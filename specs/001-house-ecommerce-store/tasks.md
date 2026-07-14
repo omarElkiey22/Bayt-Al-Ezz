@@ -169,9 +169,9 @@
 **Purpose**: Verification and optimization steps affecting all user stories before release.
 
 - [X] T041 Run automated unit tests using Vitest and verify all pass successfully
-- [ ] T042 Perform design review checking Cairo typography, RTL compliance, and 5-color palette constraints across all storefront pages
-- [ ] T043 Conduct end-to-end local validation scenarios from `specs/001-house-ecommerce-store/quickstart.md`
-- [ ] T044 Deploy production static web files onto Vercel and verify live domain
+- [X] T042 Perform design review checking Cairo typography, RTL compliance, and 5-color palette constraints across all storefront pages
+- [X] T043 Conduct end-to-end local validation scenarios from `specs/001-house-ecommerce-store/quickstart.md`
+- [X] T044 Deploy production static web files onto Vercel and verify live domain
 
 ---
 
