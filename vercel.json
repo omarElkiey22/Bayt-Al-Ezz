@@ -1,0 +1,19 @@
+{
+  "outputDirectory": ".",
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/", "destination": "/src/pages/index.html" },
+    { "source": "/index.html", "destination": "/src/pages/index.html" },
+    { "source": "/category.html", "destination": "/src/pages/category.html" },
+    { "source": "/product.html", "destination": "/src/pages/product.html" },
+    { "source": "/cart.html", "destination": "/src/pages/cart.html" },
+    { "source": "/admin/login.html", "destination": "/src/pages/admin/login.html" },
+    { "source": "/admin/dashboard.html", "destination": "/src/pages/admin/dashboard.html" },
+    { "source": "/admin/sections.html", "destination": "/src/pages/admin/sections.html" },
+    { "source": "/admin/products.html", "destination": "/src/pages/admin/products.html" },
+    { "source": "/css/:path*", "destination": "/src/css/:path*" },
+    { "source": "/js/:path*", "destination": "/src/js/:path*" },
+    { "source": "/public/:path*", "destination": "/public/:path*" },
+    { "source": "/assets/:path*", "destination": "/public/assets/:path*" }
+  ]
+}

@@ -311,7 +311,7 @@ class MockSupabaseClient {
   }
 }
 
-const useMock = localStorage.getItem('USE_MOCK') !== 'false';
+const useMock = localStorage.getItem('USE_MOCK') === 'true';
 
 export const supabase = useMock ? new MockSupabaseClient() : (url && key ? createClient(url, key) : null);
 
