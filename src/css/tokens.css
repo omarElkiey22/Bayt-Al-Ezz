@@ -1,0 +1,28 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --primary-blue: #0056B3;
+  --secondary-navy: #1A237E;
+  --tertiary-gray: #9E9E9E;
+  --neutral-gray: #75777E;
+  --base-white: #F8F9FA;
+  font-family: 'Cairo', sans-serif;
+}
+
+body {
+  font-family: 'Cairo', sans-serif;
+  background-color: var(--base-white);
+  color: var(--secondary-navy);
+}
+
+/* Material Symbols Icon Font Settings */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  display: inline-block;
+  vertical-align: middle;
+  line-height: 1;
+}
+
+.material-symbols-outlined.fill-icon {
+  font-variation-settings: 'FILL' 1;
+}

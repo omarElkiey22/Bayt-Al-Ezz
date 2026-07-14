@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>تفاصيل المنتج | بيت العز</title>
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <!-- Google Fonts Cairo & Material Symbols -->
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/store.css">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <script id="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#0056B3',
+            navy: '#1A237E',
+            light: '#F8F9FA'
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-[#F8F9FA] text-[#1A237E] min-h-screen flex flex-col antialiased">
+
+  <!-- Header / Navigation Bar -->
+  <nav class="bg-[#1A237E] text-white flex justify-between items-center w-full px-6 md:px-16 h-16 sticky top-0 z-50 shadow-md">
+    <div class="flex items-center gap-4">
+      <a class="font-bold text-xl tracking-wide hover:opacity-90 transition-opacity" href="index.html">بيت العز</a>
+    </div>
+    <div class="flex items-center gap-4">
+      <a href="cart.html" class="relative p-2 hover:bg-white/10 rounded-full transition-colors flex items-center justify-center" aria-label="عربة التسوق">
+        <span class="material-symbols-outlined">shopping_cart</span>
+        <span id="cart-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
+      </a>
+      <a href="admin/login.html" class="p-2 hover:bg-white/10 rounded-full transition-colors flex items-center justify-center" aria-label="حساب المدير">
+        <span class="material-symbols-outlined">account_circle</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- App Wrapper for Dynamic Content -->
+  <main class="flex-grow max-w-5xl w-full mx-auto px-4 md:px-8 py-8" id="app">
+    <!-- Loader skeleton -->
+    <div class="flex flex-col md:flex-row gap-8 animate-pulse">
+      <div class="md:w-1/2 aspect-square bg-gray-200 rounded-2xl"></div>
+      <div class="md:w-1/2 flex flex-col gap-4">
+        <div class="h-4 bg-gray-200 rounded w-1/4"></div>
+        <div class="h-8 bg-gray-200 rounded w-3/4"></div>
+        <div class="h-24 bg-gray-200 rounded w-full"></div>
+        <div class="h-6 bg-gray-200 rounded w-1/3 mt-4"></div>
+        <div class="h-10 bg-gray-200 rounded w-full mt-2"></div>
+        <div class="h-12 bg-gray-200 rounded w-1/2 mt-4"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-[#9E9E9E]/20 py-6 px-6 md:px-16 mt-auto">
+    <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-[#75777E]">
+      <div class="font-bold text-lg text-[#1A237E]">بيت العز</div>
+      <div class="flex gap-6">
+        <a class="hover:text-[#0056B3] transition-colors" href="#">سياسة الخصوصية</a>
+        <a class="hover:text-[#0056B3] transition-colors" href="#">الشروط والأحكام</a>
+        <a class="hover:text-[#0056B3] transition-colors" href="#">اتصل بنا</a>
+      </div>
+      <div>© ٢٠٢٦ بيت العز. جميع الحقوق محفوظة</div>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { getQueryParam, isValidUUID, resolveVariant, formatPrice } from '../js/utils.js';
+    import { fetchProductDetails } from '../js/products-api.js';
+    import { addToCart, getCartItems, calculateCartTotals } from '../js/cart.js';
+
+    const app = document.querySelector('#app');
+    const id = getQueryParam('id');
+
+    // Load dynamic cart badge
+    function updateCartBadge() {
+      const items = getCartItems();
+      const totals = calculateCartTotals(items);
+      const badge = document.getElementById('cart-badge');
+      if (totals.itemCount > 0) {
+        badge.textContent = totals.itemCount;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    }
+    updateCartBadge();
+
+    if (!isValidUUID(id)) {
+      location.href = 'index.html';
+    } else {
+      try {
+        const product = await fetchProductDetails(id);
+        let selected = product.variants.find(v => v.is_in_stock) || product.variants[0];
+
+        function render() {
+          const value = resolveVariant(selected, product);
+          
+          app.innerHTML = `
+            <!-- Breadcrumbs -->
+            <nav class="text-[#75777E] text-sm mb-6" aria-label="Breadcrumb">
+              <ol class="inline-flex items-center gap-2">
+                <li><a class="hover:text-primary transition-colors" href="index.html">الرئيسية</a></li>
+                <li><span class="material-symbols-outlined text-xs">chevron_left</span></li>
+                <li><a class="hover:text-primary transition-colors" href="category.html?section=${product.sections?.slug || ''}">${product.sections?.name || 'القسم'}</a></li>
+                <li><span class="material-symbols-outlined text-xs">chevron_left</span></li>
+                <li class="font-semibold text-primary">${product.name}</li>
+              </ol>
+            </nav>
+
+            <!-- Product Layout Card -->
+            <div class="bg-white border border-[#9E9E9E]/20 rounded-3xl p-6 md:p-8 shadow-sm flex flex-col md:flex-row gap-8">
+              
+              <!-- Product Image Section -->
+              <div class="w-full md:w-1/2 aspect-square bg-gray-50 rounded-2xl overflow-hidden border border-[#9E9E9E]/10">
+                <img class="w-full h-full object-cover transition-transform duration-500 hover:scale-[1.03]" src="${value.image}" alt="${product.name}">
+              </div>
+
+              <!-- Product Details Section -->
+              <div class="w-full md:w-1/2 flex flex-col justify-between">
+                <div>
+                  <span class="inline-block bg-[#0056B3]/10 text-[#0056B3] text-xs font-bold px-3 py-1 rounded-full mb-3">${product.sections?.name || ''}</span>
+                  <h1 class="text-2xl md:text-3xl font-extrabold text-[#1A237E] mb-3">${product.name}</h1>
+                  <p class="text-[#75777E] leading-relaxed mb-6 text-sm md:text-base">${product.description || ''}</p>
+
+                  <!-- Swatches / Variants -->
+                  <div class="mb-6">
+                    <h3 class="font-bold text-[#1A237E] mb-2 text-sm">الأنواع المتاحة:</h3>
+                    <div class="flex flex-wrap gap-2 swatches">
+                      ${product.variants.map(v => {
+                        const isSelected = v.id === selected.id;
+                        const inStock = v.is_in_stock;
+                        let btnClass = 'px-4 py-2 border rounded-full text-sm transition-all duration-200 ';
+                        
+                        if (!inStock) {
+                          btnClass += 'opacity-40 line-through bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed';
+                        } else if (isSelected) {
+                          btnClass += 'bg-[#0056B3]/10 text-[#0056B3] border-[#0056B3] font-bold ring-2 ring-[#0056B3]/25';
+                        } else {
+                          btnClass += 'bg-white text-[#75777E] border-gray-200 hover:border-[#0056B3] hover:text-[#0056B3]';
+                        }
+
+                        return `
+                          <button class="swatch ${btnClass}" data-id="${v.id}" ${inStock ? '' : 'disabled'}>
+                            ${v.label}
+                          </button>
+                        `;
+                      }).join('')}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Price and CTA -->
+                <div class="pt-6 border-t border-[#9E9E9E]/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div class="flex flex-col">
+                    <span class="text-xs text-[#75777E]">السعر</span>
+                    <strong class="text-2xl md:text-3xl font-extrabold text-[#0056B3] transition-all" id="price">${formatPrice(value.price)}</strong>
+                  </div>
+                  <button class="flex-grow sm:flex-grow-0 bg-[#0056B3] hover:bg-[#004491] active:scale-95 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-3 px-8 rounded-xl flex items-center justify-center gap-2 shadow-md transition-all" id="add" ${value.is_in_stock ? '' : 'disabled'}>
+                    <span class="material-symbols-outlined">${value.is_in_stock ? 'shopping_cart' : 'info'}</span>
+                    <span>${value.is_in_stock ? 'أضف للسلة' : 'غير متوفر'}</span>
+                  </button>
+                </div>
+
+              </div>
+
+            </div>
+          `;
+
+          // Handle back navigation safely
+          app.querySelectorAll('.swatch').forEach(button => {
+            button.onclick = () => {
+              selected = product.variants.find(v => v.id === button.dataset.id);
+              render();
+            };
+          });
+
+          app.querySelector('#add')?.addEventListener('click', () => {
+            addToCart(product.id, selected.id, selected.label, value.price, value.image, product.name);
+            updateCartBadge();
+            location.href = 'cart.html';
+          });
+        }
+
+        render();
+
+      } catch (e) {
+        console.error("Product render error:", e);
+        app.innerHTML = `
+          <div class="flex flex-col items-center justify-center py-16 bg-white border border-[#9E9E9E]/20 rounded-3xl text-center p-8">
+            <span class="material-symbols-outlined text-6xl text-red-500 mb-4">gpp_maybe</span>
+            <h3 class="text-xl font-bold text-[#1A237E] mb-2">المنتج غير موجود أو لم يعد متاحاً</h3>
+            <p class="text-[#75777E] mb-6">يرجى العودة لصفحة البداية واختيار منتج آخر.</p>
+            <a class="inline-flex items-center gap-2 bg-[#0056B3] hover:bg-[#004491] text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm" href="index.html">
+              <span class="material-symbols-outlined text-sm">home</span>
+              العودة للبيت
+            </a>
+          </div>
+        `;
+      }
+    }
+  </script>
+</body>
+</html>

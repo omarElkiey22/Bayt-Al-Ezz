@@ -1,0 +1,1 @@
+import {describe,it,expect} from 'vitest'; import {resolveVariant} from '../src/js/utils.js'; describe('variants',()=>{it('inherits parent values',()=>expect(resolveVariant({price_override:null,image_url:null},{base_price:150,primary_image_url:'a'})).toMatchObject({price:150,image:'a'}))})

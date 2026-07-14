@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>لوحة التاجر | بيت العز</title>
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <!-- Google Fonts Cairo & Material Symbols -->
+  <link rel="stylesheet" href="../../css/tokens.css">
+  <link rel="stylesheet" href="../../css/admin.css">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <script id="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#0056B3',
+            navy: '#1A237E',
+            light: '#F8F9FA'
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-[#F8F9FA] text-[#1A237E] min-h-screen flex flex-col md:flex-row antialiased">
+
+  <!-- Mobile Top Bar -->
+  <header class="md:hidden bg-[#1A237E] text-white w-full h-16 flex justify-between items-center px-6 shrink-0 shadow-md">
+    <div class="font-bold text-lg">بيت العز</div>
+    <button class="p-2 hover:bg-white/10 rounded-full transition-colors flex items-center justify-center" id="logout-mobile" aria-label="تسجيل الخروج">
+      <span class="material-symbols-outlined">logout</span>
+    </button>
+  </header>
+
+  <!-- Side Navigation Bar (Desktop) -->
+  <aside class="hidden md:flex fixed right-0 top-0 h-full w-72 flex-col bg-white border-l border-[#9E9E9E]/20 shadow-sm z-50">
+    <div class="p-6 border-b border-[#9E9E9E]/10 flex flex-col gap-1">
+      <span class="font-extrabold text-xl text-[#0056B3] tracking-wide">بيت العز</span>
+      <span class="text-xs text-[#75777E]">لوحة تحكم التاجر</span>
+    </div>
+    
+    <nav class="flex-grow p-4 flex flex-col gap-2">
+      <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 bg-[#0056B3]/10 text-[#0056B3] font-bold border-r-4 border-[#0056B3]" href="dashboard.html">
+        <span class="material-symbols-outlined">dashboard</span>
+        <span>الرئيسية</span>
+      </a>
+      <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-[#75777E] hover:bg-gray-100 hover:text-[#1A237E]" href="sections.html">
+        <span class="material-symbols-outlined">layers</span>
+        <span>إدارة الأقسام</span>
+      </a>
+      <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-[#75777E] hover:bg-gray-100 hover:text-[#1A237E]" href="products.html">
+        <span class="material-symbols-outlined">inventory_2</span>
+        <span>إدارة المنتجات</span>
+      </a>
+    </nav>
+
+    <div class="p-4 border-t border-[#9E9E9E]/10">
+      <button class="w-full bg-[#1A237E]/5 hover:bg-red-50 hover:text-red-600 text-[#1A237E] font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all" id="logout">
+        <span class="material-symbols-outlined">logout</span>
+        <span>تسجيل الخروج</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="flex-grow md:mr-72 p-6 md:p-12">
+    <div class="max-w-4xl mx-auto">
+      
+      <!-- Welcome Header -->
+      <div class="mb-8">
+        <h1 class="text-3xl font-extrabold text-[#1A237E]">لوحة تحكم بيت العز</h1>
+        <p class="text-[#75777E] mt-1">أهلاً بك يا تاجرنا. من هنا يمكنك إدارة أقسام البيت الإضافية والمنتجات بكل سهولة.</p>
+      </div>
+
+      <!-- Quick Stats / Bento Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white border border-[#9E9E9E]/20 p-6 rounded-2xl shadow-sm flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-[#0056B3]/10 text-[#0056B3] flex items-center justify-center">
+            <span class="material-symbols-outlined text-2xl">layers</span>
+          </div>
+          <div>
+            <h3 class="text-sm text-[#75777E]">إجمالي الأقسام</h3>
+            <p class="text-2xl font-black text-[#1A237E]" id="count-sections">...</p>
+          </div>
+        </div>
+
+        <div class="bg-white border border-[#9E9E9E]/20 p-6 rounded-2xl shadow-sm flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-[#1A237E]/10 text-[#1A237E] flex items-center justify-center">
+            <span class="material-symbols-outlined text-2xl">inventory_2</span>
+          </div>
+          <div>
+            <h3 class="text-sm text-[#75777E]">إجمالي المنتجات</h3>
+            <p class="text-2xl font-black text-[#1A237E]" id="count-products">...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions Card -->
+      <div class="bg-white border border-[#9E9E9E]/20 rounded-2xl p-6 shadow-sm">
+        <h2 class="font-bold text-lg text-[#1A237E] mb-4 pb-2 border-b border-[#9E9E9E]/10">الروابط السريعة للعمليات</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <a class="flex items-center justify-between p-4 bg-gray-50 hover:bg-[#0056B3]/5 rounded-xl border border-gray-200 hover:border-[#0056B3] transition-all group" href="sections.html">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-[#75777E] group-hover:text-[#0056B3]">layers</span>
+              <span class="font-bold text-sm text-[#1A237E]">إدارة أقسام البيت (الرومات)</span>
+            </div>
+            <span class="material-symbols-outlined text-xs text-[#75777E] group-hover:translate-x-[-4px] transition-transform">arrow_back</span>
+          </a>
+
+          <a class="flex items-center justify-between p-4 bg-gray-50 hover:bg-[#0056B3]/5 rounded-xl border border-gray-200 hover:border-[#0056B3] transition-all group" href="products.html">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-[#75777E] group-hover:text-[#0056B3]">inventory_2</span>
+              <span class="font-bold text-sm text-[#1A237E]">إدارة المنتجات والمخزون</span>
+            </div>
+            <span class="material-symbols-outlined text-xs text-[#75777E] group-hover:translate-x-[-4px] transition-transform">arrow_back</span>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script type="module">
+    import { supabase } from '../../js/supabase-client.js';
+    import { requireAdmin } from '../../js/admin/auth-gate.js';
+    import { fetchAllSectionsAdmin } from '../../js/sections-api.js';
+
+    if (await requireAdmin()) {
+      // Load quick statistics counts
+      try {
+        const sections = await fetchAllSectionsAdmin();
+        document.getElementById('count-sections').textContent = sections.length;
+
+        // Fetch products length via standard mock API or client
+        const productsRes = await supabase.from('products').select('*');
+        if (productsRes.data) {
+          document.getElementById('count-products').textContent = productsRes.data.filter(p => !p.deleted_at).length;
+        }
+      } catch (err) {
+        console.error(err);
+      }
+
+      // Logout triggers
+      const doLogout = async () => {
+        await supabase.auth.signOut();
+        location.href = 'login.html';
+      };
+      
+      document.querySelector('#logout').onclick = doLogout;
+      document.querySelector('#logout-mobile').onclick = doLogout;
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>المنتجات | بيت العز</title>
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <!-- Google Fonts Cairo & Material Symbols -->
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/store.css">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <script id="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#0056B3',
+            navy: '#1A237E',
+            light: '#F8F9FA'
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-[#F8F9FA] text-[#1A237E] min-h-screen flex flex-col antialiased">
+
+  <!-- Header / Navigation Bar -->
+  <nav class="bg-[#1A237E] text-white flex justify-between items-center w-full px-6 md:px-16 h-16 sticky top-0 z-50 shadow-md">
+    <div class="flex items-center gap-4">
+      <a class="font-bold text-xl tracking-wide hover:opacity-90 transition-opacity" href="index.html">بيت العز</a>
+    </div>
+    <div class="flex items-center gap-4">
+      <a href="cart.html" class="relative p-2 hover:bg-white/10 rounded-full transition-colors flex items-center justify-center" aria-label="عربة التسوق">
+        <span class="material-symbols-outlined">shopping_cart</span>
+        <span id="cart-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
+      </a>
+      <a href="admin/login.html" class="p-2 hover:bg-white/10 rounded-full transition-colors flex items-center justify-center" aria-label="حساب المدير">
+        <span class="material-symbols-outlined">account_circle</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Two Column Layout: Sidebar + Main Content -->
+  <div class="flex-grow flex flex-col md:flex-row max-w-7xl w-full mx-auto px-4 md:px-8 py-8 gap-8">
+    
+    <!-- Sidebar Navigation (Desktop) -->
+    <aside class="hidden md:block w-64 shrink-0 bg-white border border-[#9E9E9E]/20 rounded-2xl p-6 h-fit shadow-sm">
+      <h2 class="font-bold text-lg text-[#1A237E] mb-4 pb-2 border-b border-[#9E9E9E]/10">أقسام البيت</h2>
+      <nav class="flex flex-col gap-2" id="sidebar-nav">
+        <!-- Sidebar links loaded dynamically -->
+        <div class="h-6 w-full bg-gray-200 animate-pulse rounded"></div>
+        <div class="h-6 w-full bg-gray-200 animate-pulse rounded mt-2"></div>
+        <div class="h-6 w-full bg-gray-200 animate-pulse rounded mt-2"></div>
+      </nav>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow">
+      
+      <!-- Breadcrumbs -->
+      <nav class="text-[#75777E] text-sm mb-4" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center gap-2">
+          <li><a class="hover:text-primary transition-colors" href="index.html">الرئيسية</a></li>
+          <li><span class="material-symbols-outlined text-xs">chevron_left</span></li>
+          <li class="font-semibold text-primary" id="breadcrumb-active">تحميل القسم...</li>
+        </ol>
+      </nav>
+
+      <!-- Section Title & Info -->
+      <div class="mb-8">
+        <h1 class="text-3xl font-extrabold text-[#1A237E]" id="section-title">جاري التحميل...</h1>
+        <p class="text-[#75777E] mt-1" id="section-desc">المجموعات المختارة بعناية لأثاثك المنزلي.</p>
+      </div>
+
+      <!-- Horizontal scrollable categories for mobile -->
+      <div class="flex md:hidden gap-2 overflow-x-auto pb-4 mb-6 scrollbar-none" id="mobile-nav">
+        <!-- Mobile tabs loaded dynamically -->
+      </div>
+
+      <!-- Products Grid / Content Slot -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="content">
+        <!-- Skeleton Product Cards -->
+        <div class="bg-white border border-[#9E9E9E]/20 rounded-2xl p-4 shadow-sm flex flex-col gap-4 animate-pulse">
+          <div class="aspect-square bg-gray-200 rounded-xl w-full"></div>
+          <div class="h-4 bg-gray-200 rounded w-2/3"></div>
+          <div class="h-6 bg-gray-200 rounded w-1/3 mt-auto"></div>
+          <div class="h-10 bg-gray-200 rounded w-full mt-2"></div>
+        </div>
+        <div class="bg-white border border-[#9E9E9E]/20 rounded-2xl p-4 shadow-sm flex flex-col gap-4 animate-pulse">
+          <div class="aspect-square bg-gray-200 rounded-xl w-full"></div>
+          <div class="h-4 bg-gray-200 rounded w-2/3"></div>
+          <div class="h-6 bg-gray-200 rounded w-1/3 mt-auto"></div>
+          <div class="h-10 bg-gray-200 rounded w-full mt-2"></div>
+        </div>
+        <div class="bg-white border border-[#9E9E9E]/20 rounded-2xl p-4 shadow-sm flex flex-col gap-4 animate-pulse">
+          <div class="aspect-square bg-gray-200 rounded-xl w-full"></div>
+          <div class="h-4 bg-gray-200 rounded w-2/3"></div>
+          <div class="h-6 bg-gray-200 rounded w-1/3 mt-auto"></div>
+          <div class="h-10 bg-gray-200 rounded w-full mt-2"></div>
+        </div>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-[#9E9E9E]/20 py-6 px-6 md:px-16 mt-auto">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-[#75777E]">
+      <div class="font-bold text-lg text-[#1A237E]">بيت العز</div>
+      <div class="flex gap-6">
+        <a class="hover:text-[#0056B3] transition-colors" href="#">سياسة الخصوصية</a>
+        <a class="hover:text-[#0056B3] transition-colors" href="#">الشروط والأحكام</a>
+        <a class="hover:text-[#0056B3] transition-colors" href="#">اتصل بنا</a>
+      </div>
+      <div>© ٢٠٢٦ بيت العز. جميع الحقوق محفوظة</div>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { getQueryParam, formatPrice } from '../js/utils.js';
+    import { fetchProductsBySection } from '../js/products-api.js';
+    import { fetchActiveSections } from '../js/sections-api.js';
+    import { getCartItems, calculateCartTotals } from '../js/cart.js';
+
+    const content = document.querySelector('#content');
+    const slug = getQueryParam('section');
+    const breadcrumbActive = document.getElementById('breadcrumb-active');
+    const sectionTitle = document.getElementById('section-title');
+
+    // Load dynamic cart badge
+    const items = getCartItems();
+    const totals = calculateCartTotals(items);
+    const badge = document.getElementById('cart-badge');
+    if (totals.itemCount > 0) {
+      badge.textContent = totals.itemCount;
+      badge.classList.remove('hidden');
+    }
+
+    async function loadNavigation(sections) {
+      const sidebarNav = document.getElementById('sidebar-nav');
+      const mobileNav = document.getElementById('mobile-nav');
+
+      // Helper to map icons from display_order or slug names
+      const iconMap = {
+        'laundry': 'washing_machine',
+        'kitchen-shelving': 'kitchen',
+        'paper-goods': 'note_alt',
+        'bathroom': 'bathroom',
+        'women': 'female',
+        'men': 'male',
+        'reception': 'concierge_bell',
+        'baby': 'baby_changing_station',
+        'footwear': 'steps',
+        'vanity': 'dry_cleaning',
+        'garage': 'garage',
+        'cleaning': 'cleaning_services'
+      };
+
+      const getIcon = (sectionSlug) => iconMap[sectionSlug] || 'storefront';
+
+      // Render Sidebar
+      sidebarNav.innerHTML = sections.map(s => {
+        const isActive = s.slug === slug;
+        return `
+          <a class="flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200 ${isActive ? 'bg-[#0056B3]/10 text-[#0056B3] font-bold border-r-4 border-[#0056B3]' : 'text-[#75777E] hover:bg-gray-100 hover:text-[#1A237E]'}" href="category.html?section=${s.slug}">
+            <span class="material-symbols-outlined">${getIcon(s.slug)}</span>
+            <span>${s.name}</span>
+          </a>
+        `;
+      }).join('');
+
+      // Render Mobile Bar
+      mobileNav.innerHTML = sections.map(s => {
+        const isActive = s.slug === slug;
+        return `
+          <a class="flex-shrink-0 px-4 py-2 rounded-full border text-sm font-semibold transition-all ${isActive ? 'bg-[#0056B3] text-white border-[#0056B3]' : 'bg-white text-[#75777E] border-gray-200 hover:bg-gray-50'}" href="category.html?section=${s.slug}">
+            ${s.name}
+          </a>
+        `;
+      }).join('');
+    }
+
+    async function render() {
+      if (!slug) {
+        location.href = 'index.html';
+        return;
+      }
+
+      try {
+        const sections = await fetchActiveSections();
+        await loadNavigation(sections);
+
+        const currentSection = sections.find(s => s.slug === slug);
+        if (currentSection) {
+          breadcrumbActive.textContent = currentSection.name;
+          sectionTitle.textContent = currentSection.name;
+          document.title = `${currentSection.name} | بيت العز`;
+        }
+
+        const products = await fetchProductsBySection(slug);
+
+        if (!products.length) {
+          content.className = 'col-span-full flex flex-col items-center justify-center py-16 bg-white border border-[#9E9E9E]/20 rounded-2xl text-center p-8';
+          content.innerHTML = `
+            <span class="material-symbols-outlined text-6xl text-[#75777E] mb-4">folder_open</span>
+            <h3 class="text-xl font-bold text-[#1A237E] mb-2">السلة فاضية في القسم ده</h3>
+            <p class="text-[#75777E] mb-6">لم يتم إضافة منتجات في هذا القسم بعد.</p>
+            <a class="inline-flex items-center gap-2 bg-[#0056B3] hover:bg-[#004491] text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm" href="index.html">
+              <span class="material-symbols-outlined text-sm">home</span>
+              العودة للبيت
+            </a>
+          `;
+          return;
+        }
+
+        content.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6';
+        content.innerHTML = products.map(p => `
+          <article class="bg-white border border-[#9E9E9E]/20 rounded-2xl overflow-hidden group hover:border-[#0056B3] hover:shadow-md transition-all duration-300 flex flex-col">
+            <div class="relative aspect-square w-full bg-gray-50 overflow-hidden">
+              <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="${p.primary_image_url}" alt="${p.name}">
+            </div>
+            <div class="p-5 flex flex-col flex-grow">
+              <h3 class="text-lg font-bold text-[#1A237E] line-clamp-1 mb-2 group-hover:text-primary transition-colors">${p.name}</h3>
+              <p class="text-sm text-[#75777E] line-clamp-2 mb-4 flex-grow">${p.description || ''}</p>
+              <div class="flex items-center justify-between mt-auto pt-3 border-t border-[#9E9E9E]/10">
+                <span class="text-lg font-extrabold text-[#0056B3]">
+                  ${p.has_different_prices ? '<span class="text-xs font-semibold text-[#75777E] ml-1">بداية من</span>' : ''}${formatPrice(p.starting_price || p.base_price)}
+                </span>
+                <a class="inline-flex items-center gap-1 bg-[#1A237E] hover:bg-[#0056B3] text-white text-sm font-bold py-2 px-4 rounded-xl transition-all" href="product.html?id=${p.id}">
+                  <span>تفاصيل</span>
+                  <span class="material-symbols-outlined text-sm">visibility</span>
+                </a>
+              </div>
+            </div>
+          </article>
+        `).join('');
+
+      } catch (error) {
+        console.error(error);
+        content.className = 'col-span-full flex flex-col items-center justify-center py-16 bg-white border border-[#9E9E9E]/20 rounded-2xl text-center p-8';
+        content.innerHTML = `
+          <span class="material-symbols-outlined text-6xl text-red-500 mb-4">error</span>
+          <h3 class="text-xl font-bold text-[#1A237E] mb-2">حصلت مشكلة في تحميل المنتجات</h3>
+          <p class="text-[#75777E] mb-6">يرجى التحقق من اتصالك بالإنترنت وإعادة المحاولة.</p>
+          <button class="inline-flex items-center gap-2 bg-[#0056B3] hover:bg-[#004491] text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm" id="retry">
+            <span class="material-symbols-outlined text-sm">refresh</span>
+            حاول تاني
+          </button>
+        `;
+        document.querySelector('#retry').onclick = render;
+      }
+    }
+
+    render();
+  </script>
+</body>
+</html>

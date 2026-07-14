@@ -1,0 +1,95 @@
+.house-wrap {
+  position: relative;
+  width: min(100%, 760px);
+  margin: 2rem auto;
+}
+
+.house-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Room active/interactive overlays */
+.zone {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  cursor: pointer;
+}
+
+.house-open .zone {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.zone:hover, .zone:focus {
+  filter: drop-shadow(0 0 12px rgba(26, 35, 126, 0.5));
+  outline: none;
+}
+
+/* Isometric Door animation */
+.door {
+  transform-origin: 50% 50%;
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+
+.house-open .door {
+  transform: perspective(600px) scale(1.05) rotateY(-110deg);
+}
+
+.door:hover {
+  filter: drop-shadow(0 0 10px rgba(0, 86, 179, 0.6));
+}
+
+.door:focus {
+  outline: 3px solid #0056B3;
+  outline-offset: 4px;
+}
+
+.room-labels {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Premium HTML labels overlaid on SVG coordinates */
+.room-label {
+  position: absolute;
+  translate: -50% -50%;
+  border: 1px solid rgba(158, 158, 158, 0.3);
+  border-radius: 9999px;
+  padding: 0.5rem 1rem;
+  background: rgba(248, 249, 250, 0.95);
+  color: #1A237E;
+  font-weight: 700;
+  font-size: 0.875rem;
+  box-shadow: 0 4px 15px rgba(117, 119, 126, 0.15);
+  opacity: 0;
+  transform: translateY(15px);
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s, color 0.2s;
+  pointer-events: auto;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  white-space: nowrap;
+}
+
+.house-open .room-label {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.room-label:hover {
+  background: #0056B3;
+  color: #F8F9FA;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 86, 179, 0.3);
+}
+
+.room-label:focus {
+  outline: 3px solid #0056B3;
+  outline-offset: 2px;
+}

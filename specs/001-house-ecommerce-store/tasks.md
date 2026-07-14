@@ -25,9 +25,9 @@
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Create project directories and empty files per the implementation plan repository structure (`src/pages/`, `src/js/`, `src/css/`, `public/assets/`, `supabase/`, `tests/`)
-- [ ] T002 Initialize npm project with dependencies for Vitest (`npm install -D vitest`) and local server (`npm install -D serve`) in package.json at the repository root
-- [ ] T003 [P] Configure global CSS font integration using Google Fonts Cairo CDN stylesheet links inside the `<head>` of all storefront and admin HTML documents
+- [X] T001 Create project directories and empty files per the implementation plan repository structure (`src/pages/`, `src/js/`, `src/css/`, `public/assets/`, `supabase/`, `tests/`)
+- [X] T002 Initialize npm project with dependencies for Vitest (`npm install -D vitest`) and local server (`npm install -D serve`) in package.json at the repository root
+- [X] T003 [P] Configure global CSS font integration using Google Fonts Cairo CDN stylesheet links inside the `<head>` of all storefront and admin HTML documents
 
 ---
 
@@ -37,14 +37,14 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Setup database schema and migrations for tables (`merchant_settings`, `sections`, `products`, `product_variants`) including indexes, foreign keys, and soft-delete columns in `supabase/migrations/`
-- [ ] T004b [P] Configure 'store-assets' public Supabase Storage bucket and its associated RLS upload policies (public read, authenticated write)
-- [ ] T005 Create SQL seed script to initialize the 12 room-sections and default merchant settings in `supabase/seed/`
-- [ ] T006 [P] Create the design tokens stylesheet containing custom properties for the 5-color palette, Cairo typography, and RTL flow layouts in `src/css/tokens.css`
-- [ ] T007 [P] Initialize Supabase Client instance using ESM import from npm CDN and environment keys in `src/js/supabase-client.js`
-- [ ] T008 [P] Define application shared variables (table names, color palette constants, section counts) in `src/js/constants.js`
-- [ ] T009 [P] Implement query parameter parsing, UUID validation, and slug generator utilities in `src/js/utils.js`
-- [ ] T010 [P] Write unit tests using Vitest to validate Arabic-compatible slug generation and special character sanitization in `tests/slug.test.js`
+- [X] T004 Setup database schema and migrations for tables (`merchant_settings`, `sections`, `products`, `product_variants`) including indexes, foreign keys, and soft-delete columns in `supabase/migrations/`
+- [X] T004b [P] Configure 'store-assets' public Supabase Storage bucket and its associated RLS upload policies (public read, authenticated write)
+- [X] T005 Create SQL seed script to initialize the 12 room-sections and default merchant settings in `supabase/seed/`
+- [X] T006 [P] Create the design tokens stylesheet containing custom properties for the 5-color palette, Cairo typography, and RTL flow layouts in `src/css/tokens.css`
+- [X] T007 [P] Initialize Supabase Client instance using ESM import from npm CDN and environment keys in `src/js/supabase-client.js`
+- [X] T008 [P] Define application shared variables (table names, color palette constants, section counts) in `src/js/constants.js`
+- [X] T009 [P] Implement query parameter parsing, UUID validation, and slug generator utilities in `src/js/utils.js`
+- [X] T010 [P] Write unit tests using Vitest to validate Arabic-compatible slug generation and special character sanitization in `tests/slug.test.js`
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -58,12 +58,12 @@
 
 ### Implementation for User Story 1
 
-- [ ] T011 [P] [US1] Create coordinates JSON file mapping section slugs to their center positioning percentages (`cx`, `cy`) in `public/assets/house-coordinates.json`
-- [ ] T012 [P] [US1] Create hand-built isometric house SVG with 12 room groups (`<g>` with stable IDs) and a glowing entrance door in `public/assets/house-hero.svg`
-- [ ] T013 [P] [US1] Define CSS transitions (0.5s fade/slide), hover glows, and door open transforms in `src/css/house.css`
-- [ ] T014 [US1] Implement active sections data-fetching method (`fetchActiveSections`) in the sections data-access API wrapper in `src/js/sections-api.js`
-- [ ] T015 [US1] Implement house SVG interactive overlay placement engine, click transitions, and keyboard/RTL accessibility hooks in `src/js/house-interactions.js`
-- [ ] T016 [US1] Build storefront homepage skeleton container and script linkages in `src/pages/index.html`
+- [X] T011 [P] [US1] Create coordinates JSON file mapping section slugs to their center positioning percentages (`cx`, `cy`) in `public/assets/house-coordinates.json`
+- [X] T012 [P] [US1] Create hand-built isometric house SVG with 12 room groups (`<g>` with stable IDs) and a glowing entrance door in `public/assets/house-hero.svg`
+- [X] T013 [P] [US1] Define CSS transitions (0.5s fade/slide), hover glows, and door open transforms in `src/css/house.css`
+- [X] T014 [US1] Implement active sections data-fetching method (`fetchActiveSections`) in the sections data-access API wrapper in `src/js/sections-api.js`
+- [X] T015 [US1] Implement house SVG interactive overlay placement engine, click transitions, and keyboard/RTL accessibility hooks in `src/js/house-interactions.js`
+- [X] T016 [US1] Build storefront homepage skeleton container and script linkages in `src/pages/index.html`
 
 **Checkpoint**: User Story 1 is functional. Visitors can click the door, view room overlays, and navigate to category pages.
 
@@ -77,10 +77,10 @@
 
 ### Implementation for User Story 2
 
-- [ ] T017 [US2] Implement active section product list query method (`fetchProductsBySection`) returning parent listings sorted by newest first in `src/js/products-api.js`
-- [ ] T018 [P] [US2] Style responsive product cards, skeleton templates, Arabic typography layout, and error-retry prompts in `src/css/store.css`
-- [ ] T019 [P] [US2] Create category page layout frame containing page headers, skeleton placeholders, grids, and error wrappers in `src/pages/category.html`
-- [ ] T020 [US2] Implement category controller script parsing URL parameters, executing data-access methods, and updating UI states in `src/pages/category.html`
+- [X] T017 [US2] Implement active section product list query method (`fetchProductsBySection`) returning parent listings sorted by newest first in `src/js/products-api.js`
+- [X] T018 [P] [US2] Style responsive product cards, skeleton templates, Arabic typography layout, and error-retry prompts in `src/css/store.css`
+- [X] T019 [P] [US2] Create category page layout frame containing page headers, skeleton placeholders, grids, and error wrappers in `src/pages/category.html`
+- [X] T020 [US2] Implement category controller script parsing URL parameters, executing data-access methods, and updating UI states in `src/pages/category.html`
 
 **Checkpoint**: User Story 2 is functional. Category product listing is dynamic and displays grouped parent listings.
 
@@ -94,13 +94,13 @@
 
 ### Tests for User Story 3
 
-- [ ] T021 [P] [US3] Write unit tests to validate variant price and image inheritance algorithms (inheriting parent values if variant overrides are null) in `tests/variants.test.js`
+- [X] T021 [P] [US3] Write unit tests to validate variant price and image inheritance algorithms (inheriting parent values if variant overrides are null) in `tests/variants.test.js`
 
 ### Implementation for User Story 3
 
-- [ ] T022 [US3] Implement single product details query method (`fetchProductDetails`) returning parent details and active child variant objects in `src/js/products-api.js`
-- [ ] T023 [P] [US3] Create product detail page structure containing galleries, swatch selectors, stock badges, and descriptions in `src/pages/product.html`
-- [ ] T024 [US3] Implement product detail page controller managing swatch clicks, image updates, and out-of-stock visual overlays in `src/pages/product.html`
+- [X] T022 [US3] Implement single product details query method (`fetchProductDetails`) returning parent details and active child variant objects in `src/js/products-api.js`
+- [X] T023 [P] [US3] Create product detail page structure containing galleries, swatch selectors, stock badges, and descriptions in `src/pages/product.html`
+- [X] T024 [US3] Implement product detail page controller managing swatch clicks, image updates, and out-of-stock visual overlays in `src/pages/product.html`
 
 **Checkpoint**: User Story 3 is functional. Product page handles dynamic details, variant switching, and stock status.
 
@@ -114,14 +114,14 @@
 
 ### Tests for User Story 4
 
-- [ ] T025 [P] [US4] Write unit tests verifying cart totals calculations and WhatsApp pre-filled Arabic message construction layout in `tests/cart.test.js` and `tests/whatsapp.test.js`
+- [X] T025 [P] [US4] Write unit tests verifying cart totals calculations and WhatsApp pre-filled Arabic message construction layout in `tests/cart.test.js` and `tests/whatsapp.test.js`
 
 ### Implementation for User Story 4
 
-- [ ] T026 [P] [US4] Implement localStorage guest cart wrapper functions (`getCartItems`, `addToCart`, `updateQuantity`, `removeFromCart`, `calculateCartTotals`) in `src/js/cart.js`
-- [ ] T027 [US4] Implement settings data-fetching method (`fetchMerchantNumber`) to retrieve E.164 phone numbers from settings in `src/js/settings-api.js`
-- [ ] T028 [P] [US4] Create cart page tables layout, quantity modifiers, and fallback checkout inputs in `src/pages/cart.html`
-- [ ] T029 [US4] Implement cart controller handling database validation for stale items, copy-to-clipboard actions, and WhatsApp URL generation in `src/pages/cart.html`
+- [X] T026 [P] [US4] Implement localStorage guest cart wrapper functions (`getCartItems`, `addToCart`, `updateQuantity`, `removeFromCart`, `calculateCartTotals`) in `src/js/cart.js`
+- [X] T027 [US4] Implement settings data-fetching method (`fetchMerchantNumber`) to retrieve E.164 phone numbers from settings in `src/js/settings-api.js`
+- [X] T028 [P] [US4] Create cart page tables layout, quantity modifiers, and fallback checkout inputs in `src/pages/cart.html`
+- [X] T029 [US4] Implement cart controller handling database validation for stale items, copy-to-clipboard actions, and WhatsApp URL generation in `src/pages/cart.html`
 
 **Checkpoint**: User Story 4 is functional. Complete checkout lifecycle is operational with cart persistence and fail-safe copy clipboard options.
 
@@ -135,13 +135,13 @@
 
 ### Implementation for User Story 5
 
-- [ ] T030 [US5] Implement CRUD section database mutation queries (`fetchAllSectionsAdmin`, `createSection`, `updateSection`, `softDeleteSection`) in `src/js/sections-api.js`
-- [ ] T031 [P] [US5] Create admin session routing validation guard in `src/js/admin/auth-gate.js`
-- [ ] T032 [P] [US5] Create merchant credential login portal interface and validation in `src/pages/admin/login.html`
-- [ ] T033 [P] [US5] Design primary dashboard container layout with navigation menus in `src/pages/admin/dashboard.html`
-- [ ] T034 [P] [US5] Implement CSS styles for admin layouts, tables, modals, and sidebar configurations in `src/css/admin.css`
-- [ ] T035 [P] [US5] Create sections CRUD list interface, modals, inputs, and slug warnings in `src/pages/admin/sections.html`
-- [ ] T036 [US5] Implement sections admin controller logic, validating inputs and intercepting dangerous deletions in `src/js/admin/sections-crud.js`
+- [X] T030 [US5] Implement CRUD section database mutation queries (`fetchAllSectionsAdmin`, `createSection`, `updateSection`, `softDeleteSection`) in `src/js/sections-api.js`
+- [X] T031 [P] [US5] Create admin session routing validation guard in `src/js/admin/auth-gate.js`
+- [X] T032 [P] [US5] Create merchant credential login portal interface and validation in `src/pages/admin/login.html`
+- [X] T033 [P] [US5] Design primary dashboard container layout with navigation menus in `src/pages/admin/dashboard.html`
+- [X] T034 [P] [US5] Implement CSS styles for admin layouts, tables, modals, and sidebar configurations in `src/css/admin.css`
+- [X] T035 [P] [US5] Create sections CRUD list interface, modals, inputs, and slug warnings in `src/pages/admin/sections.html`
+- [X] T036 [US5] Implement sections admin controller logic, validating inputs and intercepting dangerous deletions in `src/js/admin/sections-crud.js`
 
 **Checkpoint**: User Story 5 is functional. Section management is protected and operates securely from the admin panel.
 
@@ -155,10 +155,10 @@
 
 ### Implementation for User Story 6
 
-- [ ] T037 [P] [US6] Implement canvas-based image resizing and compression helper functions in `src/js/image-compressor.js`
-- [ ] T038 [US6] Implement product and variant transaction database mutations (`createProduct`, `updateProduct`, `softDeleteProduct`) in `src/js/products-api.js`
-- [ ] T039 [P] [US6] Create products list dashboard and nested variant modification modals in `src/pages/admin/products.html`
-- [ ] T040 [US6] Implement products CRUD controller logic, file upload listeners, and sub-variant sync states in `src/js/admin/products-crud.js`
+- [X] T037 [P] [US6] Implement canvas-based image resizing and compression helper functions in `src/js/image-compressor.js`
+- [X] T038 [US6] Implement product and variant transaction database mutations (`createProduct`, `updateProduct`, `softDeleteProduct`) in `src/js/products-api.js`
+- [X] T039 [P] [US6] Create products list dashboard and nested variant modification modals in `src/pages/admin/products.html`
+- [X] T040 [US6] Implement products CRUD controller logic, file upload listeners, and sub-variant sync states in `src/js/admin/products-crud.js`
 
 **Checkpoint**: User Story 6 is functional. Merchants can manage their inventory, add variants, toggle active flags, and compress uploaded files seamlessly.
 
@@ -168,7 +168,7 @@
 
 **Purpose**: Verification and optimization steps affecting all user stories before release.
 
-- [ ] T041 Run automated unit tests using Vitest and verify all pass successfully
+- [X] T041 Run automated unit tests using Vitest and verify all pass successfully
 - [ ] T042 Perform design review checking Cairo typography, RTL compliance, and 5-color palette constraints across all storefront pages
 - [ ] T043 Conduct end-to-end local validation scenarios from `specs/001-house-ecommerce-store/quickstart.md`
 - [ ] T044 Deploy production static web files onto Vercel and verify live domain

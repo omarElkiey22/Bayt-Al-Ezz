@@ -1,0 +1,1 @@
+import {describe,it,expect} from 'vitest'; import {slugify} from '../src/js/utils.js'; describe('slugify',()=>{it('keeps Arabic letters and sanitizes punctuation',()=>expect(slugify(' نص الدنيا! 2026 ')).toBe('نص-الدنيا-2026'))})

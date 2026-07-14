@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>بيت العز | الصفحة الرئيسية</title>
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <!-- Google Fonts Cairo & Material Symbols -->
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/house.css">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <script id="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#0056B3',
+            navy: '#1A237E',
+            light: '#F8F9FA'
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-[#F8F9FA] text-[#1A237E] min-h-screen flex flex-col antialiased">
+
+  <!-- Header / Navigation Bar -->
+  <nav class="bg-[#1A237E] text-white flex justify-between items-center w-full px-6 md:px-16 h-16 sticky top-0 z-50 shadow-md">
+    <div class="flex items-center gap-4">
+      <a class="font-bold text-xl tracking-wide hover:opacity-90 transition-opacity" href="index.html">بيت العز</a>
+    </div>
+    <div class="flex items-center gap-4">
+      <a href="cart.html" class="relative p-2 hover:bg-white/10 rounded-full transition-colors flex items-center justify-center" aria-label="عربة التسوق">
+        <span class="material-symbols-outlined">shopping_cart</span>
+        <span id="cart-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
+      </a>
+      <a href="admin/login.html" class="p-2 hover:bg-white/10 rounded-full transition-colors flex items-center justify-center" aria-label="حساب المدير">
+        <span class="material-symbols-outlined">account_circle</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Decorative Grid Background -->
+  <main class="flex-grow flex flex-col items-center justify-center px-6 py-12 relative overflow-hidden">
+    <div class="absolute inset-0 pointer-events-none opacity-[0.03]">
+      <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" stroke-width="1"/>
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#grid)"/>
+      </svg>
+    </div>
+
+    <!-- Interactive House Container -->
+    <div class="relative z-10 w-full max-w-4xl flex flex-col items-center">
+      <!-- Title & Header -->
+      <div class="text-center mb-8">
+        <h1 class="text-3xl md:text-5xl font-extrabold text-[#0056B3] mb-4">مرحباً بك في بيت العز</h1>
+        <p class="text-lg md:text-xl text-[#75777E] max-w-2xl mx-auto">
+          بوابتك المفضلة لتأثيث منزلك بأرقى المجموعات. اضغط على الباب وافتح البيت لتستكشف غرف المتجر.
+        </p>
+      </div>
+
+      <!-- House Interactive Wrap -->
+      <section class="house-wrap w-full bg-white rounded-3xl border border-[#9E9E9E]/20 shadow-xl p-6 md:p-8" id="house">
+        <div class="house-svg w-full" id="svg-host"></div>
+        <div class="room-labels"></div>
+      </section>
+
+      <!-- Bottom Interactive Help -->
+      <div class="mt-6 text-center" id="door-hint">
+        <span class="inline-flex items-center gap-2 text-[#0056B3] font-bold bg-[#0056B3]/10 px-6 py-3 rounded-full animate-pulse">
+          <span class="material-symbols-outlined">touch_app</span>
+          اضغط على الباب الأزرق لفتح البيت
+        </span>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-[#9E9E9E]/20 py-6 px-6 md:px-16 mt-auto">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-[#75777E]">
+      <div class="font-bold text-lg text-[#1A237E]">بيت العز</div>
+      <div class="flex gap-6">
+        <a class="hover:text-[#0056B3] transition-colors" href="#">سياسة الخصوصية</a>
+        <a class="hover:text-[#0056B3] transition-colors" href="#">الشروط والأحكام</a>
+        <a class="hover:text-[#0056B3] transition-colors" href="#">اتصل بنا</a>
+      </div>
+      <div>© ٢٠٢٦ بيت العز. جميع الحقوق محفوظة</div>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { initializeHouse } from '../js/house-interactions.js';
+    import { getCartItems, calculateCartTotals } from '../js/cart.js';
+
+    // Load dynamic cart badge
+    const items = getCartItems();
+    const totals = calculateCartTotals(items);
+    const badge = document.getElementById('cart-badge');
+    if (totals.itemCount > 0) {
+      badge.textContent = totals.itemCount;
+      badge.classList.remove('hidden');
+    }
+
+    // Load House Hero SVG and initialize interactive states
+    const host = document.querySelector('#svg-host');
+    try {
+      const svgText = await fetch('../../public/assets/house-hero.svg').then(r => r.text());
+      host.innerHTML = svgText;
+      await initializeHouse(document.querySelector('#house'));
+      
+      // Hide door hint once the door is clicked (house-open class is added to root)
+      const root = document.querySelector('#house');
+      const hint = document.getElementById('door-hint');
+      root.addEventListener('click', () => {
+        if (root.classList.contains('house-open')) {
+          hint.classList.add('opacity-0', 'pointer-events-none');
+          setTimeout(() => hint.remove(), 500);
+        }
+      });
+    } catch (e) {
+      console.error("Failed to initialize house hero:", e);
+    }
+  </script>
+</body>
+</html>

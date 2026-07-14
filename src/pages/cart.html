@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>سلة المشتريات | بيت العز</title>
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <!-- Google Fonts Cairo & Material Symbols -->
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/store.css">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <script id="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#0056B3',
+            navy: '#1A237E',
+            light: '#F8F9FA'
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-[#F8F9FA] text-[#1A237E] min-h-screen flex flex-col antialiased">
+
+  <!-- Header / Navigation Bar -->
+  <nav class="bg-[#1A237E] text-white flex justify-between items-center w-full px-6 md:px-16 h-16 sticky top-0 z-50 shadow-md">
+    <div class="flex items-center gap-4">
+      <a class="font-bold text-xl tracking-wide hover:opacity-90 transition-opacity" href="index.html">بيت العز</a>
+    </div>
+    <div class="flex items-center gap-4">
+      <a href="cart.html" class="relative p-2 hover:bg-white/10 rounded-full transition-colors flex items-center justify-center" aria-label="عربة التسوق">
+        <span class="material-symbols-outlined">shopping_cart</span>
+        <span id="cart-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
+      </a>
+      <a href="admin/login.html" class="p-2 hover:bg-white/10 rounded-full transition-colors flex items-center justify-center" aria-label="حساب المدير">
+        <span class="material-symbols-outlined">account_circle</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="flex-grow max-w-6xl w-full mx-auto px-4 md:px-8 py-8">
+    <div class="mb-8">
+      <h1 class="text-3xl font-extrabold text-[#1A237E] mb-2">عربة التسوق</h1>
+      <p class="text-[#75777E]">راجع المنتجات التي اخترتها قبل إرسال الطلب عبر واتساب.</p>
+    </div>
+
+    <!-- Layout Grid -->
+    <div class="flex flex-col lg:flex-row gap-8">
+      
+      <!-- Cart Items List (Right side on RTL / Left physically) -->
+      <div class="flex-grow flex flex-col gap-4" id="lines">
+        <!-- Skeleton List -->
+        <div class="bg-white border border-[#9E9E9E]/20 rounded-2xl p-4 animate-pulse h-28"></div>
+        <div class="bg-white border border-[#9E9E9E]/20 rounded-2xl p-4 animate-pulse h-28 mt-4"></div>
+      </div>
+
+      <!-- Order Summary Card (Left side on RTL / Right physically) -->
+      <div class="w-full lg:w-[380px] shrink-0">
+        <div class="bg-white border border-[#9E9E9E]/20 rounded-2xl p-6 shadow-sm sticky top-24">
+          <h2 class="font-bold text-lg text-[#1A237E] mb-4 pb-2 border-b border-[#9E9E9E]/10">ملخص الطلب</h2>
+          
+          <div class="flex flex-col gap-3 mb-6 text-sm text-[#75777E]">
+            <div class="flex justify-between">
+              <span>المجموع الفرعي</span>
+              <span class="font-bold text-[#1A237E]" id="subtotal-val">0 ج.م</span>
+            </div>
+            <div class="flex justify-between">
+              <span>تكلفة التوصيل</span>
+              <span>تحدد لاحقاً</span>
+            </div>
+            <div class="flex justify-between items-center pt-3 border-t border-[#9E9E9E]/10">
+              <span class="font-bold text-[#1A237E]">الإجمالي المؤقت</span>
+              <strong class="text-xl font-extrabold text-[#0056B3]" id="total-val">0 ج.م</strong>
+            </div>
+          </div>
+
+          <!-- Checkout Actions -->
+          <div class="flex flex-col gap-3">
+            <button class="w-full bg-[#0056B3] hover:bg-[#004491] active:scale-95 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-xl flex items-center justify-center gap-2 shadow-md transition-all" id="whatsapp">
+              <span class="material-symbols-outlined">send</span>
+              <span>إرسال الطلب عبر واتساب</span>
+            </button>
+            <button class="w-full bg-white border border-gray-300 hover:bg-gray-50 active:scale-95 text-[#1A237E] font-bold py-3 px-6 rounded-xl flex items-center justify-center gap-2 transition-all" id="copy">
+              <span class="material-symbols-outlined">content_copy</span>
+              <span>نسخ نص الطلب</span>
+            </button>
+          </div>
+
+          <div class="mt-6 pt-4 border-t border-[#9E9E9E]/10 text-xs text-[#75777E] text-center flex flex-col gap-2">
+            <p>للتواصل المباشر مع التاجر:</p>
+            <a class="font-bold text-primary hover:underline" id="phone" href="#">جاري التحميل...</a>
+          </div>
+
+          <!-- Hidden Textarea for WhatsApp payload representation -->
+          <div class="mt-6 hidden">
+            <label class="block text-xs font-bold text-[#75777E] mb-1">تفاصيل الطلب للتأكيد:</label>
+            <textarea class="w-full border border-gray-200 rounded-lg p-2 text-xs" id="summary" readonly></textarea>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-[#9E9E9E]/20 py-6 px-6 md:px-16 mt-auto">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-[#75777E]">
+      <div class="font-bold text-lg text-[#1A237E]">بيت العز</div>
+      <div class="flex gap-6">
+        <a class="hover:text-[#0056B3] transition-colors" href="#">سياسة الخصوصية</a>
+        <a class="hover:text-[#0056B3] transition-colors" href="#">الشروط والأحكام</a>
+        <a class="hover:text-[#0056B3] transition-colors" href="#">اتصل بنا</a>
+      </div>
+      <div>© ٢٠٢٦ بيت العز. جميع الحقوق محفوظة</div>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { getCartItems, updateQuantity, removeFromCart, calculateCartTotals } from '../js/cart.js';
+    import { buildOrderText, formatPrice, makeWhatsAppUrl } from '../js/utils.js';
+    import { fetchMerchantNumber } from '../js/settings-api.js';
+    import { validateCartItems } from '../js/products-api.js';
+
+    let items = getCartItems();
+    let phone = '';
+    const lines = document.querySelector('#lines');
+
+    // Run dynamic item validation
+    try {
+      const validation = await validateCartItems(items);
+      items = items.map(item => ({
+        ...item,
+        is_stale: validation.get(item.variant_id) || false
+      }));
+      localStorage.setItem('bayt_al_ezz_cart', JSON.stringify(items));
+      phone = await fetchMerchantNumber();
+    } catch (e) {
+      console.error(e);
+    }
+
+    function updateCartBadge() {
+      const totals = calculateCartTotals(items);
+      const badge = document.getElementById('cart-badge');
+      if (totals.itemCount > 0) {
+        badge.textContent = totals.itemCount;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    }
+
+    function render() {
+      const total = calculateCartTotals(items);
+      const text = buildOrderText(items);
+      updateCartBadge();
+
+      // Display Cart Lines
+      if (!items.length) {
+        lines.className = 'flex-grow flex flex-col items-center justify-center py-16 bg-white border border-[#9E9E9E]/20 rounded-2xl text-center p-8';
+        lines.innerHTML = `
+          <span class="material-symbols-outlined text-6xl text-[#75777E] mb-4">shopping_cart_off</span>
+          <h3 class="text-xl font-bold text-[#1A237E] mb-2">السلة بتاعتك فاضية</h3>
+          <p class="text-[#75777E] mb-6">تصفح أقسام بيت العز وأضف المنتجات المناسبة.</p>
+          <a class="inline-flex items-center gap-2 bg-[#0056B3] hover:bg-[#004491] text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm" href="index.html">
+            <span class="material-symbols-outlined text-sm">home</span>
+            تصفح المتجر
+          </a>
+        `;
+      } else {
+        lines.className = 'flex-grow flex flex-col gap-4';
+        lines.innerHTML = items.map(item => {
+          const formattedSubtotal = formatPrice(item.price * item.quantity);
+          const formattedPrice = formatPrice(item.price);
+          
+          return `
+            <article class="bg-white border border-[#9E9E9E]/20 rounded-2xl p-4 md:p-5 flex flex-col sm:flex-row gap-4 items-start sm:items-center relative group transition-all duration-300 hover:border-[#0056B3]">
+              
+              <!-- Thumbnail -->
+              <div class="w-20 h-20 bg-gray-50 rounded-xl overflow-hidden border border-gray-100 flex-shrink-0">
+                <img class="w-full h-full object-cover" src="${item.image_url}" alt="${item.product_name}">
+              </div>
+
+              <!-- Product Info -->
+              <div class="flex-grow">
+                <h3 class="font-bold text-[#1A237E] text-base md:text-lg mb-1">${item.product_name}</h3>
+                <p class="text-xs text-[#75777E] mb-2">${item.variant_label}</p>
+                ${item.is_stale 
+                  ? `<span class="text-xs text-red-500 bg-red-50 px-2 py-0.5 rounded border border-red-200">المنتج ده مبقاش متاح حالياً</span>`
+                  : `<span class="text-sm font-bold text-[#0056B3]">${formattedPrice}</span>`
+                }
+              </div>
+
+              <!-- Controls -->
+              <div class="flex items-center gap-4 self-stretch sm:self-auto justify-between sm:justify-start border-t sm:border-t-0 pt-3 sm:pt-0 border-gray-100 mt-2 sm:mt-0">
+                ${item.is_stale 
+                  ? `<button class="text-red-500 hover:underline text-sm font-semibold" data-remove="${item.variant_id}">حذف</button>`
+                  : `
+                    <div class="flex items-center bg-gray-50 border border-gray-200 rounded-xl p-1 gap-2">
+                      <button class="w-8 h-8 rounded-lg flex items-center justify-center text-[#75777E] hover:bg-white hover:text-[#0056B3] active:scale-95 transition-all" data-change="${item.variant_id}" data-value="${item.quantity - 1}">
+                        <span class="material-symbols-outlined text-sm">remove</span>
+                      </button>
+                      <span class="font-bold text-sm w-6 text-center text-[#1A237E]">${item.quantity}</span>
+                      <button class="w-8 h-8 rounded-lg flex items-center justify-center text-[#75777E] hover:bg-white hover:text-[#0056B3] active:scale-95 transition-all" data-change="${item.variant_id}" data-value="${item.quantity + 1}">
+                        <span class="material-symbols-outlined text-sm">add</span>
+                      </button>
+                    </div>
+                    <span class="font-extrabold text-base text-[#1A237E] min-w-[70px] text-left">${formattedSubtotal}</span>
+                  `
+                }
+              </div>
+
+              <!-- Delete Button -->
+              <button class="absolute top-4 left-4 text-gray-400 hover:text-red-500 transition-colors p-1" title="إزالة" data-remove="${item.variant_id}">
+                <span class="material-symbols-outlined text-[20px]">delete</span>
+              </button>
+
+            </article>
+          `;
+        }).join('');
+      }
+
+      // Update summary card values
+      document.getElementById('subtotal-val').textContent = formatPrice(total.subtotal);
+      document.getElementById('total-val').textContent = formatPrice(total.subtotal);
+      document.getElementById('summary').value = text;
+
+      // Handle checkout buttons state
+      const ready = Boolean(phone) && total.itemCount > 0;
+      const checkoutBtn = document.getElementById('whatsapp');
+      checkoutBtn.disabled = !ready;
+
+      // Merchant phone configuration info
+      const phoneLink = document.getElementById('phone');
+      if (phone) {
+        phoneLink.textContent = `+${phone}`;
+        phoneLink.href = `tel:+${phone}`;
+      } else {
+        phoneLink.textContent = 'التاجر لم يقم بضبط رقم التواصل بعد';
+        phoneLink.href = '#';
+      }
+
+      // Event listener triggers
+      document.querySelectorAll('[data-change]').forEach(b => {
+        b.onclick = () => {
+          items = updateQuantity(b.dataset.change, b.dataset.value);
+          render();
+        };
+      });
+
+      document.querySelectorAll('[data-remove]').forEach(b => {
+        b.onclick = () => {
+          items = removeFromCart(b.dataset.remove);
+          render();
+        };
+      });
+    }
+
+    // WhatsApp handler click
+    document.getElementById('whatsapp').onclick = () => {
+      const text = buildOrderText(items);
+      window.open(makeWhatsAppUrl(phone, text), '_blank');
+    };
+
+    // Clipboard copy action
+    document.getElementById('copy').onclick = async () => {
+      const text = buildOrderText(items);
+      const copyBtn = document.getElementById('copy');
+      try {
+        await navigator.clipboard.writeText(text);
+        const iconSpan = copyBtn.querySelector('.material-symbols-outlined');
+        const textSpan = copyBtn.querySelector('span:not(.material-symbols-outlined)');
+        
+        iconSpan.textContent = 'done';
+        textSpan.textContent = 'تم النسخ ✓';
+        copyBtn.classList.add('bg-green-50', 'border-green-300', 'text-green-600');
+        
+        setTimeout(() => {
+          iconSpan.textContent = 'content_copy';
+          textSpan.textContent = 'نسخ نص الطلب';
+          copyBtn.classList.remove('bg-green-50', 'border-green-300', 'text-green-600');
+        }, 2000);
+      } catch (err) {
+        console.error("Failed to copy:", err);
+      }
+    };
+
+    render();
+  </script>
+</body>
+</html>

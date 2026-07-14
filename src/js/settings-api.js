@@ -1,0 +1,3 @@
+import {requireSupabase} from './supabase-client.js'; import {TABLES} from './constants.js';
+export async function fetchMerchantNumber(){const {data,error}=await requireSupabase().from(TABLES.settings).select('whatsapp_number').limit(1).maybeSingle();if(error)throw error;return data?.whatsapp_number||''}
+export async function updateMerchantNumber(number){const {data,error}=await requireSupabase().from(TABLES.settings).select('id').limit(1).single();if(error)throw error;const {error:updateError}=await requireSupabase().from(TABLES.settings).update({whatsapp_number:number,updated_at:new Date().toISOString()}).eq('id',data.id);if(updateError)throw updateError;return true}

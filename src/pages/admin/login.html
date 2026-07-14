@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>دخول التاجر | بيت العز</title>
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <!-- Google Fonts Cairo & Material Symbols -->
+  <link rel="stylesheet" href="../../css/tokens.css">
+  <link rel="stylesheet" href="../../css/admin.css">
+  <script id="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#0056B3',
+            navy: '#1A237E',
+            light: '#F8F9FA'
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-[#F8F9FA] text-[#1A237E] min-h-screen flex flex-col justify-center items-center p-6 antialiased">
+
+  <!-- Login Card -->
+  <main class="w-full max-w-md bg-white border border-[#9E9E9E]/20 rounded-3xl p-8 shadow-lg">
+    <div class="text-center mb-8">
+      <h1 class="text-2xl md:text-3xl font-extrabold text-[#1A237E]">دخول التاجر</h1>
+      <p class="text-[#75777E] text-sm mt-2">مرحباً بك مجدداً في لوحة تحكم متجر بيت العز.</p>
+    </div>
+
+    <!-- Login Form -->
+    <form class="flex flex-col gap-5" id="login">
+      <div>
+        <label class="block text-sm font-semibold text-[#1A237E] mb-1.5">البريد الإلكتروني</label>
+        <input class="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-[#1A237E] focus:border-[#0056B3] focus:ring-1 focus:ring-[#0056B3] focus:outline-none" name="email" type="email" placeholder="name@domain.com" required>
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold text-[#1A237E] mb-1.5">كلمة المرور</label>
+        <input class="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-[#1A237E] focus:border-[#0056B3] focus:ring-1 focus:ring-[#0056B3] focus:outline-none" name="password" type="password" placeholder="••••••••" required>
+      </div>
+
+      <button class="w-full bg-[#0056B3] hover:bg-[#004491] active:scale-[0.98] text-white font-bold py-3 px-6 rounded-xl transition-all shadow-md mt-2 flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined">login</span>
+        <span>تسجيل الدخول</span>
+      </button>
+
+      <p class="text-red-500 text-sm font-semibold text-center mt-2 hidden" id="error"></p>
+    </form>
+
+    <div class="mt-8 text-center text-xs text-[#75777E]">
+      <a class="hover:text-[#0056B3] transition-colors" href="../index.html">العودة لصفحة المتجر الرئيسية</a>
+    </div>
+  </main>
+
+  <script type="module">
+    import { supabase } from '../../js/supabase-client.js';
+    import { redirectIfSignedIn } from '../../js/admin/auth-gate.js';
+
+    redirectIfSignedIn();
+
+    const form = document.querySelector('#login');
+    const errorEl = document.querySelector('#error');
+
+    form.onsubmit = async e => {
+      e.preventDefault();
+      errorEl.classList.add('hidden');
+
+      if (!supabase) {
+        errorEl.textContent = 'إعدادات Supabase غير مضافة.';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+
+      const v = Object.fromEntries(new FormData(e.target));
+      const { error } = await supabase.auth.signInWithPassword(v);
+
+      if (error) {
+        errorEl.textContent = error.message;
+        errorEl.classList.remove('hidden');
+      } else {
+        location.href = 'dashboard.html';
+      }
+    };
+  </script>
+</body>
+</html>
