@@ -82,6 +82,15 @@
         errorEl.classList.remove('text-red-500', 'hidden');
         errorEl.classList.add('text-green-600');
         form.querySelector('button').disabled = true;
+
+        // Check if session is immediately available (mock mode) to redirect auto
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          errorEl.textContent += ' جاري توجيهك إلى لوحة التحكم...';
+          setTimeout(() => {
+            window.location.replace('dashboard.html');
+          }, 1500);
+        }
       }
     };
   </script>
