@@ -1,30 +1,32 @@
 <!--
   SYNC IMPACT REPORT
   ==================
-  Version change: 0.0.0 → 1.0.0 (MAJOR — initial ratification)
+  Version change: 1.0.0 → 2.0.0 (MAJOR — breaking changes to house hero,
+  security model, WhatsApp config, and admin icon management)
 
-  Modified principles: N/A (initial version, no prior principles)
+  Modified principles:
+    - III. Hand-Built SVG House Hero → III. Two-Phase Auto-Opening House Hero
+      (replaced single SVG with Frame 1 / Frame 2 auto-animation flow;
+       removed requirement for user click-to-open door)
+    - IV. Separation of Concerns → IV. Separation of Concerns
+      (updated admin icon management requirements)
 
   Added sections:
-    - Core Principles (8 principles: Spec-First, No-Build-Step,
-      Hand-Built SVG, Separation-of-Concerns, Mobile-First-RTL,
-      Single-Responsibility, Testable-Pure-Logic, Soft-Delete)
-    - Locked Tech Stack
-    - Repository & Architecture Structure
-    - Sections Catalog (seed data)
-    - Design Tokens
-    - Feature Catalog (Admin, Variants, Cart/WhatsApp)
-    - Non-Functional Requirements
-    - Out of Scope
-    - Governance
+    - IX. Security Hardening (Magic Link Auth, Rate Limiting, RLS,
+      Server-side Validation)
+    - Admin icon visual preview requirement
+    - Product image optionality
+    - Fixed WhatsApp number (+201555077347)
 
-  Removed sections: N/A (initial version)
+  Removed sections:
+    - Door-click interaction requirement (house now auto-opens)
+    - Old single house-hero.svg reference (replaced by Frame 1.svg + Frame 2.svg)
 
   Templates requiring updates:
     - plan-template.md      ✅ reviewed — Constitution Check section
         already references constitution file generically; no update needed.
     - spec-template.md      ✅ reviewed — User Scenarios & Requirements
-        sections are compatible with the spec-first principle; no update needed.
+        sections are compatible; no update needed.
     - tasks-template.md     ✅ reviewed — Phase structure and story-driven
         layout are compatible; no update needed.
 
@@ -69,32 +71,46 @@ framework build step.
 **Rationale**: keeps the deployment pipeline trivial, reduces tooling surface
 area, and avoids bundler-related debugging overhead for a vanilla-JS project.
 
-### III. Hand-Built SVG House Hero
+### III. Two-Phase Auto-Opening House Hero (UPDATED — client change)
 
-The homepage hero MUST be a code-generated SVG — never an AI-generated raster
-image or uncontrolled SVG export.
+The homepage hero MUST present a **two-phase animation** using two
+client-provided SVG files. The user does **NOT** click a door to open the
+house — the house opens automatically after a brief delay.
 
-- Single SVG, `viewBox="0 0 1200 900"`, isometric projection, transparent
-  background.
-- Exactly 12 `<g>` groups, one per section, each with a stable unique `id`
-  matching the section slug (see Sections Catalog).
-- Each zone group contains: floor-tile shape, back-wall shape (10–15% darker,
-  same hue), and an empty icon-slot placeholder — icons are overlaid via CSS/JS.
-- A separate `id="main-entrance-cta"` door element in Primary Blue with a soft
-  SVG-filter glow (blur only, no colors outside the palette).
-- No text/labels/numbers inside the SVG — section names render as real HTML text
-  overlays for editability, accessibility, and SEO.
-- Icon-slot center coordinates (`cx`, `cy`) for all 12 zones plus the entrance
-  MUST be exported as a JSON/JS array, so click handlers and overlay positioning
-  use JS without parsing SVG geometry at runtime.
-- Zone-to-zone visual differentiation (soft/rounded for women's/baby, sharp/angular
-  for men's, segmented panel lines for garage, etc.) is encoded directly in SVG
-  paths per zone `id` — hardcoded per zone, not left to a generator to infer.
+**Phase 1 — Closed House (`Frame 1.svg`)**:
+When the consumer first loads the homepage, they see the house in its closed
+state. This is the `public/assets/Frame 1.svg` file — a flat-front house
+illustration with a visible door (blue rectangle with golden knob), a
+triangular navy roof, and four interior window/room panels.
 
-**Rationale**: AI image generators cannot guarantee an exact, reliably clickable
-count of 12 distinct zones with consistent geometry. A coded SVG guarantees zone
-count, hit-boxes, and lets sections be added/removed via the admin panel without
-regenerating artwork.
+**Phase 2 — Open House (`Frame 2.svg`)**:
+After a short timed delay (e.g. 1.5–2.5 seconds), the house automatically
+transitions (via CSS animation/JS) to reveal the interior layout. This is
+the `public/assets/Frame 2.svg` file — the same house structure but with the
+interior divided into a 4×3 grid of 12 section zones. Each zone contains a
+detailed, hand-drawn category illustration (person icons, appliance drawings,
+etc.) separated by navy-blue divider lines.
+
+**Key rules**:
+- The consumer MUST NOT be required to click, tap, or interact to open the
+  house. The transition from Frame 1 to Frame 2 happens **automatically**.
+- The transition SHOULD be smooth (e.g., fade, slide, or morph animation)
+  to give a "door opening" feeling.
+- After the house is fully open (Frame 2 visible), each of the 12 section
+  zones becomes clickable, navigating to the corresponding category page.
+- Both SVG files are client-designed assets stored at:
+  - `public/assets/Frame 1.svg` (closed house)
+  - `public/assets/Frame 2.svg` (open house — 12 section grid)
+- The old `house-hero.svg` file is **deprecated** and MUST NOT be used.
+- No AI-generated raster images — only the client-provided SVGs.
+- Section zone names/icons pull from live Supabase data overlaid on top of
+  the Frame 2 SVG grid, not hardcoded text baked into the SVG.
+- Full keyboard navigability and correct `aria-label`s for all zones.
+- All colors MUST stay within the design token palette.
+
+**Rationale**: the client changed the requirement — instead of an interactive
+door-click, the consumer should immediately see the house form and then watch
+it open by itself, revealing the shopping sections without any extra action.
 
 ### IV. Separation of Concerns
 
@@ -115,7 +131,7 @@ regenerating artwork.
   tested before desktop.
 - Arabic is the primary UI language; RTL layout MUST be applied throughout.
 - Typography: Cairo font (per the approved brand identity sheet).
-- The house hero SVG and all interactive zones MUST be usable on touch devices.
+- The house hero SVGs and all interactive zones MUST be usable on touch devices.
 
 ### VI. Single Responsibility & Clean Code
 
@@ -157,6 +173,46 @@ localStorage-persisted cart items that reference a product or section id/slug.
 Hard-delete MAY only be used for data with no external references and with
 explicit approval.
 
+### IX. Security Hardening (NON-NEGOTIABLE)
+
+The application MUST implement the following security measures:
+
+1. **Authentication via Magic Link (Supabase Auth)**:
+   - Admin panel access MUST use Supabase Magic Link authentication
+     (passwordless email login). No traditional username/password flow.
+   - Only authenticated users with the merchant role can access admin
+     routes (`/admin/*`).
+   - Session tokens MUST be validated on every admin API call.
+
+2. **Rate Limiting**:
+   - All public-facing endpoints and form submissions MUST be protected
+     by rate limiting to prevent abuse.
+   - Implement client-side throttling for repeated actions (e.g., add to
+     cart, WhatsApp send button).
+   - Server-side rate limiting SHOULD be applied via Supabase Edge Functions
+     or Vercel middleware when available.
+
+3. **Row-Level Security (RLS)**:
+   - All Supabase tables MUST have RLS policies enabled.
+   - Storefront queries (public read) MUST be restricted to active,
+     non-deleted records only.
+   - Admin write operations (insert, update, delete) MUST require a valid
+     authenticated session with the merchant role.
+   - No table should ever be accessible without an RLS policy — even if
+     the policy is "allow public read."
+
+4. **Server-Side Validation**:
+   - All data submitted by admin forms (section names, product data, prices,
+     images) MUST be validated server-side (via Supabase RLS policies,
+     database constraints, and/or Edge Functions).
+   - Client-side validation is for UX convenience only — it MUST NOT be
+     the sole line of defense.
+   - Input sanitization MUST be applied to prevent XSS and injection attacks.
+
+**Rationale**: even though this is a simple storefront, the admin panel manages
+real business data. Magic Link eliminates password-related vulnerabilities,
+RLS ensures data isolation, and rate limiting prevents automated abuse.
+
 ## Locked Tech Stack
 
 | Layer | Choice | Change Policy |
@@ -164,35 +220,40 @@ explicit approval.
 | Frontend | Vanilla HTML, CSS, JavaScript (no framework) | Do NOT deviate without explicit approval |
 | Backend / Database | Supabase (Postgres + Auth + Storage) | Do NOT deviate without explicit approval |
 | Hosting | Vercel (static deployment) | Do NOT deviate without explicit approval |
-| Homepage hero | Hand-built SVG (code-generated, not AI raster) | Do NOT deviate without explicit approval |
+| Homepage hero | Two-phase auto-opening SVGs (Frame 1.svg → Frame 2.svg) | Do NOT deviate without explicit approval |
 | Planning tool | Spec-Kit (spec → plan → tasks → implement) | Do NOT deviate without explicit approval |
+| Authentication | Supabase Magic Link (passwordless) | Do NOT deviate without explicit approval |
 
 ## Repository & Architecture Structure
 
 ```
 /public
   /assets
-    house-hero.svg              — coded isometric house component
+    Frame 1.svg                 — closed house (Phase 1 of hero animation)
+    Frame 2.svg                 — open house with 12 section zones (Phase 2)
+    Frame 3.svg                 — reference design for sections with icons
+    house-coordinates.json      — zone coordinate map for overlay positioning
     icons/                      — flat icons, one per section
 /src
   /pages
-    index.html                  — homepage (house hero)
+    index.html                  — homepage (two-phase house hero animation)
     category.html               — product listing (query param: section slug)
     product.html                — single product detail + variant switcher
     cart.html                   — cart review + "Send via WhatsApp" action
     /admin
       login.html
       dashboard.html
-      sections.html             — CRUD for sections
-      products.html             — CRUD for products
+      sections.html             — CRUD for sections (with visual icon picker)
+      products.html             — CRUD for products (image is OPTIONAL)
   /js
     supabase-client.js
     constants.js                — shared constants (palette, table names, slugs)
     utils.js                    — shared helpers (price formatting, slug gen, etc.)
     cart.js                     — cart state (localStorage, guest-only)
-    house-interactions.js       — door click, zone hover/click, navigation
+    house-interactions.js       — auto-open animation, zone click, navigation
     sections-api.js             — data-access layer for sections
     products-api.js             — data-access layer for products
+    image-compressor.js         — client-side image compression
     admin/
       sections-crud.js
       products-crud.js
@@ -212,6 +273,9 @@ explicit approval.
 ```
 
 All files MUST follow this structure — no ad-hoc files dropped outside it.
+
+**Deprecated files** (do NOT use):
+- `public/assets/house-hero.svg` — replaced by Frame 1.svg + Frame 2.svg
 
 ## Sections Catalog (Initial Seed Data)
 
@@ -238,6 +302,41 @@ All files MUST follow this structure — no ad-hoc files dropped outside it.
 to "التسريحة" (vanity/dressing area) by the client. Icon updated to
 vanity/hairbrush (not pill).
 
+## Admin Icon Management (NEW — client requirement)
+
+The admin panel MUST allow the merchant to change section icons along with
+section names. The following rules apply:
+
+1. **Visual icon picker**: when the admin creates or edits a section, the icon
+   selection interface MUST display the **actual icon shapes** (visual
+   previews) — NOT just filenames like `kitchen.svg`. The merchant is
+   non-technical and cannot identify icons by filename alone.
+
+2. **Icon source**: the available icons MUST be extracted from the
+   `public/assets/Frame 3.svg` reference file, which is identical to
+   Frame 2.svg but includes an additional section with its icon as a
+   design reference. Each section zone in Frame 3 contains the visual
+   icon that should be associated with that section.
+
+3. **Icon rendering in admin**: each selectable icon MUST be rendered as
+   a small visual thumbnail (inline SVG or `<img>` tag) so the admin
+   can see the icon shape before selecting it.
+
+4. **Storage**: selected icon references MUST be stored in the `sections`
+   table so the storefront can fetch and display them dynamically.
+
+## Product Image Optionality (NEW — client requirement)
+
+Product images are **NOT mandatory**. The admin MUST be able to create and
+save a product without uploading any image.
+
+- The product form MUST NOT block submission if no image is provided.
+- On the storefront, products without images MUST display a tasteful
+  placeholder graphic (e.g., a styled icon or brand-colored "no image"
+  card) rather than a broken image tag or blank space.
+- The `products` and `product_variants` tables MUST allow NULL values for
+  image columns.
+
 ## Design Tokens
 
 ```css
@@ -257,19 +356,22 @@ vanity/hairbrush (not pill).
 
 ### Admin Panel
 
-- **Access**: Supabase Auth, single merchant role (no multi-role in this phase).
+- **Access**: Supabase Auth via **Magic Link** (passwordless email login),
+  single merchant role (no multi-role in this phase).
+  See Principle IX for full security requirements.
 - **Sections management** (`/admin/sections.html`):
   - List all sections (table or card grid); drag-to-reorder is nice-to-have, not
     blocking for v1.
-  - Create: name (Arabic), slug (auto-generated, editable), icon (upload or
-    pick from preset library).
-  - Edit: rename, change icon, change slug (with a warning that slug changes
-    affect the section's URL).
+  - Create: name (Arabic), slug (auto-generated, editable), icon (pick from
+    visual icon picker showing actual icon shapes — NOT filenames).
+  - Edit: rename, change icon (with visual preview), change slug (with a warning
+    that slug changes affect the section's URL).
   - Delete: warn if products are assigned; require reassignment or confirm
     cascade; MUST use soft-delete (see Principle VIII).
 - **Products management** (`/admin/products.html`):
   - List all products (filterable by section, with search).
-  - Create: name, description, price, section (dropdown), images, variants.
+  - Create: name, description, price, section (dropdown), images (**optional** —
+    product can be saved without any image), variants.
   - Edit: same fields, plus toggle active/inactive (inactive = hidden from
     storefront without deleting).
   - Delete: MUST use soft-delete (see Principle VIII).
@@ -278,7 +380,8 @@ vanity/hairbrush (not pill).
 
 - `products` table holds the parent listing (shared name, description, section).
 - `product_variants` table holds per-variant data: variant label (color/pattern),
-  price override, image(s), stock/availability flag, FK to parent product.
+  price override, image(s) (nullable), stock/availability flag, FK to parent
+  product.
 - Product detail page renders a swatch/thumbnail selector; variant switching
   updates image/price without full page reload.
 - Admin product form MUST support adding/removing variants under a single
@@ -291,6 +394,10 @@ vanity/hairbrush (not pill).
 - Cart page: product name, chosen variant, quantity, price, subtotal.
 - "Send order via WhatsApp" button: constructs a pre-filled `wa.me` link with a
   URL-encoded text summary and opens it in a new tab/app.
+- **WhatsApp number**: `+201555077347` — this is the fixed merchant number.
+  It MUST be stored in a configurable location (e.g., `constants.js` or a
+  Supabase `settings` table) so it can be updated without code changes, but
+  the initial value MUST be `+201555077347`.
 - No in-app order confirmation beyond "your order has been prepared, continue
   in WhatsApp."
 
@@ -299,10 +406,12 @@ vanity/hairbrush (not pill).
 - **Mobile-first**: house hero and all pages tested on small viewports first.
 - **Arabic-first / RTL**: entire UI in Arabic, RTL layout throughout.
 - **Performance**: no heavy 3D/WebGL; SVG + CSS/JS only, low page weight.
-- **Accessibility**: all 12 zones + door reachable/operable via keyboard with
+- **Accessibility**: all 12 zones reachable/operable via keyboard with
   `aria-label`s; section names are real HTML text overlays.
 - **SEO**: category and product pages MUST have real, crawlable text content —
   section names, product names/descriptions are HTML, not images.
+- **Security**: see Principle IX — Magic Link auth, RLS, rate limiting, and
+  server-side validation are all non-negotiable.
 
 ## Definition of Done
 
@@ -314,11 +423,12 @@ A task is only "done" when ALL of the following are true:
 4. No duplicated logic was introduced that already exists elsewhere.
 5. For visual/interactive features: human review confirms the output matches the
    approved design (see Principle I, step 5).
+6. Security requirements from Principle IX are satisfied where applicable.
 
 ## Explicitly Out of Scope (This Phase)
 
-- No true 3D/WebGL interactive house (superseded by isometric SVG — see
-  Principle III rationale).
+- No true 3D/WebGL interactive house (superseded by two-phase SVG animation —
+  see Principle III rationale).
 - No online payment integration.
 - No customer accounts/login (guest checkout via WhatsApp only).
 - No multi-merchant / multi-role admin permissions.
@@ -337,4 +447,4 @@ A task is only "done" when ALL of the following are true:
   - **MINOR**: new principle/section added or materially expanded.
   - **PATCH**: clarifications, wording, typo fixes.
 
-**Version**: 1.0.0 | **Ratified**: 2026-07-14 | **Last Amended**: 2026-07-14
+**Version**: 2.0.0 | **Ratified**: 2026-07-14 | **Last Amended**: 2026-07-15
