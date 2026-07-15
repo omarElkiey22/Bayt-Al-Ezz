@@ -39,9 +39,14 @@
         <input class="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-[#1A237E] focus:border-[#0056B3] focus:ring-1 focus:ring-[#0056B3] focus:outline-none" name="email" type="email" placeholder="name@domain.com" required>
       </div>
 
+      <div>
+        <label class="block text-sm font-semibold text-[#1A237E] mb-1.5">كلمة المرور</label>
+        <input class="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-[#1A237E] focus:border-[#0056B3] focus:ring-1 focus:ring-[#0056B3] focus:outline-none" name="password" type="password" placeholder="••••••••" required>
+      </div>
+
       <button class="w-full bg-[#0056B3] hover:bg-[#004491] active:scale-[0.98] text-white font-bold py-3 px-6 rounded-xl transition-all shadow-md mt-2 flex items-center justify-center gap-2">
-        <span class="material-symbols-outlined">mark_email_read</span>
-        <span>أرسل رابط الدخول</span>
+        <span class="material-symbols-outlined">login</span>
+        <span>تسجيل الدخول</span>
       </button>
 
       <p class="text-red-500 text-sm font-semibold text-center mt-2 hidden" id="error"></p>
@@ -72,25 +77,23 @@
       }
 
       const v = Object.fromEntries(new FormData(e.target));
-      const { error } = await supabase.auth.signInWithOtp({ email: v.email });
+      const { error } = await supabase.auth.signInWithPassword({
+        email: v.email,
+        password: v.password
+      });
 
       if (error) {
         errorEl.textContent = error.message;
         errorEl.classList.remove('hidden');
       } else {
-        errorEl.textContent = 'تم إرسال الرابط السحري إلى بريدك الإلكتروني بنجاح.';
+        errorEl.textContent = 'تم تسجيل الدخول بنجاح. جاري توجيهك...';
         errorEl.classList.remove('text-red-500', 'hidden');
         errorEl.classList.add('text-green-600');
         form.querySelector('button').disabled = true;
 
-        // Check if session is immediately available (mock mode) to redirect auto
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          errorEl.textContent += ' جاري توجيهك إلى لوحة التحكم...';
-          setTimeout(() => {
-            window.location.replace('dashboard.html');
-          }, 1500);
-        }
+        setTimeout(() => {
+          window.location.replace('dashboard.html');
+        }, 1000);
       }
     };
   </script>

@@ -1,3 +1,4 @@
+
 # Tasks: V2 Storefront Upgrade
 
 **Input**: Design documents from `/specs/002-v2-storefront-upgrade/`

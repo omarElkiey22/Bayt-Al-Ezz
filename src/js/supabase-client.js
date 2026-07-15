@@ -5,18 +5,18 @@ const key = globalThis.SUPABASE_ANON_KEY || localStorage.getItem('SUPABASE_ANON_
 
 // Define default mock data with valid UUID v4 IDs
 const defaultSections = [
-  { id: '11111111-1111-4111-a111-111111111111', name: 'الغسالة', slug: 'laundry', icon_name: 'washing-machine.svg', display_order: 0, is_active: true, deleted_at: null },
-  { id: '22222222-2222-4222-a222-222222222222', name: 'رفايع المطبخ', slug: 'kitchen-shelving', icon_name: 'kitchen-shelf.svg', display_order: 1, is_active: true, deleted_at: null },
-  { id: '33333333-3333-4333-a333-333333333333', name: 'ورقيات', slug: 'paper-goods', icon_name: 'foil-roll.svg', display_order: 2, is_active: true, deleted_at: null },
-  { id: '44444444-4444-4444-a444-444444444444', name: 'بيت الراحة', slug: 'bathroom', icon_name: 'toilet.svg', display_order: 3, is_active: true, deleted_at: null },
-  { id: '55555555-5555-4555-a555-555555555555', name: 'نص الدنيا', slug: 'women', icon_name: 'female-head.svg', display_order: 4, is_active: true, deleted_at: null },
-  { id: '66666666-6666-4666-a666-666666666666', name: 'جنتلمان', slug: 'men', icon_name: 'razor.svg', display_order: 5, is_active: true, deleted_at: null },
-  { id: '77777777-7777-4777-a777-777777777777', name: 'الريسبشن', slug: 'reception', icon_name: 'reception-bell.svg', display_order: 6, is_active: true, deleted_at: null },
-  { id: '88888888-8888-4888-a888-888888888888', name: 'بيبي زون', slug: 'baby', icon_name: 'baby-bottle.svg', display_order: 7, is_active: true, deleted_at: null },
-  { id: '99999999-9999-4999-a999-999999999999', name: 'الجزامة', slug: 'footwear', icon_name: 'shoe.svg', display_order: 8, is_active: true, deleted_at: null },
-  { id: 'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa', name: 'التسريحة', slug: 'vanity', icon_name: 'vanity-brush.svg', display_order: 9, is_active: true, deleted_at: null },
-  { id: 'bbbbbbbb-bbbb-4bbb-abbb-bbbbbbbbbbbb', name: 'الجراج', slug: 'garage', icon_name: 'garage-door.svg', display_order: 10, is_active: true, deleted_at: null },
-  { id: 'cccccccc-cccc-4ccc-accc-cccccccccccc', name: 'منظفات', slug: 'cleaning', icon_name: 'spray-bottle.svg', display_order: 11, is_active: true, deleted_at: null }
+  { id: '11111111-1111-4111-a111-111111111111', name: 'الغسالة', slug: 'laundry', icon_name: 'laundry.svg', display_order: 0, is_active: true, deleted_at: null },
+  { id: '22222222-2222-4222-a222-222222222222', name: 'رفايع المطبخ', slug: 'kitchen-shelving', icon_name: 'kitchen-shelving.svg', display_order: 1, is_active: true, deleted_at: null },
+  { id: '33333333-3333-4333-a333-333333333333', name: 'ورقيات', slug: 'paper-goods', icon_name: 'paper-goods.svg', display_order: 2, is_active: true, deleted_at: null },
+  { id: '44444444-4444-4444-a444-444444444444', name: 'بيت الراحة', slug: 'bathroom', icon_name: 'bathroom.svg', display_order: 3, is_active: true, deleted_at: null },
+  { id: '55555555-5555-4555-a555-555555555555', name: 'نص الدنيا', slug: 'women', icon_name: 'women.svg', display_order: 4, is_active: true, deleted_at: null },
+  { id: '66666666-6666-4666-a666-666666666666', name: 'جنتلمان', slug: 'men', icon_name: 'men.svg', display_order: 5, is_active: true, deleted_at: null },
+  { id: '77777777-7777-4777-a777-777777777777', name: 'الريسبشن', slug: 'reception', icon_name: 'reception.svg', display_order: 6, is_active: true, deleted_at: null },
+  { id: '88888888-8888-4888-a888-888888888888', name: 'بيبي زون', slug: 'baby', icon_name: 'baby.svg', display_order: 7, is_active: true, deleted_at: null },
+  { id: '99999999-9999-4999-a999-999999999999', name: 'الجزامة', slug: 'footwear', icon_name: 'footwear.svg', display_order: 8, is_active: true, deleted_at: null },
+  { id: 'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa', name: 'التسريحة', slug: 'vanity', icon_name: 'vanity.svg', display_order: 9, is_active: true, deleted_at: null },
+  { id: 'bbbbbbbb-bbbb-4bbb-abbb-bbbbbbbbbbbb', name: 'الجراج', slug: 'garage', icon_name: 'garage.svg', display_order: 10, is_active: true, deleted_at: null },
+  { id: 'cccccccc-cccc-4ccc-accc-cccccccccccc', name: 'منظفات', slug: 'cleaning', icon_name: 'cleaning.svg', display_order: 11, is_active: true, deleted_at: null }
 ];
 
 const defaultProducts = [
@@ -319,7 +319,16 @@ class MockSupabaseClient {
   }
 }
 
-const useMock = localStorage.getItem('USE_MOCK') === 'true';
+// Default to mock mode on localhost/127.0.0.1 unless USE_MOCK is explicitly set
+const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const mockQuery = new URLSearchParams(window.location.search).get('mock');
+let useMock = localStorage.getItem('USE_MOCK') === 'true';
+
+if (localStorage.getItem('USE_MOCK') === null) {
+  useMock = isLocal || mockQuery === 'true';
+} else if (mockQuery !== null) {
+  useMock = mockQuery === 'true';
+}
 
 export const supabase = useMock ? new MockSupabaseClient() : (url && key ? createClient(url, key) : null);
 
