@@ -1,10 +1,12 @@
 import { fetchAllSectionsAdmin, createSection, updateSection, softDeleteSection } from '../sections-api.js';
-import { slugify } from '../utils.js';
+import { slugify, sanitizeInput } from '../utils.js';
+import { requireAdmin } from './auth-gate.js';
 
 export async function initializeSectionsPage(root) {
   let editing = null;
 
   const render = async () => {
+    await requireAdmin();
     const sections = await fetchAllSectionsAdmin();
 
     root.innerHTML = `
@@ -37,8 +39,17 @@ export async function initializeSectionsPage(root) {
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-[#1A237E] mb-1.5">اسم ملف الأيقونة</label>
-              <input class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-[#1A237E] focus:border-[#0056B3] focus:ring-1 focus:ring-[#0056B3] focus:outline-none" name="icon_name" placeholder="kitchen-shelf.svg" value="${editing?.icon_name || ''}" required>
+              <label class="block text-xs font-semibold text-[#1A237E] mb-1.5">الأيقونة (اختر من القائمة)</label>
+              <input type="hidden" name="icon_name" id="selected-icon-input" value="${editing?.icon_name || 'laundry.svg'}" required>
+              <div class="grid grid-cols-4 gap-2" id="icon-picker">
+                ${['laundry.svg', 'kitchen-shelving.svg', 'paper-goods.svg', 'bathroom.svg', 'women.svg', 'men.svg', 'reception.svg', 'baby.svg', 'footwear.svg', 'vanity.svg', 'garage.svg', 'cleaning.svg'].map(icon => {
+                  const isSelected = editing?.icon_name === icon || (!editing && icon === 'laundry.svg');
+                  return `
+                  <button type="button" data-icon="${icon}" class="icon-btn p-2 border rounded-xl flex items-center justify-center transition-all ${isSelected ? 'border-[#0056B3] bg-[#0056B3]/10 ring-1 ring-[#0056B3]' : 'border-gray-200 hover:bg-gray-50 hover:border-gray-300'}">
+                    <img src="../../public/assets/icons/${icon}" class="w-8 h-8 pointer-events-none" alt="${icon}">
+                  </button>
+                `}).join('')}
+              </div>
             </div>
 
             <div class="flex gap-2 mt-2">
@@ -82,7 +93,9 @@ export async function initializeSectionsPage(root) {
                       <td class="p-4">
                         <span class="bg-gray-100 text-gray-600 text-xs font-semibold px-2.5 py-0.5 rounded-full">${s.slug}</span>
                       </td>
-                      <td class="p-4 text-[#75777E] text-xs">${s.icon_name}</td>
+                      <td class="p-4">
+                        <img src="../../public/assets/icons/${s.icon_name || 'placeholder.svg'}" class="w-8 h-8 rounded" alt="icon">
+                      </td>
                       <td class="p-4">
                         <div class="flex items-center justify-center gap-2">
                           <button class="w-8 h-8 rounded-full flex items-center justify-center text-primary hover:bg-[#0056B3]/10 transition-colors" data-edit="${s.id}" title="تعديل">
@@ -111,9 +124,28 @@ export async function initializeSectionsPage(root) {
       if (!editing) form.slug.value = slugify(form.name.value);
     };
 
+    // Icon picker listener
+    root.querySelectorAll('.icon-btn').forEach(btn => {
+      btn.onclick = () => {
+        root.querySelectorAll('.icon-btn').forEach(b => {
+          b.classList.remove('border-[#0056B3]', 'bg-[#0056B3]/10', 'ring-1', 'ring-[#0056B3]');
+          b.classList.add('border-gray-200', 'hover:bg-gray-50', 'hover:border-gray-300');
+        });
+        btn.classList.add('border-[#0056B3]', 'bg-[#0056B3]/10', 'ring-1', 'ring-[#0056B3]');
+        btn.classList.remove('border-gray-200', 'hover:bg-gray-50', 'hover:border-gray-300');
+        root.querySelector('#selected-icon-input').value = btn.dataset.icon;
+      };
+    });
+
     form.onsubmit = async e => {
       e.preventDefault();
-      const data = Object.fromEntries(new FormData(form));
+      await requireAdmin();
+      const rawData = Object.fromEntries(new FormData(form));
+      const data = {
+        ...rawData,
+        name: sanitizeInput(rawData.name || ''),
+        slug: sanitizeInput(rawData.slug || ''),
+      };
       if (editing && data.slug !== editing.slug && !confirm('تغيير الرابط قد يكسر روابط المنتجات القديمة. هل تريد المتابعة؟')) return;
       try {
         if (editing) {

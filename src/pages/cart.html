@@ -182,7 +182,7 @@
               
               <!-- Thumbnail -->
               <div class="w-20 h-20 bg-gray-50 rounded-xl overflow-hidden border border-gray-100 flex-shrink-0">
-                <img class="w-full h-full object-cover" src="${item.image_url}" alt="${item.product_name}">
+                <img class="w-full h-full object-cover" src="${item.image_url || '../public/assets/placeholder.svg'}" alt="${item.product_name}">
               </div>
 
               <!-- Product Info -->
@@ -261,9 +261,18 @@
     }
 
     // WhatsApp handler click
-    document.getElementById('whatsapp').onclick = () => {
+    document.getElementById('whatsapp').onclick = function() {
+      const btn = this;
+      if (btn.disabled) return;
+      btn.disabled = true;
+      const originalText = btn.innerHTML;
+      btn.innerHTML = `<span class="material-symbols-outlined">hourglass_empty</span><span>جاري التحويل...</span>`;
       const text = buildOrderText(items);
       window.open(makeWhatsAppUrl(phone, text), '_blank');
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }, 1000);
     };
 
     // Clipboard copy action

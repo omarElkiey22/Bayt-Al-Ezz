@@ -76,18 +76,11 @@
       </div>
 
       <!-- House Interactive Wrap -->
-      <section class="house-wrap w-full bg-white rounded-3xl border border-[#9E9E9E]/20 shadow-xl p-6 md:p-8" id="house">
-        <div class="house-svg w-full" id="svg-host"></div>
-        <div class="room-labels"></div>
+      <section class="house-wrap w-full bg-white rounded-3xl border border-[#9E9E9E]/20 shadow-xl p-6 md:p-8 relative" id="house">
+        <div class="house-svg w-full absolute inset-0 transition-opacity duration-1000 opacity-100" id="hero-frame-1"></div>
+        <div class="house-svg w-full transition-opacity duration-1000 opacity-0 pointer-events-none" id="hero-frame-2"></div>
+        <div class="room-labels z-20"></div>
       </section>
-
-      <!-- Bottom Interactive Help -->
-      <div class="mt-6 text-center" id="door-hint">
-        <span class="inline-flex items-center gap-2 text-[#0056B3] font-bold bg-[#0056B3]/10 px-6 py-3 rounded-full animate-pulse">
-          <span class="material-symbols-outlined">touch_app</span>
-          اضغط على الباب الأزرق لفتح البيت
-        </span>
-      </div>
     </div>
   </main>
 
@@ -117,22 +110,15 @@
       badge.classList.remove('hidden');
     }
 
-    // Load House Hero SVG and initialize interactive states
-    const host = document.querySelector('#svg-host');
+    // Load House Hero SVGs and initialize interactive states
     try {
-      const svgText = await fetch('../../public/assets/house-hero.svg').then(r => r.text());
-      host.innerHTML = svgText;
-      await initializeHouse(document.querySelector('#house'));
+      const frame1Text = await fetch('../../public/assets/Frame 1.svg').then(r => r.text());
+      const frame2Text = await fetch('../../public/assets/Frame 2.svg').then(r => r.text());
       
-      // Hide door hint once the door is clicked (house-open class is added to root)
-      const root = document.querySelector('#house');
-      const hint = document.getElementById('door-hint');
-      root.addEventListener('click', () => {
-        if (root.classList.contains('house-open')) {
-          hint.classList.add('opacity-0', 'pointer-events-none');
-          setTimeout(() => hint.remove(), 500);
-        }
-      });
+      document.querySelector('#hero-frame-1').innerHTML = frame1Text;
+      document.querySelector('#hero-frame-2').innerHTML = frame2Text;
+      
+      await initializeHouse(document.querySelector('#house'));
     } catch (e) {
       console.error("Failed to initialize house hero:", e);
     }

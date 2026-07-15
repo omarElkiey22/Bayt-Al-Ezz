@@ -219,7 +219,7 @@
         content.innerHTML = products.map(p => `
           <article class="bg-white border border-[#9E9E9E]/20 rounded-2xl overflow-hidden group hover:border-[#0056B3] hover:shadow-md transition-all duration-300 flex flex-col">
             <div class="relative aspect-square w-full bg-gray-50 overflow-hidden">
-              <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="${p.primary_image_url}" alt="${p.name}">
+              <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="${p.primary_image_url || '../../public/assets/placeholder.svg'}" alt="${p.name}">
             </div>
             <div class="p-5 flex flex-col flex-grow">
               <h3 class="text-lg font-bold text-[#1A237E] line-clamp-1 mb-2 group-hover:text-primary transition-colors">${p.name}</h3>

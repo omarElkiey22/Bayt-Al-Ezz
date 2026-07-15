@@ -2,7 +2,8 @@ import { fetchAllSectionsAdmin } from '../sections-api.js';
 import { createProduct, updateProduct, softDeleteProduct, fetchProductDetails } from '../products-api.js';
 import { compressImage } from '../image-compressor.js';
 import { TABLES } from '../constants.js';
-import { formatPrice } from '../utils.js';
+import { formatPrice, sanitizeInput } from '../utils.js';
+import { requireAdmin } from './auth-gate.js';
 
 // Image Upload Helper
 async function upload(file) {
@@ -21,6 +22,7 @@ export async function initializeProductsPage(root) {
   let variants = [{ label: 'افتراضي', price_override: '', is_in_stock: true }];
 
   const draw = async () => {
+    await requireAdmin();
     const { supabase } = await import('../supabase-client.js');
     
     // Fetch products
@@ -72,8 +74,8 @@ export async function initializeProductsPage(root) {
 
             <div>
               <label class="block text-xs font-semibold text-[#1A237E] mb-1.5">صورة المنتج</label>
-              <input class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-[#0056B3]/10 file:text-[#0056B3] hover:file:bg-[#0056B3]/20" name="image" type="file" accept="image/jpeg,image/png,image/webp" ${editing ? '' : 'required'}>
-              ${editing ? `<p class="text-[10px] text-[#75777E] mt-1">اتركه فارغاً للحفاظ على الصورة الحالية.</p>` : ''}
+              <input class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-[#0056B3]/10 file:text-[#0056B3] hover:file:bg-[#0056B3]/20" name="image" type="file" accept="image/jpeg,image/png,image/webp">
+              <p class="text-[10px] text-[#75777E] mt-1">اختياري: اتركه فارغاً إذا لم تكن هناك صورة.</p>
             </div>
 
             <!-- Variants Editor -->
@@ -143,7 +145,7 @@ export async function initializeProductsPage(root) {
                       <tr class="hover:bg-gray-50 transition-colors">
                         <td class="p-4">
                           <div class="w-12 h-12 rounded-lg border border-[#9E9E9E]/10 overflow-hidden bg-gray-100">
-                            <img class="w-full h-full object-cover" src="${p.primary_image_url}" alt="${p.name}">
+                            <img class="w-full h-full object-cover" src="${p.primary_image_url || '../../public/assets/placeholder.svg'}" alt="${p.name}">
                           </div>
                         </td>
                         <td class="p-4 font-bold">
@@ -273,7 +275,13 @@ export async function initializeProductsPage(root) {
     const form = root.querySelector('#product-form');
     form.onsubmit = async e => {
       e.preventDefault();
-      const data = Object.fromEntries(new FormData(form));
+      await requireAdmin();
+      const rawData = Object.fromEntries(new FormData(form));
+      const data = {
+        ...rawData,
+        name: sanitizeInput(rawData.name || ''),
+        description: sanitizeInput(rawData.description || '')
+      };
       
       try {
         let imageUrl = editing?.primary_image_url || '';

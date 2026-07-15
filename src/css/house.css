@@ -30,24 +30,15 @@
   outline: none;
 }
 
-/* Isometric Door animation */
-.door {
-  transform-origin: 50% 50%;
-  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-  cursor: pointer;
+/* Dual-Frame Transition */
+.house-open #hero-frame-1 {
+  opacity: 0;
+  pointer-events: none;
 }
 
-.house-open .door {
-  transform: perspective(600px) scale(1.05) rotateY(-110deg);
-}
-
-.door:hover {
-  filter: drop-shadow(0 0 10px rgba(0, 86, 179, 0.6));
-}
-
-.door:focus {
-  outline: 3px solid #0056B3;
-  outline-offset: 4px;
+.house-open #hero-frame-2 {
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }
 
 .room-labels {

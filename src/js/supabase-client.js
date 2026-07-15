@@ -287,6 +287,14 @@ class MockSupabaseClient {
         }
         return { data: null, error: { message: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' } };
       },
+      async signInWithOtp({ email }) {
+        if (email) {
+          const user = { id: 'admin-user', email };
+          localStorage.setItem('sb-mock-session', JSON.stringify({ user }));
+          return { data: {}, error: null };
+        }
+        return { data: null, error: { message: 'يرجى إدخال بريد إلكتروني صحيح.' } };
+      },
       async signOut() {
         localStorage.removeItem('sb-mock-session');
         return { error: null };

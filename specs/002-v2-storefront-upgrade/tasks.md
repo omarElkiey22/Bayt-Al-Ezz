@@ -20,9 +20,9 @@
 
 **Purpose**: Assets setup and baseline verification
 
-- [ ] T001 Create folder `public/assets/icons/` and extract the 12 icons from `public/assets/Frame 3.svg` as static files (`laundry.svg`, `kitchen-shelving.svg`, `paper-goods.svg`, `bathroom.svg`, `women.svg`, `men.svg`, `reception.svg`, `baby.svg`, `footwear.svg`, `vanity.svg`, `garage.svg`, `cleaning.svg`)
-- [ ] T002 Create a brand-styled fallback placeholder SVG asset at `public/assets/placeholder.svg`
-- [ ] T003 [P] Configure Vitest testing environment and run existing test suite using `npm run test` to verify all baseline tests pass
+- [x] T001 Create folder `public/assets/icons/` and extract the 12 icons from `public/assets/Frame 3.svg` as static files (`laundry.svg`, `kitchen-shelving.svg`, `paper-goods.svg`, `bathroom.svg`, `women.svg`, `men.svg`, `reception.svg`, `baby.svg`, `footwear.svg`, `vanity.svg`, `garage.svg`, `cleaning.svg`)
+- [x] T002 Create a brand-styled fallback placeholder SVG asset at `public/assets/placeholder.svg`
+- [x] T003 [P] Configure Vitest testing environment and run existing test suite using `npm run test` to verify all baseline tests pass
 
 ---
 
@@ -32,11 +32,11 @@
 
 **⚠️ CRITICAL**: Setup and foundational tasks must be complete before story-level work can begin
 
-- [ ] T004 Create database migration file `supabase/migrations/002_optional_images.sql` to drop the `NOT NULL` constraint on `products.primary_image_url`
-- [ ] T005 Create database migration file `supabase/migrations/003_db_constraints_validation.sql` to add Check Constraints (name/slug length, non-negative price) and a database trigger to reject inputs containing executable script or HTML tags
-- [ ] T006 [P] Add the `sanitizeInput(text)` helper function to strip HTML/script tags from strings in `src/js/utils.js`
-- [ ] T007 [P] Create unit test file `tests/sanitize.test.js` to verify that `sanitizeInput` strips HTML/script tags properly
-- [ ] T008 Apply the new database migration files to the Supabase instance using local CLI or dashboard
+- [x] T004 Create database migration file `supabase/migrations/002_optional_images.sql` to drop the `NOT NULL` constraint on `products.primary_image_url`
+- [x] T005 Create database migration file `supabase/migrations/003_db_constraints_validation.sql` to add Check Constraints (name/slug length, non-negative price) and a database trigger to reject inputs containing executable script or HTML tags
+- [x] T006 [P] Add the `sanitizeInput(text)` helper function to strip HTML/script tags from strings in `src/js/utils.js`
+- [x] T007 [P] Create unit test file `tests/sanitize.test.js` to verify that `sanitizeInput` strips HTML/script tags properly
+- [x] T008 Apply the new database migration files to the Supabase instance using local CLI or dashboard
 
 **Checkpoint**: Foundation ready - user story implementation can now begin
 
@@ -50,10 +50,10 @@
 
 ### Implementation for User Story 1
 
-- [ ] T009 [US1] Update `src/pages/index.html` to house two layered elements (`#hero-frame-1` and `#hero-frame-2`) absolute-positioned over each other instead of rendering a single `house-hero.svg`
-- [ ] T010 [P] [US1] Modify `src/css/house.css` to style the layered SVG wrappers, smooth fade transition, zone hover highlighting, and focus outlines
-- [ ] T011 [US1] Update `src/js/house-interactions.js` to load both SVG frames, implement the 1.5–2.5 second delay transition timer, overlay active section titles, handle keyboard navigation (Tab and Enter support), and use `sessionStorage` caching to prevent repeating the intro on navigation
-- [ ] T012 [P] [US1] Search and remove all remaining code references to the deprecated `public/assets/house-hero.svg` across the workspace
+- [x] T009 [US1] Update `src/pages/index.html` to house two layered elements (`#hero-frame-1` and `#hero-frame-2`) absolute-positioned over each other instead of rendering a single `house-hero.svg`
+- [x] T010 [P] [US1] Modify `src/css/house.css` to style the layered SVG wrappers, smooth fade transition, zone hover highlighting, and focus outlines
+- [x] T011 [US1] Update `src/js/house-interactions.js` to load both SVG frames, implement the 1.5–2.5 second delay transition timer, overlay active section titles, handle keyboard navigation (Tab and Enter support), and use `sessionStorage` caching to prevent repeating the intro on navigation
+- [x] T012 [P] [US1] Search and remove all remaining code references to the deprecated `public/assets/house-hero.svg` across the workspace
 
 **Checkpoint**: User Story 1 is fully functional and testable independently.
 
@@ -67,25 +67,17 @@
 
 ### Implementation for User Story 2
 
-- [ ] T013 [US2] Update section form layout in `src/pages/admin/sections.html` to replace the `icon_name` text input with a CSS grid of 12 selectable icon thumbnail buttons linked to a hidden form field
-- [ ] T014 [US2] Update `src/js/admin/sections-crud.js` to render the 12 visual preview SVGs in the form picker, handle select state style toggles, map filenames to the form submit, and display visual thumbnails in the sections table rows instead of file string names
+- [x] T013 [US2] Update section form layout in `src/pages/admin/sections.html` to replace the `icon_name` text input with a CSS grid of 12 selectable icon thumbnail buttons linked to a hidden form field
+- [x] T014 [US2] Update `src/js/admin/sections-crud.js` to render the 12 visual preview SVGs in the form picker, handle select state style toggles, map filenames to the form submit, and display visual thumbnails in the sections table rows instead of file string names
 
-**Checkpoint**: User Story 2 is fully functional and testable independently.
-
----
-
-## Phase 5: User Story 3 - Optional Product Images (Priority: P2)
-
-**Goal**: Allow saving products without image uploads and show a styled placeholder card on the storefront.
-
-**Independent Test**: Create a product in admin with no image, save, verify it lists in storefront using the branded placeholder graphic.
+**Checkpoint**: User Story 2 is functional.
 
 ### Implementation for User Story 3
 
-- [ ] T015 [US3] Modify product form validator in `src/js/admin/products-crud.js` to allow form submission with a missing or empty image field
-- [ ] T016 [P] [US3] Update product card rendering logic in `src/pages/category.html` to load `public/assets/placeholder.svg` when product `primary_image_url` is null
-- [ ] T017 [P] [US3] Update main display rendering logic in `src/pages/product.html` to display the placeholder image when the selected product or variant has no image URL
-- [ ] T018 [P] [US3] Update product thumbnail logic in `src/pages/cart.html` to render the placeholder image for image-less cart items
+- [x] T015 [US3] Modify product form validator in `src/js/admin/products-crud.js` to allow form submission with a missing or empty image field
+- [x] T016 [P] [US3] Update product card rendering logic in `src/pages/category.html` to load `public/assets/placeholder.svg` when product `primary_image_url` is null
+- [x] T017 [P] [US3] Update main display rendering logic in `src/pages/product.html` to display the placeholder image when the selected product or variant has no image URL
+- [x] T018 [P] [US3] Update product thumbnail logic in `src/pages/cart.html` to render the placeholder image for image-less cart items
 
 **Checkpoint**: User Story 3 is fully functional and testable independently.
 
@@ -99,10 +91,10 @@
 
 ### Implementation for User Story 4
 
-- [ ] T019 [US4] Modify `src/pages/admin/login.html` to remove password fields and supply a passwordless email submission form triggering Magic Link auth
-- [ ] T020 [US4] Update mock authentication client in `src/js/supabase-client.js` to support mock `signInWithOtp` passwordless simulation for local storage testing
-- [ ] T021 [US4] Modify `src/js/admin/auth-gate.js` to validate session token state and redirect expired or unauthenticated sessions to `login.html`
-- [ ] T022 [US4] Update auth constraints in `src/js/admin/products-crud.js` and `src/js/admin/sections-crud.js` to verify authenticated session token validity before executing database queries
+- [x] T019 [US4] Modify `src/pages/admin/login.html` to remove password fields and supply a passwordless email submission form triggering Magic Link auth
+- [x] T020 [US4] Update mock authentication client in `src/js/supabase-client.js` to support mock `signInWithOtp` passwordless simulation for local storage testing
+- [x] T021 [US4] Modify `src/js/admin/auth-gate.js` to validate session token state and redirect expired or unauthenticated sessions to `login.html`
+- [x] T022 [US4] Update auth constraints in `src/js/admin/products-crud.js` and `src/js/admin/sections-crud.js` to verify authenticated session token validity before executing database queries
 
 **Checkpoint**: User Story 4 is fully functional and testable independently.
 
@@ -116,7 +108,7 @@
 
 ### Implementation for User Story 5
 
-- [ ] T023 [US5] Verify and execute standard RLS configuration updates for anonymous/authenticated roles across all tables (`sections`, `products`, `product_variants`, `merchant_settings`) in `supabase/migrations/001_initial_schema.sql`
+- [x] T023 [US5] Verify and execute standard RLS configuration updates for anonymous/authenticated roles across all tables (`sections`, `products`, `product_variants`, `merchant_settings`) in `supabase/migrations/001_initial_schema.sql`
 
 **Checkpoint**: User Story 5 is fully functional and testable independently.
 
@@ -130,10 +122,10 @@
 
 ### Implementation for User Story 6
 
-- [ ] T024 [P] [US6] Add click-throttling logic in `src/js/cart.js` for cart actions
-- [ ] T025 [P] [US6] Modify "Add to Cart" button in `src/pages/product.html` to disable itself for exactly 1.0 second after a user click
-- [ ] T026 [P] [US6] Modify "Send Order" button in `src/pages/cart.html` to disable itself for exactly 1.0 second after a user click
-- [ ] T027 [US6] Inject input sanitization helper `sanitizeInput` from `utils.js` into admin input processing in `src/js/admin/products-crud.js` and `src/js/admin/sections-crud.js`
+- [x] T024 [P] [US6] Add click-throttling logic in `src/js/cart.js` for cart actions
+- [x] T025 [P] [US6] Modify "Add to Cart" button in `src/pages/product.html` to disable itself for exactly 1.0 second after a user click
+- [x] T026 [P] [US6] Modify "Send Order" button in `src/pages/cart.html` to disable itself for exactly 1.0 second after a user click
+- [x] T027 [US6] Inject input sanitization helper `sanitizeInput` from `utils.js` into admin input processing in `src/js/admin/products-crud.js` and `src/js/admin/sections-crud.js`
 
 **Checkpoint**: User Story 6 is fully functional and testable independently.
 
@@ -143,9 +135,9 @@
 
 **Purpose**: System documentation, validation, and manual test cleanup
 
-- [ ] T028 Update developer documentation or README to reflect v2 auth and assets structure
-- [ ] T029 Execute Vitest suite (`npm run test`) and verify all logic tests pass
-- [ ] T030 Execute all manual verification procedures outlined in `quickstart.md`
+- [x] T028 Update developer documentation or README to reflect v2 auth and assets structure
+- [x] T029 Execute Vitest suite (`npm run test`) and verify all logic tests pass
+- [x] T030 Execute all manual verification procedures outlined in `quickstart.md`
 
 ---
 
