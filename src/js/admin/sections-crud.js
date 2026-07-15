@@ -2,6 +2,14 @@ import { fetchAllSectionsAdmin, createSection, updateSection, softDeleteSection 
 import { slugify, sanitizeInput } from '../utils.js';
 import { requireAdmin } from './auth-gate.js';
 
+const ICONS = ['laundry.svg', 'kitchen-shelving.svg', 'paper-goods.svg', 'bathroom.svg', 'women.svg', 'men.svg', 'reception.svg', 'baby.svg', 'footwear.svg', 'vanity.svg', 'garage.svg', 'cleaning.svg'];
+const ICON_DIRECTORY = '../../../public/assets/icons/';
+const DEFAULT_ICON = 'laundry.svg';
+
+function iconSource(iconName) {
+  return `${ICON_DIRECTORY}${ICONS.includes(iconName) ? iconName : DEFAULT_ICON}`;
+}
+
 export async function initializeSectionsPage(root) {
   let editing = null;
 
@@ -40,13 +48,13 @@ export async function initializeSectionsPage(root) {
 
             <div>
               <label class="block text-xs font-semibold text-[#1A237E] mb-1.5">الأيقونة (اختر من القائمة)</label>
-              <input type="hidden" name="icon_name" id="selected-icon-input" value="${editing?.icon_name || 'laundry.svg'}" required>
+              <input type="hidden" name="icon_name" id="selected-icon-input" value="${ICONS.includes(editing?.icon_name) ? editing.icon_name : DEFAULT_ICON}" required>
               <div class="grid grid-cols-4 gap-2" id="icon-picker">
-                ${['laundry.svg', 'kitchen-shelving.svg', 'paper-goods.svg', 'bathroom.svg', 'women.svg', 'men.svg', 'reception.svg', 'baby.svg', 'footwear.svg', 'vanity.svg', 'garage.svg', 'cleaning.svg'].map(icon => {
-                  const isSelected = editing?.icon_name === icon || (!editing && icon === 'laundry.svg');
+                ${ICONS.map(icon => {
+                  const isSelected = editing?.icon_name === icon || (!editing && icon === DEFAULT_ICON);
                   return `
                   <button type="button" data-icon="${icon}" class="icon-btn p-2 border rounded-xl flex items-center justify-center transition-all ${isSelected ? 'border-[#0056B3] bg-[#0056B3]/10 ring-1 ring-[#0056B3]' : 'border-gray-200 hover:bg-gray-50 hover:border-gray-300'}">
-                    <img src="../../public/assets/icons/${icon}" class="w-8 h-8 pointer-events-none" alt="${icon}">
+                    <img src="${iconSource(icon)}" class="w-8 h-8 pointer-events-none" alt="${icon}">
                   </button>
                 `}).join('')}
               </div>
@@ -94,7 +102,7 @@ export async function initializeSectionsPage(root) {
                         <span class="bg-gray-100 text-gray-600 text-xs font-semibold px-2.5 py-0.5 rounded-full">${s.slug}</span>
                       </td>
                       <td class="p-4">
-                        <img src="../../public/assets/icons/${s.icon_name || 'placeholder.svg'}" class="w-8 h-8 rounded" alt="icon">
+                        <img src="${iconSource(s.icon_name)}" class="w-8 h-8 rounded" alt="">
                       </td>
                       <td class="p-4">
                         <div class="flex items-center justify-center gap-2">

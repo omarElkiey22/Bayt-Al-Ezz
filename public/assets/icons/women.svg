@@ -1,4 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-    <rect width="100" height="100" fill="#EAEAEA" rx="8" />
-    <text x="50" y="55" font-size="12" font-family="sans-serif" text-anchor="middle" fill="#333">women</text>
-  </svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none" stroke="#0056B3" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="20" cy="12" r="7" />
+  <path d="M8 36 C8 24 32 24 32 36" />
+  <path d="M13 8 C11 4 20 2 27 8" />
+</svg>
