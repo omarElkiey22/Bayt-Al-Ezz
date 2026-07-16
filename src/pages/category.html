@@ -181,6 +181,7 @@
         if (currentSection) {
           breadcrumbActive.textContent = currentSection.name;
           sectionTitle.textContent = currentSection.name;
+          document.getElementById('section-desc').textContent = currentSection.description || 'المجموعات المختارة بعناية لأثاثك المنزلي.';
           document.title = `${currentSection.name} | بيت العز`;
         }
 

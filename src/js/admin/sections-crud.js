@@ -40,6 +40,11 @@ export async function initializeSectionsPage(root) {
               <input class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-[#1A237E] focus:border-[#0056B3] focus:ring-1 focus:ring-[#0056B3] focus:outline-none" name="name" placeholder="مثال: رفايع المطبخ" value="${editing?.name || ''}" required>
             </div>
 
+            <div>
+              <label class="block text-xs font-semibold text-[#1A237E] mb-1.5">الكلمة التعريفية للقسم (الوصف)</label>
+              <textarea class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-[#1A237E] focus:border-[#0056B3] focus:ring-1 focus:ring-[#0056B3] focus:outline-none h-20" name="description" placeholder="مثال: المجموعات المختارة بعناية لأثاثك المنزلي.">${editing?.description || 'المجموعات المختارة بعناية لأثاثك المنزلي.'}</textarea>
+            </div>
+
 
 
             <div>
@@ -102,7 +107,10 @@ export async function initializeSectionsPage(root) {
                   ${sections.map((s, index) => `
                     <tr class="hover:bg-gray-50 transition-colors">
                       <td class="p-4 font-semibold text-gray-400">#${index + 1}</td>
-                      <td class="p-4 font-bold">${s.name}</td>
+                      <td class="p-4 font-bold">
+                        <div>${s.name}</div>
+                        <div class="text-xs text-[#75777E] mt-0.5 max-w-[200px] truncate" title="${s.description || ''}">${s.description || ''}</div>
+                      </td>
                       <td class="p-4">
                         <img src="${iconSource(s.icon_name)}" class="w-16 h-16 rounded object-contain" alt="">
                       </td>
@@ -156,6 +164,7 @@ export async function initializeSectionsPage(root) {
       const data = {
         ...rawData,
         name: sanitizeInput(rawData.name || ''),
+        description: sanitizeInput(rawData.description || 'المجموعات المختارة بعناية لأثاثك المنزلي.'),
         slug: autoSlug,
       };
       try {
