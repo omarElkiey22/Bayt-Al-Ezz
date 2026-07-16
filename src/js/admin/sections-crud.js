@@ -62,7 +62,7 @@ export async function initializeSectionsPage(root) {
               ${ICONS.includes(editing?.icon_name) && editing?.icon_name === 'Gift_Home.svg' || !editing ? '' : ''}
               <p class="text-[10px] text-amber-600 mt-1.5 flex items-center gap-1">
                 <span class="text-sm">⚠️</span>
-                اختيار أيقونة "Gift_Home" يضع القسم في موقع خاص داخل مثلث البيت (الأعلى).
+                اختيار أيقونة يضع القسم في موقع خاص داخل مثلث البيت (الأعلى).
               </p>
             </div>
 
