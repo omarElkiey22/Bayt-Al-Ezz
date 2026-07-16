@@ -55,13 +55,13 @@ export async function initializeHouse(root) {
   const [sections, coordinates] = await Promise.all([fetchActiveSections(), loadCoordinates()]);
   const labels = root.querySelector('.room-labels');
 
-  for (const section of sections) {
-    const fallback = coordinates.find(item => item.slug === section.slug);
-    if (!fallback) continue;
+  sections.forEach((section, index) => {
+    if (index >= coordinates.length) return;
+    const slot = coordinates[index];
 
-    // Look for the SVG zone element (in frame-2 first, then frame-1)
-    const zone = root.querySelector(`#hero-frame-2 #${CSS.escape(section.slug)}`)
-              || root.querySelector(`#${CSS.escape(section.slug)}`);
+    // Look for the SVG zone element (in frame-2 first, then frame-1) using the static slot ID
+    const zone = root.querySelector(`#hero-frame-2 #${CSS.escape(slot.slug)}`)
+              || root.querySelector(`#${CSS.escape(slot.slug)}`);
 
     let bounds = null;
     if (zone) {
@@ -73,8 +73,8 @@ export async function initializeHouse(root) {
       bounds = zoneBoundsPercent(zone);
     }
 
-    labels.append(createLabel(section, bounds, fallback, section.display_order));
-  }
+    labels.append(createLabel(section, bounds, slot, index));
+  });
 
   if (sessionStorage.getItem('house_opened') === '1') {
     root.classList.add('house-open');

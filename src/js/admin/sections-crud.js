@@ -137,8 +137,12 @@ export async function initializeSectionsPage(root) {
       e.preventDefault();
       await requireAdmin();
       const rawData = Object.fromEntries(new FormData(form));
-      const iconName = rawData.icon_name || DEFAULT_ICON;
-      const autoSlug = iconName.replace(/\.svg$/i, '');
+      let autoSlug = slugify(rawData.name || '');
+      if (autoSlug.length < 2) {
+        autoSlug = 'sec-' + Math.random().toString(36).substring(2, 7);
+      } else if (autoSlug.length > 100) {
+        autoSlug = autoSlug.substring(0, 100);
+      }
       const data = {
         ...rawData,
         name: sanitizeInput(rawData.name || ''),
@@ -175,7 +179,7 @@ export async function initializeSectionsPage(root) {
 
     root.querySelectorAll('[data-delete]').forEach(b => {
       b.onclick = async () => {
-        if (confirm('هل تريد حذف القسم حذفاً آمناً؟ لن يتم حذف المنتجات ولكنها ستصبح بلا قسم.')) {
+        if (confirm('هل تريد حذف هذا القسم نهائياً؟ سيتم حذف القسم والمنتجات غير النشطة التابعة له، ولا يمكن حذفه إذا كان يحتوي على منتجات نشطة.')) {
           try {
             await softDeleteSection(b.dataset.delete);
             render();

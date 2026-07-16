@@ -133,8 +133,28 @@ class MockQueryBuilder {
     return this;
   }
 
+  delete() {
+    this.isDelete = true;
+    return this;
+  }
+
   async execute() {
     let dbData = getStorageData(this.table);
+
+    if (this.isDelete) {
+      let affected = [];
+      const kept = [];
+      dbData.forEach(row => {
+        if (this.matchRow(row)) {
+          affected.push(row);
+        } else {
+          kept.push(row);
+        }
+      });
+      setStorageData(this.table, kept);
+      const res = this.isSingle || this.isMaybeSingle ? affected[0] || null : affected;
+      return { data: res, error: null };
+    }
 
     if (this.insertData) {
       const rowsToInsert = Array.isArray(this.insertData) ? this.insertData : [this.insertData];
