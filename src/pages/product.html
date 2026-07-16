@@ -187,14 +187,19 @@
             if (btn.disabled) return;
             btn.disabled = true;
             const originalText = btn.innerHTML;
-            btn.innerHTML = `<span class="material-symbols-outlined">hourglass_empty</span><span>جاري الإضافة...</span>`;
+            btn.innerHTML = `<span class="material-symbols-outlined">done</span><span>تمت الإضافة ✓</span>`;
+            btn.classList.remove('bg-[#0056B3]', 'hover:bg-[#004491]');
+            btn.classList.add('bg-green-600', 'hover:bg-green-700');
+            
             addToCart(product.id, selected.id, selected.label, value.price, value.image, product.name);
             updateCartBadge();
+            
             setTimeout(() => {
               btn.disabled = false;
               btn.innerHTML = originalText;
-              location.href = 'cart.html';
-            }, 1000);
+              btn.classList.remove('bg-green-600', 'hover:bg-green-700');
+              btn.classList.add('bg-[#0056B3]', 'hover:bg-[#004491]');
+            }, 1500);
           });
         }
 
