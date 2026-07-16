@@ -10,7 +10,8 @@ async function upload(file) {
   if (!file) return '';
   const compressed = await compressImage(file);
   const { supabase } = await import('../supabase-client.js');
-  const path = `products/${crypto.randomUUID()}-${compressed.name}`;
+  const extension = compressed.name.split('.').pop() || 'webp';
+  const path = `products/${crypto.randomUUID()}.${extension}`;
   const { error } = await supabase.storage.from('store-assets').upload(path, compressed);
   if (error) throw error;
   return supabase.storage.from('store-assets').getPublicUrl(path).data.publicUrl;
