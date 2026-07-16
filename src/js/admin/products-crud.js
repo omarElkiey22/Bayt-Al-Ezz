@@ -78,31 +78,6 @@ export async function initializeProductsPage(root) {
               <p class="text-[10px] text-[#75777E] mt-1">اختياري: اتركه فارغاً إذا لم تكن هناك صورة.</p>
             </div>
 
-            <!-- Variants Editor -->
-            <div class="mt-2">
-              <div class="flex justify-between items-center mb-2">
-                <span class="text-xs font-bold text-[#1A237E]">خيارات الأنواع (الألوان/المقاسات)</span>
-                <button type="button" class="text-xs text-[#0056B3] font-bold hover:underline" id="add-variant">+ إضافة نوع</button>
-              </div>
-              <div class="flex flex-col gap-2 max-h-48 overflow-y-auto pr-1" id="variants-list">
-                ${variants.map((v, i) => `
-                  <div class="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl p-2 relative group">
-                    <input class="w-1/2 rounded-lg border-gray-300 text-xs px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#0056B3]" data-v="${i}" data-k="label" value="${v.label}" placeholder="النوع (أبيض)" required>
-                    <input class="w-1/3 rounded-lg border-gray-300 text-xs px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#0056B3]" data-v="${i}" data-k="price_override" value="${v.price_override || ''}" type="number" placeholder="سعر بديل">
-                    
-                    <!-- Stock Toggler -->
-                    <button type="button" class="w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${v.is_in_stock ? 'text-green-600 bg-green-50' : 'text-gray-400 bg-gray-100'}" data-stock="${i}" title="${v.is_in_stock ? 'متوفر' : 'غير متوفر'}">
-                      <span class="material-symbols-outlined text-[16px]">${v.is_in_stock ? 'check_circle' : 'do_not_disturb_on'}</span>
-                    </button>
-
-                    <button type="button" class="w-7 h-7 rounded-lg flex items-center justify-center text-red-500 hover:bg-red-50 transition-colors" data-remove="${i}" title="حذف النوع">
-                      <span class="material-symbols-outlined text-[16px]">close</span>
-                    </button>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
-
             <div class="flex gap-2 mt-4 pt-4 border-t border-[#9E9E9E]/10">
               <button class="flex-grow bg-[#0056B3] hover:bg-[#004491] active:scale-[0.98] text-white font-bold py-2.5 px-4 rounded-xl transition-all text-sm flex items-center justify-center gap-1 shadow-md">
                 <span class="material-symbols-outlined text-sm">save</span>
@@ -133,14 +108,12 @@ export async function initializeProductsPage(root) {
                     <th class="p-4">اسم المنتج</th>
                     <th class="p-4">القسم</th>
                     <th class="p-4">السعر</th>
-                    <th class="p-4">الأنواع</th>
                     <th class="p-4 text-center">الإجراءات</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-[#9E9E9E]/10 text-[#1A237E]">
                   ${products.map(p => {
                     const section = sections.find(s => s.id === p.section_id);
-                    const activeVariants = p.product_variants ? p.product_variants.filter(v => !v.deleted_at) : [];
                     return `
                       <tr class="hover:bg-gray-50 transition-colors">
                         <td class="p-4">
@@ -156,9 +129,6 @@ export async function initializeProductsPage(root) {
                           <span class="bg-gray-100 text-gray-600 text-xs font-semibold px-2.5 py-0.5 rounded-full">${section?.name || 'غير محدد'}</span>
                         </td>
                         <td class="p-4 font-bold text-[#0056B3]">${formatPrice(p.base_price)}</td>
-                        <td class="p-4 text-xs text-[#75777E]">
-                          ${activeVariants.length} أنواع
-                        </td>
                         <td class="p-4">
                           <div class="flex items-center justify-center gap-2">
                             <button class="w-8 h-8 rounded-full flex items-center justify-center text-primary hover:bg-[#0056B3]/10 transition-colors" data-edit="${p.id}" title="تعديل">
@@ -181,54 +151,6 @@ export async function initializeProductsPage(root) {
 
       </div>
     `;
-
-    // Dynamic variant triggers
-    root.querySelector('#add-variant').onclick = () => {
-      variants.push({ label: '', price_override: '', is_in_stock: true });
-      drawVariantsList();
-    };
-
-    function drawVariantsList() {
-      const container = root.querySelector('#variants-list');
-      container.innerHTML = variants.map((v, i) => `
-        <div class="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl p-2 relative group">
-          <input class="w-1/2 rounded-lg border-gray-300 text-xs px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#0056B3]" data-v="${i}" data-k="label" value="${v.label}" placeholder="النوع (أبيض)" required>
-          <input class="w-1/3 rounded-lg border-gray-300 text-xs px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#0056B3]" data-v="${i}" data-k="price_override" value="${v.price_override || ''}" type="number" placeholder="سعر بديل">
-          
-          <button type="button" class="w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${v.is_in_stock ? 'text-green-600 bg-green-50' : 'text-gray-400 bg-gray-100'}" data-stock="${i}" title="${v.is_in_stock ? 'متوفر' : 'غير متوفر'}">
-            <span class="material-symbols-outlined text-[16px]">${v.is_in_stock ? 'check_circle' : 'do_not_disturb_on'}</span>
-          </button>
-
-          <button type="button" class="w-7 h-7 rounded-lg flex items-center justify-center text-red-500 hover:bg-red-50 transition-colors" data-remove="${i}" title="حذف النوع">
-            <span class="material-symbols-outlined text-[16px]">close</span>
-          </button>
-        </div>
-      `).join('');
-
-      // Re-bind inline inputs
-      container.querySelectorAll('[data-v]').forEach(el => {
-        el.oninput = () => variants[el.dataset.v][el.dataset.k] = el.value;
-      });
-
-      container.querySelectorAll('[data-stock]').forEach(el => {
-        el.onclick = () => {
-          const idx = el.dataset.stock;
-          variants[idx].is_in_stock = !variants[idx].is_in_stock;
-          drawVariantsList();
-        };
-      });
-
-      container.querySelectorAll('[data-remove]').forEach(el => {
-        el.onclick = () => {
-          if (variants.length > 1) {
-            variants.splice(el.dataset.remove, 1);
-            drawVariantsList();
-          } else {
-            alert('يجب أن يحتوي المنتج على نوع واحد على الأقل.');
-          }
-        };
-      });
-    }
 
     // Cancel editing
     const cancelBtn = root.querySelector('#cancel-edit');

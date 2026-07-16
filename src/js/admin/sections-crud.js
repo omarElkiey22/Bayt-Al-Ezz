@@ -2,7 +2,7 @@ import { fetchAllSectionsAdmin, createSection, updateSection, softDeleteSection 
 import { slugify, sanitizeInput } from '../utils.js';
 import { requireAdmin } from './auth-gate.js';
 
-const ICONS = ['laundry.svg', 'kitchen-shelving.svg', 'paper-goods.svg', 'bathroom.svg', 'women.svg', 'men.svg', 'reception.svg', 'baby.svg', 'footwear.svg', 'vanity.svg', 'garage.svg', 'cleaning.svg'];
+const ICONS = ['laundry.svg', 'kitchen-shelving.svg', 'paper-goods.svg', 'bathroom.svg', 'women.svg', 'men.svg', 'reception.svg', 'baby.svg', 'footwear.svg', 'vanity.svg', 'garage.svg', 'cleaning.svg', 'Gift_Home.svg', 'Medications.svg'];
 const ICON_DIRECTORY = '../../../public/assets/icons/';
 const DEFAULT_ICON = 'laundry.svg';
 
@@ -40,11 +40,7 @@ export async function initializeSectionsPage(root) {
               <input class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-[#1A237E] focus:border-[#0056B3] focus:ring-1 focus:ring-[#0056B3] focus:outline-none" name="name" placeholder="مثال: رفايع المطبخ" value="${editing?.name || ''}" required>
             </div>
 
-            <div>
-              <label class="block text-xs font-semibold text-[#1A237E] mb-1.5">الرابط (Slug)</label>
-              <input class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-[#1A237E] focus:border-[#0056B3] focus:ring-1 focus:ring-[#0056B3] focus:outline-none bg-gray-50" name="slug" placeholder="kitchen-shelving" value="${editing?.slug || ''}" required>
-              <p class="text-[10px] text-[#75777E] mt-1">يُستخدم كرابط لصفحة القسم.</p>
-            </div>
+
 
             <div>
               <label class="block text-xs font-semibold text-[#1A237E] mb-1.5">الأيقونة (اختر من القائمة)</label>
@@ -53,8 +49,8 @@ export async function initializeSectionsPage(root) {
                 ${ICONS.map(icon => {
                   const isSelected = editing?.icon_name === icon || (!editing && icon === DEFAULT_ICON);
                   return `
-                  <button type="button" data-icon="${icon}" class="icon-btn p-2 border rounded-xl flex items-center justify-center transition-all ${isSelected ? 'border-[#0056B3] bg-[#0056B3]/10 ring-1 ring-[#0056B3]' : 'border-gray-200 hover:bg-gray-50 hover:border-gray-300'}">
-                    <img src="${iconSource(icon)}" class="w-8 h-8 pointer-events-none" alt="${icon}">
+                  <button type="button" data-icon="${icon}" class="icon-btn p-3 border rounded-xl flex items-center justify-center transition-all ${isSelected ? 'border-[#0056B3] bg-[#0056B3]/10 ring-1 ring-[#0056B3]' : 'border-gray-200 hover:bg-gray-50 hover:border-gray-300'}">
+                    <img src="${iconSource(icon)}" class="w-12 h-12 pointer-events-none" alt="${icon}">
                   </button>
                 `}).join('')}
               </div>
@@ -85,12 +81,11 @@ export async function initializeSectionsPage(root) {
             <div class="overflow-x-auto w-full">
               <table class="w-full text-right text-sm">
                 <thead class="bg-gray-50 border-b border-[#9E9E9E]/20 text-[#75777E] font-bold">
-                  <tr>
-                    <th class="p-4">الترتيب</th>
-                    <th class="p-4">اسم القسم</th>
-                    <th class="p-4">الرابط</th>
-                    <th class="p-4">الأيقونة</th>
-                    <th class="p-4 text-center">الإجراءات</th>
+                    <tr>
+                     <th class="p-4">الترتيب</th>
+                     <th class="p-4">اسم القسم</th>
+                     <th class="p-4">الأيقونة</th>
+                     <th class="p-4 text-center">الإجراءات</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-[#9E9E9E]/10 text-[#1A237E]">
@@ -99,10 +94,7 @@ export async function initializeSectionsPage(root) {
                       <td class="p-4 font-semibold text-gray-400">#${index + 1}</td>
                       <td class="p-4 font-bold">${s.name}</td>
                       <td class="p-4">
-                        <span class="bg-gray-100 text-gray-600 text-xs font-semibold px-2.5 py-0.5 rounded-full">${s.slug}</span>
-                      </td>
-                      <td class="p-4">
-                        <img src="${iconSource(s.icon_name)}" class="w-8 h-8 rounded" alt="">
+                        <img src="${iconSource(s.icon_name)}" class="w-10 h-10 rounded" alt="">
                       </td>
                       <td class="p-4">
                         <div class="flex items-center justify-center gap-2">
@@ -126,11 +118,7 @@ export async function initializeSectionsPage(root) {
       </div>
     `;
 
-    // Input slugify listener
     const form = root.querySelector('#section-form');
-    form.name.oninput = () => {
-      if (!editing) form.slug.value = slugify(form.name.value);
-    };
 
     // Icon picker listener
     root.querySelectorAll('.icon-btn').forEach(btn => {
@@ -149,12 +137,13 @@ export async function initializeSectionsPage(root) {
       e.preventDefault();
       await requireAdmin();
       const rawData = Object.fromEntries(new FormData(form));
+      const iconName = rawData.icon_name || DEFAULT_ICON;
+      const autoSlug = iconName.replace(/\.svg$/i, '');
       const data = {
         ...rawData,
         name: sanitizeInput(rawData.name || ''),
-        slug: sanitizeInput(rawData.slug || ''),
+        slug: autoSlug,
       };
-      if (editing && data.slug !== editing.slug && !confirm('تغيير الرابط قد يكسر روابط المنتجات القديمة. هل تريد المتابعة؟')) return;
       try {
         if (editing) {
           await updateSection(editing.id, data);

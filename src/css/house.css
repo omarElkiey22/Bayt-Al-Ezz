@@ -58,13 +58,9 @@
 /* Premium HTML labels overlaid on SVG coordinates */
 .room-label {
   position: absolute;
-  translate: -50% -50%;
   border: 1px solid rgba(158, 158, 158, 0.3);
   border-radius: 20px;
   padding: 0.5rem;
-  width: 22%;
-  max-width: 130px;
-  aspect-ratio: 1 / 1;
   background: rgba(248, 249, 250, 0.95);
   color: #1A237E;
   box-shadow: 0 4px 15px rgba(117, 119, 126, 0.15);
@@ -79,8 +75,9 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.25rem;
   text-align: center;
+  box-sizing: border-box;
 }
 
 .house-open .room-label {
