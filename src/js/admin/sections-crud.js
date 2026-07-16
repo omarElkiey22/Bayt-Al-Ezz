@@ -49,8 +49,8 @@ export async function initializeSectionsPage(root) {
                 ${ICONS.map(icon => {
                   const isSelected = editing?.icon_name === icon || (!editing && icon === DEFAULT_ICON);
                   return `
-                  <button type="button" data-icon="${icon}" class="icon-btn p-3 border rounded-xl flex items-center justify-center transition-all ${isSelected ? 'border-[#0056B3] bg-[#0056B3]/10 ring-1 ring-[#0056B3]' : 'border-gray-200 hover:bg-gray-50 hover:border-gray-300'}">
-                    <img src="${iconSource(icon)}" class="w-12 h-12 pointer-events-none" alt="${icon}">
+                  <button type="button" data-icon="${icon}" class="icon-btn p-2 border rounded-xl flex items-center justify-center transition-all ${isSelected ? 'border-[#0056B3] bg-[#0056B3]/10 ring-1 ring-[#0056B3]' : 'border-gray-200 hover:bg-gray-50 hover:border-gray-300'}" title="${icon}">
+                    <img src="${iconSource(icon)}" class="w-16 h-16 object-contain pointer-events-none" alt="${icon}">
                   </button>
                 `}).join('')}
               </div>
@@ -94,7 +94,7 @@ export async function initializeSectionsPage(root) {
                       <td class="p-4 font-semibold text-gray-400">#${index + 1}</td>
                       <td class="p-4 font-bold">${s.name}</td>
                       <td class="p-4">
-                        <img src="${iconSource(s.icon_name)}" class="w-10 h-10 rounded" alt="">
+                        <img src="${iconSource(s.icon_name)}" class="w-16 h-16 rounded object-contain" alt="">
                       </td>
                       <td class="p-4">
                         <div class="flex items-center justify-center gap-2">

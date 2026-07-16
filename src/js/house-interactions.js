@@ -28,11 +28,13 @@ function createLabel(section, bounds, fallback, delay) {
   label.className = 'room-label';
 
   if (bounds) {
-    // Position & size from the actual SVG zone bounding box
-    label.style.left   = `${bounds.left}%`;
-    label.style.top    = `${bounds.top}%`;
-    label.style.width  = `${bounds.width}%`;
-    label.style.height = `${bounds.height}%`;
+    // Position & size from the actual SVG zone bounding box with a 1.5% inset gap
+    const insetX = 1.5;
+    const insetY = 1.5;
+    label.style.left   = `${bounds.left + insetX}%`;
+    label.style.top    = `${bounds.top + insetY}%`;
+    label.style.width  = `${bounds.width - insetX * 2}%`;
+    label.style.height = `${bounds.height - insetY * 2}%`;
   } else if (fallback) {
     // Graceful degradation: old cx/cy approach
     label.style.left = `${fallback.cx}%`;
@@ -41,7 +43,7 @@ function createLabel(section, bounds, fallback, delay) {
 
   label.style.transitionDelay = `${delay * 35}ms`;
   label.innerHTML = `
-    <img src="../../public/assets/icons/${section.icon_name || 'placeholder.svg'}" class="w-12 h-12 md:w-14 md:h-14 object-contain pointer-events-none" alt="" onerror="this.style.display='none'">
+    <img src="../../public/assets/icons/${section.icon_name || 'placeholder.svg'}" class="w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 object-contain pointer-events-none mb-1 md:mb-2" alt="" onerror="this.style.display='none'">
     <span class="text-center font-extrabold text-sm md:text-base leading-tight">${section.name}</span>
   `;
   label.setAttribute('aria-label', section.name);

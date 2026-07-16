@@ -150,7 +150,7 @@
         const isActive = s.slug === slug;
         return `
           <a class="flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200 ${isActive ? 'bg-[#0056B3]/10 text-[#0056B3] font-bold border-r-4 border-[#0056B3]' : 'text-[#75777E] hover:bg-gray-100 hover:text-[#1A237E]'}" href="category.html?section=${s.slug}${mockParam}">
-            <img src="../../public/assets/icons/${s.icon_name || 'laundry.svg'}" class="w-5 h-5 object-contain pointer-events-none" alt="" onerror="this.style.display='none'">
+            <img src="../../public/assets/icons/${s.icon_name || 'laundry.svg'}" class="w-7 h-7 object-contain pointer-events-none" alt="" onerror="this.style.display='none'">
             <span>${s.name}</span>
           </a>
         `;

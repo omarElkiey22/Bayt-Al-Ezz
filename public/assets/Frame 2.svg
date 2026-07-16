@@ -7,4 +7,16 @@
 <line x1="1498.5" y1="538" x2="1498.5" y2="1992" stroke="#164D85" stroke-width="21"/>
 <line x1="1979" y1="1039.5" x2="49" y2="1039.5" stroke="#164D85" stroke-width="21"/>
 <line x1="1979" y1="1510.5" x2="49" y2="1510.5" stroke="#164D85" stroke-width="21"/>
+<rect id="laundry" x="38" y="527" width="498.5" height="512.5" fill="transparent"/>
+<rect id="kitchen-shelving" x="537.5" y="527" width="480" height="512.5" fill="transparent"/>
+<rect id="paper-goods" x="1017.5" y="527" width="481" height="512.5" fill="transparent"/>
+<rect id="bathroom" x="1498.5" y="527" width="491.5" height="512.5" fill="transparent"/>
+<rect id="women" x="38" y="1039.5" width="498.5" height="471" fill="transparent"/>
+<rect id="men" x="537.5" y="1039.5" width="480" height="471" fill="transparent"/>
+<rect id="reception" x="1017.5" y="1039.5" width="481" height="471" fill="transparent"/>
+<rect id="baby" x="1498.5" y="1039.5" width="491.5" height="471" fill="transparent"/>
+<rect id="footwear" x="38" y="1510.5" width="498.5" height="492.5" fill="transparent"/>
+<rect id="vanity" x="537.5" y="1510.5" width="480" height="492.5" fill="transparent"/>
+<rect id="garage" x="1017.5" y="1510.5" width="481" height="492.5" fill="transparent"/>
+<rect id="cleaning" x="1498.5" y="1510.5" width="491.5" height="492.5" fill="transparent"/>
 </svg>
