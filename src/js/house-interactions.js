@@ -11,8 +11,8 @@ function createLabel(section,position){
   label.style.top=`${position.cy}%`;
   label.style.transitionDelay=`${section.display_order*35}ms`;
   label.innerHTML=`
-    <img src="../../public/assets/icons/${section.icon_name || 'placeholder.svg'}" class="w-5 h-5 object-contain pointer-events-none" alt="" onerror="this.style.display='none'">
-    <span>${section.name}</span>
+    <img src="../../public/assets/icons/${section.icon_name || 'placeholder.svg'}" class="w-8 h-8 object-contain pointer-events-none mb-1" alt="" onerror="this.style.display='none'">
+    <span class="text-center font-extrabold text-sm md:text-base leading-tight">${section.name}</span>
   `;
   label.setAttribute('aria-label',section.name);
   label.addEventListener('click',()=>location.href=`category.html?section=${encodeURIComponent(section.slug)}`);
