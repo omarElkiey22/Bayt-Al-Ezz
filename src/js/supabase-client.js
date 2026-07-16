@@ -322,12 +322,20 @@ class MockSupabaseClient {
 // Default to mock mode on localhost/127.0.0.1 unless USE_MOCK is explicitly set
 const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 const mockQuery = new URLSearchParams(window.location.search).get('mock');
+if (mockQuery === 'true') {
+  sessionStorage.setItem('sb_mock_mode', 'true');
+} else if (mockQuery === 'false') {
+  sessionStorage.removeItem('sb_mock_mode');
+}
+
 let useMock = localStorage.getItem('USE_MOCK') === 'true';
 
 if (localStorage.getItem('USE_MOCK') === null) {
-  useMock = isLocal || mockQuery === 'true';
+  useMock = isLocal || mockQuery === 'true' || sessionStorage.getItem('sb_mock_mode') === 'true';
 } else if (mockQuery !== null) {
   useMock = mockQuery === 'true';
+} else if (sessionStorage.getItem('sb_mock_mode') === 'true') {
+  useMock = true;
 }
 
 export const supabase = useMock ? new MockSupabaseClient() : (url && key ? createClient(url, key) : null);

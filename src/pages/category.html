@@ -142,30 +142,15 @@
       const sidebarNav = document.getElementById('sidebar-nav');
       const mobileNav = document.getElementById('mobile-nav');
 
-      // Helper to map icons from display_order or slug names
-      const iconMap = {
-        'laundry': 'washing_machine',
-        'kitchen-shelving': 'kitchen',
-        'paper-goods': 'note_alt',
-        'bathroom': 'bathroom',
-        'women': 'female',
-        'men': 'male',
-        'reception': 'concierge_bell',
-        'baby': 'baby_changing_station',
-        'footwear': 'steps',
-        'vanity': 'dry_cleaning',
-        'garage': 'garage',
-        'cleaning': 'cleaning_services'
-      };
-
-      const getIcon = (sectionSlug) => iconMap[sectionSlug] || 'storefront';
+      const isMock = new URLSearchParams(location.search).get('mock');
+      const mockParam = isMock ? `&mock=${isMock}` : '';
 
       // Render Sidebar
       sidebarNav.innerHTML = sections.map(s => {
         const isActive = s.slug === slug;
         return `
-          <a class="flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200 ${isActive ? 'bg-[#0056B3]/10 text-[#0056B3] font-bold border-r-4 border-[#0056B3]' : 'text-[#75777E] hover:bg-gray-100 hover:text-[#1A237E]'}" href="category.html?section=${s.slug}">
-            <span class="material-symbols-outlined">${getIcon(s.slug)}</span>
+          <a class="flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200 ${isActive ? 'bg-[#0056B3]/10 text-[#0056B3] font-bold border-r-4 border-[#0056B3]' : 'text-[#75777E] hover:bg-gray-100 hover:text-[#1A237E]'}" href="category.html?section=${s.slug}${mockParam}">
+            <img src="../../public/assets/icons/${s.icon_name || 'laundry.svg'}" class="w-5 h-5 object-contain pointer-events-none" alt="" onerror="this.style.display='none'">
             <span>${s.name}</span>
           </a>
         `;
@@ -175,7 +160,7 @@
       mobileNav.innerHTML = sections.map(s => {
         const isActive = s.slug === slug;
         return `
-          <a class="flex-shrink-0 px-4 py-2 rounded-full border text-sm font-semibold transition-all ${isActive ? 'bg-[#0056B3] text-white border-[#0056B3]' : 'bg-white text-[#75777E] border-gray-200 hover:bg-gray-50'}" href="category.html?section=${s.slug}">
+          <a class="flex-shrink-0 px-4 py-2 rounded-full border text-sm font-semibold transition-all ${isActive ? 'bg-[#0056B3] text-white border-[#0056B3]' : 'bg-white text-[#75777E] border-gray-200 hover:bg-gray-50'}" href="category.html?section=${s.slug}${mockParam}">
             ${s.name}
           </a>
         `;
@@ -202,12 +187,14 @@
         const products = await fetchProductsBySection(slug);
 
         if (!products.length) {
+          const isMock = new URLSearchParams(location.search).get('mock');
+          const mockParam = isMock ? `?mock=${isMock}` : '';
           content.className = 'col-span-full flex flex-col items-center justify-center py-16 bg-white border border-[#9E9E9E]/20 rounded-2xl text-center p-8';
           content.innerHTML = `
             <span class="material-symbols-outlined text-6xl text-[#75777E] mb-4">folder_open</span>
-            <h3 class="text-xl font-bold text-[#1A237E] mb-2">السلة فاضية في القسم ده</h3>
+            <h3 class="text-xl font-bold text-[#1A237E] mb-2">السلة فارغة في القسم ده</h3>
             <p class="text-[#75777E] mb-6">لم يتم إضافة منتجات في هذا القسم بعد.</p>
-            <a class="inline-flex items-center gap-2 bg-[#0056B3] hover:bg-[#004491] text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm" href="index.html">
+            <a class="inline-flex items-center gap-2 bg-[#0056B3] hover:bg-[#004491] text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm" href="index.html${mockParam}">
               <span class="material-symbols-outlined text-sm">home</span>
               العودة للبيت
             </a>
