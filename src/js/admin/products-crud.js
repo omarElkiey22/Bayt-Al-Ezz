@@ -57,7 +57,7 @@ export async function initializeProductsPage(root) {
 
             <div>
               <label class="block text-xs font-semibold text-[#1A237E] mb-1.5">وصف المنتج</label>
-              <textarea class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-[#1A237E] focus:border-[#0056B3] focus:ring-1 focus:ring-[#0056B3] focus:outline-none h-24" name="description" placeholder="اكتب تفاصيل ومواصفات المنتج..." required>${editing?.description || ''}</textarea>
+              <textarea class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-[#1A237E] focus:border-[#0056B3] focus:ring-1 focus:ring-[#0056B3] focus:outline-none h-24" name="description" placeholder="اكتب تفاصيل ومواصفات المنتج...">${editing?.description || ''}</textarea>
             </div>
 
             <div>
