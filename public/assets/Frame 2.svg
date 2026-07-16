@@ -1,6 +1,7 @@
 <svg width="2048" height="2048" viewBox="0 0 2048 2048" fill="none" xmlns="http://www.w3.org/2000/svg">
 <rect width="2048" height="2048" fill="white"/>
 <path d="M2000 512L1018 51L35 512H2000Z" fill="#1C1F53" stroke="#1C1F53" stroke-width="8"/>
+<polygon id="gift-zone" points="2000,512 1018,51 35,512" fill="transparent"/>
 <rect x="38" y="527" width="1952" height="1476" fill="white" stroke="#164D85" stroke-width="22"/>
 <line x1="536.5" y1="537.993" x2="537.5" y2="1991.99" stroke="#164D85" stroke-width="21"/>
 <line x1="1017.5" y1="538" x2="1017.5" y2="1992" stroke="#164D85" stroke-width="21"/>

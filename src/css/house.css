@@ -96,3 +96,46 @@
   outline: 3px solid #0056B3;
   outline-offset: 2px;
 }
+
+/* ─── Gift / Promo Section (Triangle / Roof Zone) ─── */
+.room-label--gift {
+  background: #1E2154;
+  color: #ffffff;
+  border: none;
+  border-radius: 0;
+  /* Clip the label into a triangle shape matching the roof */
+  clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+  box-shadow: 0 8px 32px rgba(30, 33, 84, 0.4);
+  /* Override default opacity / transform for smoother entry */
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+              background 0.2s, filter 0.2s;
+  /* Content alignment towards the bottom centre of the triangle */
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 8%;
+}
+
+.house-open .room-label--gift {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.room-label--gift span {
+  color: #ffffff !important;
+}
+
+.room-label--gift:hover {
+  background: #2a2f6e;
+  filter: brightness(1.1) drop-shadow(0 4px 16px rgba(30, 33, 84, 0.5));
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(30, 33, 84, 0.5);
+  color: #ffffff;
+}
+
+.room-label--gift:focus {
+  outline: 3px solid #ffffff;
+  outline-offset: 2px;
+}

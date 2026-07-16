@@ -48,12 +48,22 @@ export async function initializeSectionsPage(root) {
               <div class="grid grid-cols-4 gap-2" id="icon-picker">
                 ${ICONS.map(icon => {
                   const isSelected = editing?.icon_name === icon || (!editing && icon === DEFAULT_ICON);
+                  const isGift = icon === 'Gift_Home.svg';
+                  const baseClass = isGift
+                    ? `icon-btn p-2 border-2 rounded-xl flex flex-col items-center justify-center transition-all relative ${isSelected ? 'border-[#1E2154] bg-[#1E2154]/10 ring-1 ring-[#1E2154]' : 'border-amber-400 hover:bg-amber-50 hover:border-amber-500'}`
+                    : `icon-btn p-2 border rounded-xl flex items-center justify-center transition-all ${isSelected ? 'border-[#0056B3] bg-[#0056B3]/10 ring-1 ring-[#0056B3]' : 'border-gray-200 hover:bg-gray-50 hover:border-gray-300'}`;
                   return `
-                  <button type="button" data-icon="${icon}" class="icon-btn p-2 border rounded-xl flex items-center justify-center transition-all ${isSelected ? 'border-[#0056B3] bg-[#0056B3]/10 ring-1 ring-[#0056B3]' : 'border-gray-200 hover:bg-gray-50 hover:border-gray-300'}" title="${icon}">
+                  <button type="button" data-icon="${icon}" class="${baseClass}" title="${isGift ? 'موضع خاص: قسم عروض البيت (المثلث العلوي)' : icon}">
+                    ${isGift ? `<span class="absolute -top-1.5 right-1 text-[8px] font-bold bg-amber-400 text-white px-1 rounded leading-tight">مميز</span>` : ''}
                     <img src="${iconSource(icon)}" class="w-16 h-16 object-contain pointer-events-none" alt="${icon}">
                   </button>
                 `}).join('')}
               </div>
+              ${ICONS.includes(editing?.icon_name) && editing?.icon_name === 'Gift_Home.svg' || !editing ? '' : ''}
+              <p class="text-[10px] text-amber-600 mt-1.5 flex items-center gap-1">
+                <span class="text-sm">⚠️</span>
+                اختيار أيقونة "Gift_Home" يضع القسم في موقع خاص داخل مثلث البيت (الأعلى).
+              </p>
             </div>
 
             <div class="flex gap-2 mt-2">

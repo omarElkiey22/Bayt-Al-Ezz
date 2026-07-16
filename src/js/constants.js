@@ -18,5 +18,5 @@ export const PALETTE = {
   white: '#F8F9FA'
 };
 
-export const MAX_SECTIONS = 12; // Maximum visual zones allowed on the Frame 2 SVG homepage
+export const MAX_SECTIONS = 13; // 12 visual grid zones + 1 special Gift/Promo zone in the triangle roof
 export const CART_KEY = 'bayt_al_ezz_cart';

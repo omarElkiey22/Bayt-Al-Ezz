@@ -10,5 +10,6 @@
   {"slug":"footwear","cx":14,"cy":82},
   {"slug":"vanity","cx":38,"cy":82},
   {"slug":"garage","cx":61,"cy":82},
-  {"slug":"cleaning","cx":86,"cy":82}
+  {"slug":"cleaning","cx":86,"cy":82},
+  {"slug":"gift-zone","cx":50,"cy":14,"isGiftZone":true}
 ]
