@@ -87,9 +87,11 @@
 }
 
 .room-label__icon {
-  width: 1.25rem;
-  height: 1.25rem;
+  /* fluid icon: ~10% of container width, min 1.5rem so it never vanishes */
+  width: clamp(1.5rem, 10cqi, 5rem);
+  height: clamp(1.5rem, 10cqi, 5rem);
   margin-bottom: 0px;
+  flex-shrink: 0;
 }
 
 .room-label__text {
@@ -101,11 +103,7 @@
   .room-label {
     border-radius: 12px;
     padding: 0.3rem;
-    gap: 0.1rem;
-  }
-  .room-label__icon {
-    width: 1.75rem;
-    height: 1.75rem;
+    gap: 0.15rem;
   }
   .room-label__text {
     font-size: 0.65rem;
@@ -117,11 +115,9 @@
   .room-label {
     border-radius: 14px;
     padding: 0.4rem;
-    gap: 0.15rem;
+    gap: 0.2rem;
   }
   .room-label__icon {
-    width: 2.25rem;
-    height: 2.25rem;
     margin-bottom: 0.1rem;
   }
   .room-label__text {
@@ -134,11 +130,9 @@
   .room-label {
     border-radius: 16px;
     padding: 0.5rem;
-    gap: 0.2rem;
+    gap: 0.25rem;
   }
   .room-label__icon {
-    width: 3rem;
-    height: 3rem;
     margin-bottom: 0.2rem;
   }
   .room-label__text {
@@ -151,11 +145,9 @@
   .room-label {
     border-radius: 18px;
     padding: 0.6rem;
-    gap: 0.25rem;
+    gap: 0.3rem;
   }
   .room-label__icon {
-    width: 3.75rem;
-    height: 3.75rem;
     margin-bottom: 0.25rem;
   }
   .room-label__text {
@@ -168,11 +160,9 @@
   .room-label {
     border-radius: 20px;
     padding: 0.75rem;
-    gap: 0.3rem;
+    gap: 0.35rem;
   }
   .room-label__icon {
-    width: 4.5rem;
-    height: 4.5rem;
     margin-bottom: 0.3rem;
   }
   .room-label__text {
