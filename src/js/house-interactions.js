@@ -31,12 +31,17 @@ function createLabel(section, bounds, fallback, delay, options = {}) {
 
   if (isGift) {
     // Special gift/promo section — lives in the triangle (roof) area
+    // Triangle points from Frame 2.svg viewBox(2048×2048): (35,512) (1018,51) (2000,512)
+    // As percentages: left=1.71%, top=2.49%, width=95.95%, height=22.51%
+    // clip-path points relative to the button bounding box:
+    //   top-left  (35,512)  → (0%, 100%)
+    //   apex      (1018,51) → ((1018-35)/(2000-35)*100%, (51-51)/(512-51)*100%) = (50%, 0%)
+    //   top-right (2000,512)→ (100%, 100%)
     label.className = 'room-label room-label--gift';
-    // Position centered in the triangular roof zone
-    label.style.left   = '25%';
-    label.style.top    = '2%';
-    label.style.width  = '50%';
-    label.style.height = '22%';
+    label.style.left   = '1.71%';
+    label.style.top    = '2.49%';
+    label.style.width  = '95.95%';
+    label.style.height = '22.51%';
   } else {
     label.className = 'room-label';
 

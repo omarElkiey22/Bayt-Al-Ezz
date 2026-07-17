@@ -204,7 +204,8 @@
   color: #ffffff;
   border: none;
   border-radius: 0;
-  /* Clip the label into a triangle shape matching the roof */
+  /* Clip the label into a triangle matching the SVG polygon exactly:
+     apex at 50% x (=(1018-35)/(2000-35)), bottom corners at 0% and 100% */
   clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
   box-shadow: 0 8px 32px rgba(30, 33, 84, 0.4);
   /* Explicitly remove backdrop-filter — it bleeds outside clip-path bounds */
