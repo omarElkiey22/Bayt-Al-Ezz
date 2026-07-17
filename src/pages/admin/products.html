@@ -27,15 +27,22 @@
 <body class="bg-[#F8F9FA] text-[#1A237E] min-h-screen flex flex-col md:flex-row antialiased">
 
   <!-- Mobile Top Bar -->
-  <header class="md:hidden bg-[#1A237E] text-white w-full h-16 flex justify-between items-center px-6 shrink-0 shadow-md">
-    <div class="font-bold text-lg">بيت العز</div>
+  <header class="md:hidden bg-[#1A237E] text-white w-full h-16 flex justify-between items-center px-4 shrink-0 shadow-md relative z-40">
+    <div class="flex items-center gap-3">
+      <button class="p-2 hover:bg-white/10 rounded-xl transition-colors flex items-center justify-center" id="menu-toggle" aria-label="القائمة">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+      <div class="font-bold text-lg">بيت العز</div>
+    </div>
     <button class="p-2 hover:bg-white/10 rounded-full transition-colors flex items-center justify-center" id="logout-mobile" aria-label="تسجيل الخروج">
       <span class="material-symbols-outlined">logout</span>
     </button>
   </header>
 
-  <!-- Side Navigation Bar (Desktop) -->
-  <aside class="hidden md:flex fixed right-0 top-0 h-full w-72 flex-col bg-white border-l border-[#9E9E9E]/20 shadow-sm z-50">
+  <!-- Side Navigation Bar (Desktop & Mobile) -->
+  <div class="fixed inset-0 bg-black/40 z-40 hidden md:hidden transition-opacity duration-300" id="sidebar-backdrop"></div>
+  
+  <aside class="fixed right-0 top-0 h-full w-72 flex flex-col bg-white border-l border-[#9E9E9E]/20 shadow-xl z-50 transition-transform duration-300 ease-in-out translate-x-full md:translate-x-0" id="admin-sidebar">
     <div class="p-6 border-b border-[#9E9E9E]/10 flex flex-col gap-1">
       <span class="font-extrabold text-xl text-[#0056B3] tracking-wide">بيت العز</span>
       <span class="text-xs text-[#75777E]">لوحة تحكم التاجر</span>
@@ -88,6 +95,21 @@
 
       document.querySelector('#logout').onclick = doLogout;
       document.querySelector('#logout-mobile').onclick = doLogout;
+
+      // Sidebar Toggle for Mobile
+      const menuToggle = document.getElementById('menu-toggle');
+      const sidebar = document.getElementById('admin-sidebar');
+      const backdrop = document.getElementById('sidebar-backdrop');
+
+      if (menuToggle && sidebar && backdrop) {
+        const toggleSidebar = () => {
+          sidebar.classList.toggle('translate-x-full');
+          backdrop.classList.toggle('hidden');
+        };
+
+        menuToggle.onclick = toggleSidebar;
+        backdrop.onclick = toggleSidebar;
+      }
     }
   </script>
 </body>
