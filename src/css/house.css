@@ -70,7 +70,6 @@
   transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s, color 0.2s;
   pointer-events: auto;
   cursor: pointer;
-  backdrop-filter: blur(4px);
   white-space: normal;
   display: flex;
   flex-direction: column;
@@ -80,6 +79,11 @@
   text-align: center;
   box-sizing: border-box;
   word-break: keep-all;
+}
+
+/* backdrop-filter only for regular (non-gift) labels — NOT on clip-path elements */
+.room-label:not(.room-label--gift) {
+  backdrop-filter: blur(4px);
 }
 
 .room-label__icon {
@@ -203,6 +207,8 @@
   /* Clip the label into a triangle shape matching the roof */
   clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
   box-shadow: 0 8px 32px rgba(30, 33, 84, 0.4);
+  /* Explicitly remove backdrop-filter — it bleeds outside clip-path bounds */
+  backdrop-filter: none;
   /* Override default opacity / transform for smoother entry */
   opacity: 0;
   transform: translateY(-10px);
