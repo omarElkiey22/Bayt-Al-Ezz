@@ -57,8 +57,8 @@ function createLabel(section, bounds, fallback, delay, options = {}) {
 
   label.style.transitionDelay = `${delay * 35}ms`;
   label.innerHTML = `
-    <img src="../../public/assets/icons/${section.icon_name || 'placeholder.svg'}" class="w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 object-contain pointer-events-none mb-1 md:mb-2" alt="" onerror="this.style.display='none'">
-    <span class="text-center font-extrabold text-sm md:text-base leading-tight">${section.name}</span>
+    <img src="../../public/assets/icons/${section.icon_name || 'placeholder.svg'}" class="room-label__icon object-contain pointer-events-none" alt="" onerror="this.style.display='none'">
+    <span class="room-label__text text-center font-extrabold">${section.name}</span>
   `;
   label.setAttribute('aria-label', section.name);
   label.addEventListener('click', () => location.href = `category.html?section=${encodeURIComponent(section.slug)}`);
