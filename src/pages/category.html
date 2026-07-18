@@ -248,6 +248,16 @@
             const productId = btn.dataset.addToCart;
             const product = products.find(p => p.id === productId);
             if (!product) return;
+
+            // If product has sizes or colors, redirect to detail page so customer can choose
+            const hasSizes = product.sizes && product.sizes.length > 0;
+            const hasColors = product.colors && product.colors.length > 0;
+            if (hasSizes || hasColors) {
+              const isMock = new URLSearchParams(location.search).get('mock');
+              const mockParam = isMock ? `&mock=${isMock}` : '';
+              location.href = `product.html?id=${productId}${mockParam}`;
+              return;
+            }
             
             const variant = product.variants?.find(v => v.is_in_stock);
             if (!variant) return;

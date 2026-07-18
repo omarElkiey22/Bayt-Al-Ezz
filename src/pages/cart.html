@@ -102,6 +102,18 @@
     </div>
   </main>
 
+  <!-- Thank You Modal -->
+  <div id="thanks-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden" role="dialog" aria-modal="true" aria-labelledby="thanks-title">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full mx-4 p-8 flex flex-col items-center text-center gap-5 animate-[fadeInUp_0.3s_ease]">
+      <div class="w-20 h-20 bg-[#0056B3]/10 rounded-full flex items-center justify-center mb-2">
+        <span class="material-symbols-outlined text-[#0056B3] text-5xl">favorite</span>
+      </div>
+      <h2 id="thanks-title" class="text-xl font-extrabold text-[#1A237E] leading-snug">شكراً لك على طلبكم من متجر بيت العز</h2>
+      <p class="text-[#75777E] text-sm leading-relaxed">زرنا كل أسبوع حتى لا يفوتك كل جديد من العروض الأسبوعية والمنتجات.</p>
+      <button id="thanks-ok" class="mt-2 w-full bg-[#0056B3] hover:bg-[#004491] active:scale-95 text-white font-bold py-3 px-8 rounded-xl transition-all shadow-md text-base">حسناً</button>
+    </div>
+  </div>
+
   <!-- Footer -->
   <footer class="bg-white border-t border-[#9E9E9E]/20 py-6 px-6 md:px-16 mt-auto">
     <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-[#75777E]">
@@ -116,7 +128,7 @@
   </footer>
 
   <script type="module">
-    import { getCartItems, updateQuantity, removeFromCart, calculateCartTotals } from '../js/cart.js';
+    import { getCartItems, updateQuantity, removeFromCart, calculateCartTotals, clearCart } from '../js/cart.js';
     import { buildOrderText, formatPrice, makeWhatsAppUrl } from '../js/utils.js';
     import { fetchMerchantNumber } from '../js/settings-api.js';
     import { validateCartItems } from '../js/products-api.js';
@@ -185,7 +197,11 @@
               <!-- Product Info -->
               <div class="flex-grow">
                 <h3 class="font-bold text-[#1A237E] text-base md:text-lg mb-1">${item.product_name}</h3>
-                <p class="text-xs text-[#75777E] mb-2">${item.variant_label}</p>
+                <p class="text-xs text-[#75777E] mb-2">
+                  ${item.variant_label}
+                  ${item.selected_size ? ` | المقاس: ${item.selected_size}` : ''}
+                  ${item.selected_color ? ` | اللون: ${item.selected_color}` : ''}
+                </p>
                 ${item.is_stale 
                   ? `<span class="text-xs text-red-500 bg-red-50 px-2 py-0.5 rounded border border-red-200">المنتج ده مبقاش متاح حالياً</span>`
                   : `<span class="text-sm font-bold text-[#0056B3]">${formattedPrice}</span>`
@@ -195,14 +211,14 @@
               <!-- Controls -->
               <div class="flex items-center gap-4 self-stretch sm:self-auto justify-between sm:justify-start border-t sm:border-t-0 pt-3 sm:pt-0 border-gray-100 mt-2 sm:mt-0">
                 ${item.is_stale 
-                  ? `<button class="text-red-500 hover:underline text-sm font-semibold" data-remove="${item.variant_id}">حذف</button>`
+                  ? `<button class="text-red-500 hover:underline text-sm font-semibold" data-remove="${item.id || item.variant_id}">حذف</button>`
                   : `
                     <div class="flex items-center bg-gray-50 border border-gray-200 rounded-xl p-1 gap-2">
-                      <button class="w-8 h-8 rounded-lg flex items-center justify-center text-[#75777E] hover:bg-white hover:text-[#0056B3] active:scale-95 transition-all" data-change="${item.variant_id}" data-value="${item.quantity - 1}">
+                      <button class="w-8 h-8 rounded-lg flex items-center justify-center text-[#75777E] hover:bg-white hover:text-[#0056B3] active:scale-95 transition-all" data-change="${item.id || item.variant_id}" data-value="${item.quantity - 1}">
                         <span class="material-symbols-outlined text-sm">remove</span>
                       </button>
                       <span class="font-bold text-sm w-6 text-center text-[#1A237E]">${item.quantity}</span>
-                      <button class="w-8 h-8 rounded-lg flex items-center justify-center text-[#75777E] hover:bg-white hover:text-[#0056B3] active:scale-95 transition-all" data-change="${item.variant_id}" data-value="${item.quantity + 1}">
+                      <button class="w-8 h-8 rounded-lg flex items-center justify-center text-[#75777E] hover:bg-white hover:text-[#0056B3] active:scale-95 transition-all" data-change="${item.id || item.variant_id}" data-value="${item.quantity + 1}">
                         <span class="material-symbols-outlined text-sm">add</span>
                       </button>
                     </div>
@@ -212,7 +228,7 @@
               </div>
 
               <!-- Delete Button -->
-              <button class="absolute top-4 left-4 text-gray-400 hover:text-red-500 transition-colors p-1" title="إزالة" data-remove="${item.variant_id}">
+              <button class="absolute top-4 left-4 text-gray-400 hover:text-red-500 transition-colors p-1" title="إزالة" data-remove="${item.id || item.variant_id}">
                 <span class="material-symbols-outlined text-[20px]">delete</span>
               </button>
 
@@ -259,6 +275,21 @@
       });
     }
 
+    // Show thank-you modal helper
+    function showThanksModal() {
+      const modal = document.getElementById('thanks-modal');
+      modal.classList.remove('hidden');
+      document.getElementById('thanks-ok').onclick = () => {
+        modal.classList.add('hidden');
+        clearCart();
+        const isMock = new URLSearchParams(location.search).get('mock');
+        const mockParam = isMock ? `?mock=${isMock}` : '';
+        location.href = `index.html${mockParam}`;
+      };
+      // Close modal on backdrop click
+      modal.onclick = (e) => { if (e.target === modal) modal.classList.add('hidden'); };
+    }
+
     // WhatsApp handler click
     document.getElementById('whatsapp').onclick = function() {
       const btn = this;
@@ -271,6 +302,7 @@
       setTimeout(() => {
         btn.disabled = false;
         btn.innerHTML = originalText;
+        showThanksModal();
       }, 1000);
     };
 
@@ -291,7 +323,8 @@
           iconSpan.textContent = 'content_copy';
           textSpan.textContent = 'نسخ نص الطلب';
           copyBtn.classList.remove('bg-green-50', 'border-green-300', 'text-green-600');
-        }, 2000);
+          showThanksModal();
+        }, 1200);
       } catch (err) {
         console.error("Failed to copy:", err);
       }

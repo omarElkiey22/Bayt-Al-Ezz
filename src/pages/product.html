@@ -99,6 +99,8 @@
       try {
         const product = await fetchProductDetails(id);
         let selected = product.variants.find(v => v.is_in_stock) || product.variants[0];
+        let selectedSize = product.sizes && product.sizes.length > 0 ? product.sizes[0] : null;
+        let selectedColor = product.colors && product.colors.length > 0 ? product.colors[0] : null;
 
         function render() {
           const value = resolveVariant(selected, product);
@@ -155,6 +157,52 @@
                       }).join('')}
                     </div>
                   </div>
+
+                  <!-- Sizes -->
+                  ${product.sizes && product.sizes.length > 0 ? `
+                  <div class="mb-6">
+                    <h3 class="font-bold text-[#1A237E] mb-2 text-sm">المقاس المتاح:</h3>
+                    <div class="flex flex-wrap gap-2 sizes">
+                      ${product.sizes.map(s => {
+                        const isSelected = s === selectedSize;
+                        let btnClass = 'px-4 py-2 border rounded-full text-sm transition-all duration-200 ';
+                        if (isSelected) {
+                          btnClass += 'bg-[#0056B3]/10 text-[#0056B3] border-[#0056B3] font-bold ring-2 ring-[#0056B3]/25';
+                        } else {
+                          btnClass += 'bg-white text-[#75777E] border-gray-200 hover:border-[#0056B3] hover:text-[#0056B3]';
+                        }
+                        return `
+                          <button class="size-swatch ${btnClass}" data-size="${s}">
+                            ${s}
+                          </button>
+                        `;
+                      }).join('')}
+                    </div>
+                  </div>
+                  ` : ''}
+
+                  <!-- Colors -->
+                  ${product.colors && product.colors.length > 0 ? `
+                  <div class="mb-6">
+                    <h3 class="font-bold text-[#1A237E] mb-2 text-sm">اللون المتاح:</h3>
+                    <div class="flex flex-wrap gap-2 colors">
+                      ${product.colors.map(c => {
+                        const isSelected = c === selectedColor;
+                        let btnClass = 'px-4 py-2 border rounded-full text-sm transition-all duration-200 ';
+                        if (isSelected) {
+                          btnClass += 'bg-[#0056B3]/10 text-[#0056B3] border-[#0056B3] font-bold ring-2 ring-[#0056B3]/25';
+                        } else {
+                          btnClass += 'bg-white text-[#75777E] border-gray-200 hover:border-[#0056B3] hover:text-[#0056B3]';
+                        }
+                        return `
+                          <button class="color-swatch ${btnClass}" data-color="${c}">
+                            ${c}
+                          </button>
+                        `;
+                      }).join('')}
+                    </div>
+                  </div>
+                  ` : ''}
                 </div>
 
                 <!-- Price and CTA -->
@@ -182,6 +230,20 @@
             };
           });
 
+          app.querySelectorAll('.size-swatch').forEach(button => {
+            button.onclick = () => {
+              selectedSize = button.dataset.size;
+              render();
+            };
+          });
+
+          app.querySelectorAll('.color-swatch').forEach(button => {
+            button.onclick = () => {
+              selectedColor = button.dataset.color;
+              render();
+            };
+          });
+
           app.querySelector('#add')?.addEventListener('click', function() {
             const btn = this;
             if (btn.disabled) return;
@@ -191,7 +253,7 @@
             btn.classList.remove('bg-[#0056B3]', 'hover:bg-[#004491]');
             btn.classList.add('bg-green-600', 'hover:bg-green-700');
             
-            addToCart(product.id, selected.id, selected.label, value.price, value.image, product.name);
+            addToCart(product.id, selected.id, selected.label, value.price, value.image, product.name, selectedSize, selectedColor);
             updateCartBadge();
             
             setTimeout(() => {

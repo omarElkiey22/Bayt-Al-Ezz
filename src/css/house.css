@@ -95,7 +95,7 @@
 }
 
 .room-label__text {
-  font-size: 0.55rem;
+  font-size: 0.7rem;
   line-height: 1.1;
 }
 
@@ -106,7 +106,7 @@
     gap: 0.15rem;
   }
   .room-label__text {
-    font-size: 0.65rem;
+    font-size: 0.85rem;
     line-height: 1.15;
   }
 }
@@ -121,7 +121,7 @@
     margin-bottom: 0.1rem;
   }
   .room-label__text {
-    font-size: 0.75rem;
+    font-size: 0.95rem;
     line-height: 1.2;
   }
 }
@@ -136,7 +136,7 @@
     margin-bottom: 0.2rem;
   }
   .room-label__text {
-    font-size: 0.85rem;
+    font-size: 1.1rem;
     line-height: 1.25;
   }
 }
@@ -151,7 +151,7 @@
     margin-bottom: 0.25rem;
   }
   .room-label__text {
-    font-size: 0.95rem;
+    font-size: 1.2rem;
     line-height: 1.3;
   }
 }
@@ -166,7 +166,7 @@
     margin-bottom: 0.3rem;
   }
   .room-label__text {
-    font-size: 1.05rem;
+    font-size: 1.3rem;
     line-height: 1.3;
   }
 }

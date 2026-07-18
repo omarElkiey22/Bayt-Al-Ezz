@@ -79,6 +79,24 @@ export async function initializeProductsPage(root) {
               <p class="text-[10px] text-[#75777E] mt-1">اختياري: اتركه فارغاً إذا لم تكن هناك صورة.</p>
             </div>
 
+            <div>
+              <label class="block text-xs font-semibold text-[#1A237E] mb-1.5">المقاسات:</label>
+              <div id="sizes-container" class="flex flex-col gap-2"></div>
+              <button type="button" id="add-size-btn" class="mt-2 text-xs text-[#0056B3] hover:text-[#004491] font-bold flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm">add</span>
+                <span>إضافة مقاس آخر</span>
+              </button>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-[#1A237E] mb-1.5">الألوان:</label>
+              <div id="colors-container" class="flex flex-col gap-2"></div>
+              <button type="button" id="add-color-btn" class="mt-2 text-xs text-[#0056B3] hover:text-[#004491] font-bold flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm">add</span>
+                <span>إضافة لون آخر</span>
+              </button>
+            </div>
+
             <div class="flex gap-2 mt-4 pt-4 border-t border-[#9E9E9E]/10">
               <button class="flex-grow bg-[#0056B3] hover:bg-[#004491] active:scale-[0.98] text-white font-bold py-2.5 px-4 rounded-xl transition-all text-sm flex items-center justify-center gap-1 shadow-md">
                 <span class="material-symbols-outlined text-sm">save</span>
@@ -153,6 +171,84 @@ export async function initializeProductsPage(root) {
       </div>
     `;
 
+    // Render Sizes & Colors input rows
+    const sizesContainer = root.querySelector('#sizes-container');
+    const colorsContainer = root.querySelector('#colors-container');
+
+    const renderRows = (container, list, placeholder, inputClass) => {
+      container.innerHTML = '';
+      if (!list || list.length === 0) list = [''];
+      list.forEach((val) => {
+        const row = document.createElement('div');
+        row.className = 'flex items-center gap-2';
+        row.innerHTML = `
+          <input class="flex-grow rounded-xl border border-gray-300 px-4 py-2 text-sm text-[#1A237E] focus:border-[#0056B3] focus:ring-1 focus:ring-[#0056B3] focus:outline-none ${inputClass}" 
+                 type="text" placeholder="${placeholder}" value="${val}">
+          <button type="button" class="w-8 h-8 rounded-full flex items-center justify-center text-primary hover:bg-[#0056B3]/10 transition-colors edit-btn" title="تعديل">
+            <span class="material-symbols-outlined text-[18px]">edit</span>
+          </button>
+          <button type="button" class="w-8 h-8 rounded-full flex items-center justify-center text-red-500 hover:bg-red-50 transition-colors delete-btn" title="حذف">
+            <span class="material-symbols-outlined text-[18px]">delete</span>
+          </button>
+        `;
+        
+        row.querySelector('.edit-btn').onclick = () => {
+          row.querySelector('input').focus();
+        };
+        
+        row.querySelector('.delete-btn').onclick = () => {
+          row.remove();
+        };
+        
+        container.appendChild(row);
+      });
+    };
+
+    let initialSizes = editing?.sizes && editing.sizes.length > 0 ? [...editing.sizes] : [''];
+    let initialColors = editing?.colors && editing.colors.length > 0 ? [...editing.colors] : [''];
+
+    renderRows(sizesContainer, initialSizes, 'مثال: XL أو ٤٠ سم', 'size-input');
+    renderRows(colorsContainer, initialColors, 'مثال: أحمر أو أبيض', 'color-input');
+
+    // Add button handlers
+    root.querySelector('#add-size-btn').onclick = () => {
+      const row = document.createElement('div');
+      row.className = 'flex items-center gap-2';
+      row.innerHTML = `
+        <input class="flex-grow rounded-xl border border-gray-300 px-4 py-2 text-sm text-[#1A237E] focus:border-[#0056B3] focus:ring-1 focus:ring-[#0056B3] focus:outline-none size-input" 
+               type="text" placeholder="مثال: XL أو ٤٠ سم" value="">
+        <button type="button" class="w-8 h-8 rounded-full flex items-center justify-center text-primary hover:bg-[#0056B3]/10 transition-colors edit-btn" title="تعديل">
+          <span class="material-symbols-outlined text-[18px]">edit</span>
+        </button>
+        <button type="button" class="w-8 h-8 rounded-full flex items-center justify-center text-red-500 hover:bg-red-50 transition-colors delete-btn" title="حذف">
+          <span class="material-symbols-outlined text-[18px]">delete</span>
+        </button>
+      `;
+      row.querySelector('.edit-btn').onclick = () => row.querySelector('input').focus();
+      row.querySelector('.delete-btn').onclick = () => row.remove();
+      sizesContainer.appendChild(row);
+      row.querySelector('input').focus();
+    };
+
+    root.querySelector('#add-color-btn').onclick = () => {
+      const row = document.createElement('div');
+      row.className = 'flex items-center gap-2';
+      row.innerHTML = `
+        <input class="flex-grow rounded-xl border border-gray-300 px-4 py-2 text-sm text-[#1A237E] focus:border-[#0056B3] focus:ring-1 focus:ring-[#0056B3] focus:outline-none color-input" 
+               type="text" placeholder="مثال: أحمر أو أبيض" value="">
+        <button type="button" class="w-8 h-8 rounded-full flex items-center justify-center text-primary hover:bg-[#0056B3]/10 transition-colors edit-btn" title="تعديل">
+          <span class="material-symbols-outlined text-[18px]">edit</span>
+        </button>
+        <button type="button" class="w-8 h-8 rounded-full flex items-center justify-center text-red-500 hover:bg-red-50 transition-colors delete-btn" title="حذف">
+          <span class="material-symbols-outlined text-[18px]">delete</span>
+        </button>
+      `;
+      row.querySelector('.edit-btn').onclick = () => row.querySelector('input').focus();
+      row.querySelector('.delete-btn').onclick = () => row.remove();
+      colorsContainer.appendChild(row);
+      row.querySelector('input').focus();
+    };
+
     // Cancel editing
     const cancelBtn = root.querySelector('#cancel-edit');
     if (cancelBtn) {
@@ -211,13 +307,23 @@ export async function initializeProductsPage(root) {
         if (form.image.files[0]) {
           imageUrl = await upload(form.image.files[0]);
         }
+
+        const sizesArray = Array.from(sizesContainer.querySelectorAll('.size-input'))
+          .map(input => sanitizeInput(input.value.trim()))
+          .filter(val => val !== '');
+        
+        const colorsArray = Array.from(colorsContainer.querySelectorAll('.color-input'))
+          .map(input => sanitizeInput(input.value.trim()))
+          .filter(val => val !== '');
         
         const updates = {
           name: data.name,
           description: data.description,
           section_id: data.section_id,
           base_price: Number(data.base_price),
-          primary_image_url: imageUrl
+          primary_image_url: imageUrl,
+          sizes: sizesArray,
+          colors: colorsArray
         };
 
         const parsedVariants = variants.map(v => ({
