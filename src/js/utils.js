@@ -13,7 +13,8 @@ export function buildOrderText(items,date=new Date()){
     const subtotal=item.price*item.quantity;
     const sizeStr = item.selected_size ? `\n   📏 المقاس: ${item.selected_size}` : '';
     const colorStr = item.selected_color ? `\n   🎨 اللون: ${item.selected_color}` : '';
-    return `${num} *${item.product_name}*${sizeStr}${colorStr}\n   📌 الاختيار: ${item.variant_label}\n   🔢 الكمية: ${item.quantity} قطعة\n   💰 ${formatPrice(item.price)} × ${item.quantity} = *${formatPrice(subtotal)}*`;
+    const variantStr = item.variant_label && item.variant_label !== 'افتراضي' ? `\n   📌 الاختيار: ${item.variant_label}` : '';
+    return `${num} *${item.product_name}*${sizeStr}${colorStr}${variantStr}\n   🔢 الكمية: ${item.quantity} قطعة\n   💰 ${formatPrice(item.price)} × ${item.quantity} = *${formatPrice(subtotal)}*`;
   }).join('\n\n');
   const total=active.reduce((sum,item)=>sum+item.price*item.quantity,0);
   return `🛒 *طلب جديد من بيت العز* 🏠\n━━━━━━━━━━━━━━━━━\n📅 التاريخ: ${day}/${month}/${date.getFullYear()}\n━━━━━━━━━━━━━━━━━\n\n📦 *تفاصيل الطلب:*\n\n${rows}\n\n━━━━━━━━━━━━━━━━━\n💵 *إجمالي قيمة الطلب: ${formatPrice(total)}*\n━━━━━━━━━━━━━━━━━\n\n✅ من فضلك أكد لي تفاصيل الشحن والتوصيل.`;

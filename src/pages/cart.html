@@ -198,9 +198,11 @@
               <div class="flex-grow">
                 <h3 class="font-bold text-[#1A237E] text-base md:text-lg mb-1">${item.product_name}</h3>
                 <p class="text-xs text-[#75777E] mb-2">
-                  ${item.variant_label}
-                  ${item.selected_size ? ` | المقاس: ${item.selected_size}` : ''}
-                  ${item.selected_color ? ` | اللون: ${item.selected_color}` : ''}
+                  ${[
+                    item.variant_label !== 'افتراضي' ? item.variant_label : null,
+                    item.selected_size ? `المقاس: ${item.selected_size}` : null,
+                    item.selected_color ? `اللون: ${item.selected_color}` : null
+                  ].filter(Boolean).join(' | ')}
                 </p>
                 ${item.is_stale 
                   ? `<span class="text-xs text-red-500 bg-red-50 px-2 py-0.5 rounded border border-red-200">المنتج ده مبقاش متاح حالياً</span>`

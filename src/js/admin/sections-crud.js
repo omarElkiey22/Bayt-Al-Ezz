@@ -2,7 +2,7 @@ import { fetchAllSectionsAdmin, createSection, updateSection, softDeleteSection 
 import { slugify, sanitizeInput } from '../utils.js';
 import { requireAdmin } from './auth-gate.js';
 
-const ICONS = ['laundry.svg', 'kitchen-shelving.svg', 'paper-goods.svg', 'bathroom.svg', 'women.svg', 'men.svg', 'reception.svg', 'baby.svg', 'footwear.svg', 'vanity.svg', 'garage.svg', 'cleaning.svg', 'Gift_Home.svg', 'Medications.svg'];
+const ICONS = ['laundry.svg', 'kitchen-shelving.svg', 'paper-goods.svg', 'bathroom.svg', 'women.svg', 'men.svg', 'reception.svg', 'baby.svg', 'footwear.svg', 'vanity.svg', 'garage.svg', 'cleaning.svg', 'Gift_Home.svg', 'Medications.svg', 'library-book.svg'];
 const ICON_DIRECTORY = '../../../public/assets/icons/';
 const DEFAULT_ICON = 'laundry.svg';
 

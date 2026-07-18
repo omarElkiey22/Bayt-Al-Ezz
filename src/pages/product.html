@@ -133,6 +133,7 @@
                   <p class="text-[#75777E] leading-relaxed mb-6 text-sm md:text-base">${product.description || ''}</p>
 
                   <!-- Swatches / Variants -->
+                  ${product.variants.length > 1 || (product.variants.length === 1 && product.variants[0].label !== 'افتراضي') ? `
                   <div class="mb-6">
                     <h3 class="font-bold text-[#1A237E] mb-2 text-sm">الأنواع المتاحة:</h3>
                     <div class="flex flex-wrap gap-2 swatches">
@@ -157,6 +158,7 @@
                       }).join('')}
                     </div>
                   </div>
+                  ` : ''}
 
                   <!-- Sizes -->
                   ${product.sizes && product.sizes.length > 0 ? `
