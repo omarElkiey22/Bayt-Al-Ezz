@@ -21,6 +21,7 @@ export async function initializeProductsPage(root) {
   const sections = await fetchAllSectionsAdmin();
   let editing = null;
   let variants = [{ label: 'افتراضي', price_override: '', is_in_stock: true }];
+  let adminSearchQuery = '';
 
   const draw = async () => {
     await requireAdmin();
@@ -35,6 +36,10 @@ export async function initializeProductsPage(root) {
       console.error(e);
     }
 
+    const filteredProducts = products.filter(p => 
+      !adminSearchQuery || p.name.toLowerCase().includes(adminSearchQuery.toLowerCase().trim())
+    );
+
     root.innerHTML = `
       <!-- Page Title -->
       <div class="mb-8">
@@ -44,7 +49,7 @@ export async function initializeProductsPage(root) {
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
-        <!-- Form Column (Right logically / Left physically in RTL) -->
+        <!-- Form Column -->
         <div class="lg:col-span-1">
           <form class="bg-white border border-[#9E9E9E]/20 rounded-2xl p-6 shadow-sm flex flex-col gap-4 sticky top-24" id="product-form">
             <h2 class="font-bold text-lg text-[#1A237E] pb-2 border-b border-[#9E9E9E]/10">
@@ -114,9 +119,21 @@ export async function initializeProductsPage(root) {
         <!-- Products List Column -->
         <div class="lg:col-span-2">
           <div class="bg-white border border-[#9E9E9E]/20 rounded-2xl shadow-sm overflow-hidden">
-            <div class="p-4 bg-gray-50 border-b border-[#9E9E9E]/10 flex justify-between items-center">
-              <h3 class="font-bold text-[#1A237E] text-sm">قائمة المنتجات الحالية</h3>
-              <span class="text-xs text-[#75777E]">${products.length} منتج</span>
+            <div class="p-4 bg-gray-50 border-b border-[#9E9E9E]/10 flex flex-col sm:flex-row gap-3 justify-between items-center">
+              <div class="flex items-center gap-2">
+                <h3 class="font-bold text-[#1A237E] text-sm">قائمة المنتجات الحالية</h3>
+                <span class="text-xs text-[#75777E]" id="admin-products-count">(${filteredProducts.length} من أصل ${products.length})</span>
+              </div>
+              <div class="relative w-full sm:w-64">
+                <input 
+                  type="text" 
+                  id="admin-product-search" 
+                  placeholder="ابحث باسم المنتج..." 
+                  value="${adminSearchQuery}"
+                  class="w-full bg-white border border-gray-300 rounded-xl pr-9 pl-3 py-1.5 text-xs text-[#1A237E] focus:border-[#0056B3] focus:ring-1 focus:ring-[#0056B3] focus:outline-none"
+                />
+                <span class="material-symbols-outlined absolute right-2.5 top-2 text-gray-400 text-base pointer-events-none">search</span>
+              </div>
             </div>
 
             <div class="overflow-x-auto w-full">
@@ -130,8 +147,15 @@ export async function initializeProductsPage(root) {
                     <th class="p-4 text-center">الإجراءات</th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-[#9E9E9E]/10 text-[#1A237E]">
-                  ${products.map(p => {
+                <tbody class="divide-y divide-[#9E9E9E]/10 text-[#1A237E]" id="admin-products-tbody">
+                  ${filteredProducts.length === 0 ? `
+                    <tr>
+                      <td colspan="5" class="p-8 text-center text-[#75777E]">
+                        <span class="material-symbols-outlined text-4xl block mb-2 text-gray-400">search_off</span>
+                        <span>لا توجد منتجات تطابق البحث</span>
+                      </td>
+                    </tr>
+                  ` : filteredProducts.map(p => {
                     const section = sections.find(s => s.id === p.section_id);
                     return `
                       <tr class="hover:bg-gray-50 transition-colors">
@@ -248,6 +272,91 @@ export async function initializeProductsPage(root) {
       colorsContainer.appendChild(row);
       row.querySelector('input').focus();
     };
+
+    // Admin Product Search Input
+    const searchInput = root.querySelector('#admin-product-search');
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        adminSearchQuery = e.target.value;
+        const curFiltered = products.filter(p => !adminSearchQuery || p.name.toLowerCase().includes(adminSearchQuery.toLowerCase().trim()));
+        const countBadge = root.querySelector('#admin-products-count');
+        if (countBadge) countBadge.textContent = `(${curFiltered.length} من أصل ${products.length})`;
+        const tbody = root.querySelector('#admin-products-tbody');
+        if (tbody) {
+          if (!curFiltered.length) {
+            tbody.innerHTML = `
+              <tr>
+                <td colspan="5" class="p-8 text-center text-[#75777E]">
+                  <span class="material-symbols-outlined text-4xl block mb-2 text-gray-400">search_off</span>
+                  <span>لا توجد منتجات تطابق البحث</span>
+                </td>
+              </tr>
+            `;
+          } else {
+            tbody.innerHTML = curFiltered.map(p => {
+              const section = sections.find(s => s.id === p.section_id);
+              return `
+                <tr class="hover:bg-gray-50 transition-colors">
+                  <td class="p-4">
+                    <div class="w-12 h-12 rounded-lg border border-[#9E9E9E]/10 overflow-hidden bg-gray-100">
+                      <img class="w-full h-full object-cover" src="${p.primary_image_url || '../../public/assets/placeholder.svg'}" alt="${p.name}">
+                    </div>
+                  </td>
+                  <td class="p-4 font-bold">
+                    <div>${p.name}</div>
+                    <div class="text-xs text-[#75777E] mt-0.5 line-clamp-1">${p.description || ''}</div>
+                  </td>
+                  <td class="p-4">
+                    <span class="bg-gray-100 text-gray-600 text-xs font-semibold px-2.5 py-0.5 rounded-full">${section?.name || 'غير محدد'}</span>
+                  </td>
+                  <td class="p-4 font-bold text-[#0056B3]">${formatPrice(p.base_price)}</td>
+                  <td class="p-4">
+                    <div class="flex items-center justify-center gap-2">
+                      <button class="w-8 h-8 rounded-full flex items-center justify-center text-primary hover:bg-[#0056B3]/10 transition-colors" data-edit="${p.id}" title="تعديل">
+                        <span class="material-symbols-outlined text-[18px]">edit</span>
+                      </button>
+                      <button class="w-8 h-8 rounded-full flex items-center justify-center text-red-500 hover:bg-red-50 transition-colors" data-delete="${p.id}" title="حذف">
+                        <span class="material-symbols-outlined text-[18px]">delete</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              `;
+            }).join('');
+            
+            tbody.querySelectorAll('[data-edit]').forEach(b => {
+              b.onclick = async () => {
+                const prod = products.find(p => p.id === b.dataset.edit);
+                if (prod) {
+                  const detail = await fetchProductDetails(prod.id);
+                  editing = detail;
+                  variants = detail.variants.map(v => ({
+                    id: v.id,
+                    label: v.label,
+                    price_override: v.price_override || '',
+                    is_in_stock: v.is_in_stock
+                  }));
+                  draw();
+                }
+              };
+            });
+
+            tbody.querySelectorAll('[data-delete]').forEach(b => {
+              b.onclick = async () => {
+                if (confirm('هل تريد حذف المنتج حذفاً آمناً؟')) {
+                  try {
+                    await softDeleteProduct(b.dataset.delete);
+                    draw();
+                  } catch (error) {
+                    alert(error.message);
+                  }
+                }
+              };
+            });
+          }
+        }
+      });
+    }
 
     // Cancel editing
     const cancelBtn = root.querySelector('#cancel-edit');

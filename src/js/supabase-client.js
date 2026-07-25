@@ -103,6 +103,11 @@ class MockQueryBuilder {
     return this;
   }
 
+  ilike(column, pattern) {
+    this.filters.push({ type: 'ilike', column, pattern });
+    return this;
+  }
+
   order(column, options) {
     this.orderConfig = { column, ...options };
     return this;
@@ -204,6 +209,10 @@ class MockQueryBuilder {
         if (filter.type === 'in') {
           return filter.values.includes(val);
         }
+        if (filter.type === 'ilike') {
+          const cleanPattern = String(filter.pattern || '').replace(/%/g, '').toLowerCase();
+          return String(val || '').toLowerCase().includes(cleanPattern);
+        }
         return true;
       });
     }
@@ -260,6 +269,9 @@ class MockQueryBuilder {
         if (val != filter.value) return false;
       } else if (filter.type === 'in') {
         if (!filter.values.includes(val)) return false;
+      } else if (filter.type === 'ilike') {
+        const cleanPattern = String(filter.pattern || '').replace(/%/g, '').toLowerCase();
+        if (!String(val || '').toLowerCase().includes(cleanPattern)) return false;
       }
     }
     return true;

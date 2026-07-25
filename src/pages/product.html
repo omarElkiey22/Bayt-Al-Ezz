@@ -27,11 +27,12 @@
 <body class="bg-[#F8F9FA] text-[#1A237E] min-h-screen flex flex-col antialiased">
 
   <!-- Header / Navigation Bar -->
-  <nav class="bg-[#1A237E] text-white flex justify-between items-center w-full px-6 md:px-16 h-16 sticky top-0 z-50 shadow-md">
-    <div class="flex items-center gap-4">
+  <nav class="bg-[#1A237E] text-white flex justify-between items-center w-full px-4 md:px-16 h-16 sticky top-0 z-50 shadow-md">
+    <div class="flex items-center gap-4 shrink-0">
       <a class="font-bold text-xl tracking-wide hover:opacity-90 transition-opacity" href="index.html">بيت العز</a>
     </div>
-    <div class="flex items-center gap-4">
+    <div id="search-bar-slot" class="flex-grow max-w-md mx-2 md:mx-4"></div>
+    <div class="flex items-center gap-2 md:gap-4 shrink-0">
       <a href="cart.html" class="relative p-2 hover:bg-white/10 rounded-full transition-colors flex items-center justify-center" aria-label="عربة التسوق">
         <span class="material-symbols-outlined">shopping_cart</span>
         <span id="cart-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
@@ -75,6 +76,9 @@
     import { getQueryParam, isValidUUID, resolveVariant, formatPrice } from '../js/utils.js';
     import { fetchProductDetails } from '../js/products-api.js';
     import { addToCart, getCartItems, calculateCartTotals } from '../js/cart.js';
+    import { initializeSearchBar } from '../js/search-bar.js';
+
+    initializeSearchBar(document.getElementById('search-bar-slot'));
 
     const app = document.querySelector('#app');
     const id = getQueryParam('id');

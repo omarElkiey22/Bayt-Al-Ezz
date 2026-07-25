@@ -27,11 +27,12 @@
 <body class="bg-[#F8F9FA] text-[#1A237E] min-h-screen flex flex-col antialiased">
 
   <!-- Header / Navigation Bar -->
-  <nav class="bg-[#1A237E] text-white flex justify-between items-center w-full px-6 md:px-16 h-16 sticky top-0 z-50 shadow-md">
-    <div class="flex items-center gap-4">
+  <nav class="bg-[#1A237E] text-white flex justify-between items-center w-full px-4 md:px-16 h-16 sticky top-0 z-50 shadow-md">
+    <div class="flex items-center gap-4 shrink-0">
       <a class="font-bold text-xl tracking-wide hover:opacity-90 transition-opacity" href="index.html">بيت العز</a>
     </div>
-    <div class="flex items-center gap-4">
+    <div id="search-bar-slot" class="flex-grow max-w-md mx-2 md:mx-4"></div>
+    <div class="flex items-center gap-2 md:gap-4 shrink-0">
       <a href="cart.html" class="relative p-2 hover:bg-white/10 rounded-full transition-colors flex items-center justify-center" aria-label="عربة التسوق">
         <span class="material-symbols-outlined">shopping_cart</span>
         <span id="cart-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
@@ -120,12 +121,16 @@
 
   <script type="module">
     import { getQueryParam, formatPrice } from '../js/utils.js';
-    import { fetchProductsBySection } from '../js/products-api.js';
+    import { fetchProductsBySection, searchProducts } from '../js/products-api.js';
     import { fetchActiveSections } from '../js/sections-api.js';
     import { addToCart, getCartItems, calculateCartTotals } from '../js/cart.js';
+    import { initializeSearchBar } from '../js/search-bar.js';
+
+    initializeSearchBar(document.getElementById('search-bar-slot'));
 
     const content = document.querySelector('#content');
     const slug = getQueryParam('section');
+    const searchQuery = getQueryParam('search');
     const breadcrumbActive = document.getElementById('breadcrumb-active');
     const sectionTitle = document.getElementById('section-title');
 
@@ -168,7 +173,7 @@
     }
 
     async function render() {
-      if (!slug) {
+      if (!slug && !searchQuery) {
         location.href = 'index.html';
         return;
       }
@@ -177,25 +182,43 @@
         const sections = await fetchActiveSections();
         await loadNavigation(sections);
 
-        const currentSection = sections.find(s => s.slug === slug);
-        if (currentSection) {
-          breadcrumbActive.textContent = currentSection.name;
-          sectionTitle.textContent = currentSection.name;
-          document.getElementById('section-desc').textContent = currentSection.description || 'المجموعات المختارة بعناية لأثاثك المنزلي.';
-          document.title = `${currentSection.name} | بيت العز`;
+        let products = [];
+        const isMock = new URLSearchParams(location.search).get('mock');
+        const indexMockParam = isMock ? `?mock=${isMock}` : '';
+        const productMockParam = isMock ? `&mock=${isMock}` : '';
+
+        if (searchQuery) {
+          breadcrumbActive.textContent = `البحث: ${searchQuery}`;
+          sectionTitle.textContent = `نتائج البحث عن "${searchQuery}"`;
+          document.title = `البحث عن ${searchQuery} | بيت العز`;
+          products = await searchProducts(searchQuery);
+          document.getElementById('section-desc').textContent = `عثرنا على ${products.length} منتج يطابق بحثك.`;
+        } else {
+          const currentSection = sections.find(s => s.slug === slug);
+          if (currentSection) {
+            breadcrumbActive.textContent = currentSection.name;
+            sectionTitle.textContent = currentSection.name;
+            document.getElementById('section-desc').textContent = currentSection.description || 'المجموعات المختارة بعناية لأثاثك المنزلي.';
+            document.title = `${currentSection.name} | بيت العز`;
+          }
+          products = await fetchProductsBySection(slug);
         }
 
-        const products = await fetchProductsBySection(slug);
-
         if (!products.length) {
-          const isMock = new URLSearchParams(location.search).get('mock');
-          const mockParam = isMock ? `?mock=${isMock}` : '';
           content.className = 'col-span-full flex flex-col items-center justify-center py-16 bg-white border border-[#9E9E9E]/20 rounded-2xl text-center p-8';
-          content.innerHTML = `
+          content.innerHTML = searchQuery ? `
+            <span class="material-symbols-outlined text-6xl text-[#75777E] mb-4">search_off</span>
+            <h3 class="text-xl font-bold text-[#1A237E] mb-2">لا توجد نتائج بحث مطابقة</h3>
+            <p class="text-[#75777E] mb-6">لم نعثر على أي منتج يطابق كلمة "${searchQuery}". جرب البحث باسم منتج آخر.</p>
+            <a class="inline-flex items-center gap-2 bg-[#0056B3] hover:bg-[#004491] text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm" href="index.html${indexMockParam}">
+              <span class="material-symbols-outlined text-sm">home</span>
+              العودة للرئيسية
+            </a>
+          ` : `
             <span class="material-symbols-outlined text-6xl text-[#75777E] mb-4">folder_open</span>
             <h3 class="text-xl font-bold text-[#1A237E] mb-2">السلة فارغة في القسم ده</h3>
             <p class="text-[#75777E] mb-6">لم يتم إضافة منتجات في هذا القسم بعد.</p>
-            <a class="inline-flex items-center gap-2 bg-[#0056B3] hover:bg-[#004491] text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm" href="index.html${mockParam}">
+            <a class="inline-flex items-center gap-2 bg-[#0056B3] hover:bg-[#004491] text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm" href="index.html${indexMockParam}">
               <span class="material-symbols-outlined text-sm">home</span>
               العودة للبيت
             </a>
@@ -203,16 +226,13 @@
           return;
         }
 
-        const isMock = new URLSearchParams(location.search).get('mock');
-        const mockParam = isMock ? `&mock=${isMock}` : '';
-
         content.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6';
         content.innerHTML = products.map(p => {
           const inStockVariants = p.variants?.filter(v => v.is_in_stock) || [];
           const hasInStock = inStockVariants.length > 0;
           return `
             <article class="relative bg-white border border-[#9E9E9E]/20 rounded-2xl overflow-hidden group hover:border-[#0056B3] hover:shadow-md transition-all duration-300 flex flex-col">
-              <a class="absolute inset-0 z-10" href="product.html?id=${p.id}${mockParam}" aria-label="${p.name}"></a>
+              <a class="absolute inset-0 z-10" href="product.html?id=${p.id}${productMockParam}" aria-label="${p.name}"></a>
               <div class="relative aspect-square w-full bg-gray-50 overflow-hidden">
                 <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="${p.primary_image_url || '../../public/assets/placeholder.svg'}" alt="${p.name}">
               </div>
