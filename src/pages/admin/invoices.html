@@ -439,6 +439,7 @@
       let catalogProducts = [];
       let selectedProduct = null;
       let invoicesHistory = [];
+      let currentAvailableOptions = [];
 
       // Tabs Navigation
       const tabCreate = document.getElementById('tab-create');
@@ -574,6 +575,57 @@
         elSearchResultsList.classList.remove('hidden');
       }
 
+      // Extract all available sizes, colors, and variant options from product DB record
+      function getAvailableProductOptions(prod) {
+        const options = [];
+
+        // 1. Check sizes array column in products table
+        if (Array.isArray(prod.sizes) && prod.sizes.length > 0) {
+          prod.sizes.forEach(s => {
+            const label = String(s).trim();
+            if (label) {
+              options.push({
+                id: `size_${label}`,
+                label: `المقاس: ${label}`,
+                rawLabel: `مقاس ${label}`,
+                price: prod.base_price
+              });
+            }
+          });
+        }
+
+        // 2. Check colors array column in products table
+        if (Array.isArray(prod.colors) && prod.colors.length > 0) {
+          prod.colors.forEach(c => {
+            const label = String(c).trim();
+            if (label) {
+              options.push({
+                id: `color_${label}`,
+                label: `اللون / النوع: ${label}`,
+                rawLabel: label,
+                price: prod.base_price
+              });
+            }
+          });
+        }
+
+        // 3. Check product_variants table
+        const validVariants = (prod.product_variants || []).filter(v => !v.deleted_at);
+        const realVariants = validVariants.filter(v => v.label && v.label.trim() !== 'افتراضي');
+        realVariants.forEach(v => {
+          const price = (v.price_override !== null && v.price_override !== undefined) ? v.price_override : prod.base_price;
+          const label = v.label.trim();
+          options.push({
+            id: `variant_${v.id}`,
+            label: label,
+            rawLabel: label,
+            price: price
+          });
+        });
+
+        return options;
+      }
+
       // Handle Selecting a Product from Search
       function selectCatalogProduct(prod) {
         selectedProduct = prod;
@@ -583,18 +635,16 @@
         elSelectedText.textContent = `المنتج المحدد: ${prod.name} (${prod.base_price} ج.م)`;
         elSelectedBadge.classList.remove('hidden');
 
-        // Check for real variants (excluding generic 'افتراضي')
-        const validVariants = (prod.product_variants || []).filter(v => !v.deleted_at);
-        const realVariants = validVariants.filter(v => v.label && v.label.trim() !== 'افتراضي');
+        // Extract options from sizes, colors, and product_variants
+        currentAvailableOptions = getAvailableProductOptions(prod);
 
-        if (realVariants.length > 0) {
+        if (currentAvailableOptions.length > 0) {
           elSelectVariant.innerHTML = '<option value="">-- اختر المقاس أو اللون المتاح --</option>';
-          realVariants.forEach(v => {
-            const price = (v.price_override !== null && v.price_override !== undefined) ? v.price_override : prod.base_price;
-            const opt = document.createElement('option');
-            opt.value = v.id;
-            opt.textContent = `${v.label} - (${price} ج.م)`;
-            elSelectVariant.appendChild(opt);
+          currentAvailableOptions.forEach(opt => {
+            const optionEl = document.createElement('option');
+            optionEl.value = opt.id;
+            optionEl.textContent = `${opt.label} - (${opt.price} ج.م)`;
+            elSelectVariant.appendChild(optionEl);
           });
           elVariantBox.classList.remove('hidden');
         } else {
@@ -606,6 +656,7 @@
       // Clear Selected Product
       function clearSelectedProduct() {
         selectedProduct = null;
+        currentAvailableOptions = [];
         elSearchInput.value = '';
         elSearchResultsList.classList.add('hidden');
         elSelectedBadge.classList.add('hidden');
@@ -626,7 +677,7 @@
 
       // Add Catalog Item to Invoice
       btnAddCatalog.onclick = () => {
-        if (!selectedProduct) return alert('برجاء البحث وااختيار منتج من القائمة أولاً');
+        if (!selectedProduct) return alert('برجاء البحث واختيار منتج من القائمة أولاً');
 
         const qty = parseInt(elCatalogQty.value, 10);
         if (isNaN(qty) || qty < 1) return alert('يرجى إدخال كمية صحيحة');
@@ -635,22 +686,19 @@
         let price = selectedProduct.base_price;
         let details = [];
 
-        const validVariants = (selectedProduct.product_variants || []).filter(v => !v.deleted_at);
-        const realVariants = validVariants.filter(v => v.label && v.label.trim() !== 'افتراضي');
-
-        if (realVariants.length > 0) {
-          const varId = elSelectVariant.value;
-          if (varId) {
-            const variant = realVariants.find(v => v.id === varId);
-            if (variant) {
-              details.push(variant.label);
-              if (variant.price_override !== null && variant.price_override !== undefined) {
-                price = variant.price_override;
-              }
+        // Check if user selected an option from the dropdown
+        const optId = elSelectVariant.value;
+        if (optId && currentAvailableOptions) {
+          const selectedOpt = currentAvailableOptions.find(o => o.id === optId);
+          if (selectedOpt) {
+            details.push(selectedOpt.rawLabel);
+            if (selectedOpt.price !== null && selectedOpt.price !== undefined) {
+              price = selectedOpt.price;
             }
           }
         }
 
+        // Check manual note if typed
         const manualNote = elCatalogVariantNote ? elCatalogVariantNote.value.trim() : '';
         if (manualNote) {
           details.push(manualNote);
