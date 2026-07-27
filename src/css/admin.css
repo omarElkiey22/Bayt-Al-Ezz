@@ -1,7 +1,12 @@
 /* Admin page styles - styling handled by Tailwind CSS via CDN */
 
 @media print {
-  /* Hide non-printable elements */
+  @page {
+    size: A4 portrait;
+    margin: 10mm;
+  }
+
+  /* Hide all non-printable elements */
   header,
   aside,
   #sidebar-backdrop,
@@ -11,28 +16,55 @@
   }
 
   /* Reset main page container layout for printing */
-  body {
+  html, body {
     background: #ffffff !important;
     color: #000000 !important;
     margin: 0 !important;
     padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
   main {
-    margin-right: 0 !important;
+    margin: 0 !important;
     padding: 0 !important;
     max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  .max-w-6xl {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Reset grid layout during print to prevent col-span offset */
+  .grid {
+    display: block !important;
+  }
+
+  .lg\:col-span-7,
+  .lg\:col-span-5,
+  .col-span-12,
+  [class*="col-span-"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    float: none !important;
   }
 
   .printable-invoice-container {
     box-shadow: none !important;
     border: none !important;
-    padding: 15px !important;
-    margin: 0 !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
     width: 100% !important;
     max-width: 100% !important;
+    background: #ffffff !important;
   }
 
   .page-break {

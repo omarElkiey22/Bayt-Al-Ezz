@@ -21,20 +21,23 @@ export function calculateItemTotal(unitPrice, quantity) {
   return Math.max(0, price * qty);
 }
 
-export function calculateInvoiceTotals(items = [], shippingFee = 0, discount = 0) {
+export function calculateInvoiceTotals(items = [], shippingFee = 0, discountPercent = 0) {
   const subtotal = items.reduce((sum, item) => {
     return sum + calculateItemTotal(item.unitPrice, item.quantity);
   }, 0);
 
   const shipping = Math.max(0, parseFloat(shippingFee) || 0);
-  const disc = Math.max(0, parseFloat(discount) || 0);
+  const percent = Math.min(100, Math.max(0, parseFloat(discountPercent) || 0));
+  const discountAmount = Math.round((subtotal * (percent / 100)) * 100) / 100;
 
-  const grandTotal = Math.max(0, subtotal + shipping - disc);
+  const grandTotal = Math.max(0, subtotal + shipping - discountAmount);
 
   return {
     subtotal,
     shipping,
-    discount: disc,
+    discountPercent: percent,
+    discountAmount,
+    discount: discountAmount,
     grandTotal
   };
 }
