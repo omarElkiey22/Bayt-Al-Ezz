@@ -399,18 +399,18 @@
 
         <!-- Invoices Log Table -->
         <div class="bg-white border border-[#9E9E9E]/20 rounded-2xl shadow-sm overflow-hidden">
-          <div class="overflow-x-auto">
-            <table class="w-full text-right text-xs md:text-sm border-collapse whitespace-nowrap">
+          <div class="overflow-x-auto w-full">
+            <table class="min-w-[700px] w-full text-right text-xs md:text-sm border-collapse whitespace-nowrap">
               <thead>
                 <tr class="bg-[#1A237E] text-white">
-                  <th class="py-3 px-4 font-bold text-center w-10">#</th>
-                  <th class="py-3 px-4 font-bold">رقم الفاتورة</th>
-                  <th class="py-3 px-4 font-bold">التاريخ</th>
-                  <th class="py-3 px-4 font-bold">العميل والعنوان</th>
-                  <th class="py-3 px-4 font-bold text-center">حالة السداد</th>
-                  <th class="py-3 px-4 font-bold text-center">البنود</th>
-                  <th class="py-3 px-4 font-bold text-left">الإجمالي النهائي</th>
-                  <th class="py-3 px-4 font-bold text-center">العمليات</th>
+                  <th class="py-3.5 px-4 font-bold text-center w-10 whitespace-nowrap">#</th>
+                  <th class="py-3.5 px-4 font-bold whitespace-nowrap">رقم الفاتورة</th>
+                  <th class="py-3.5 px-4 font-bold whitespace-nowrap">التاريخ</th>
+                  <th class="py-3.5 px-4 font-bold whitespace-nowrap">العميل والعنوان</th>
+                  <th class="py-3.5 px-4 font-bold text-center whitespace-nowrap">حالة السداد</th>
+                  <th class="py-3.5 px-4 font-bold text-center whitespace-nowrap">البنود</th>
+                  <th class="py-3.5 px-4 font-bold text-left whitespace-nowrap">الإجمالي النهائي</th>
+                  <th class="py-3.5 px-4 font-bold text-center whitespace-nowrap">العمليات</th>
                 </tr>
               </thead>
               <tbody id="history-items-body" class="divide-y divide-gray-200">
@@ -766,11 +766,11 @@
         viewPayStatus.textContent = statusValue;
 
         if (statusValue === 'مدفوع بالكامل') {
-          viewPayStatus.className = 'inline-block px-2.5 py-0.5 bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold rounded-lg text-xs';
+          viewPayStatus.className = 'inline-flex items-center justify-center whitespace-nowrap shrink-0 px-3 py-1 bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold rounded-lg text-xs leading-none';
         } else if (statusValue === 'غير مدفوع') {
-          viewPayStatus.className = 'inline-block px-2.5 py-0.5 bg-red-100 text-red-800 border border-red-300 font-bold rounded-lg text-xs';
+          viewPayStatus.className = 'inline-flex items-center justify-center whitespace-nowrap shrink-0 px-3 py-1 bg-red-100 text-red-800 border border-red-300 font-bold rounded-lg text-xs leading-none';
         } else if (statusValue === 'مدفوع جزئياً') {
-          viewPayStatus.className = 'inline-block px-2.5 py-0.5 bg-orange-100 text-orange-800 border border-orange-300 font-bold rounded-lg text-xs';
+          viewPayStatus.className = 'inline-flex items-center justify-center whitespace-nowrap shrink-0 px-3 py-1 bg-orange-100 text-orange-800 border border-orange-300 font-bold rounded-lg text-xs leading-none';
         }
 
         // Render Table Rows
@@ -942,11 +942,11 @@
           filtered.forEach((inv, idx) => {
             let statusBadge = '';
             if (inv.payment_status === 'مدفوع بالكامل') {
-              statusBadge = '<span class="inline-block whitespace-nowrap px-2.5 py-1 bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold rounded-lg text-xs">مدفوع بالكامل</span>';
+              statusBadge = '<span class="inline-flex items-center justify-center whitespace-nowrap shrink-0 px-3 py-1 bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold rounded-lg text-xs leading-none">مدفوع بالكامل</span>';
             } else if (inv.payment_status === 'غير مدفوع') {
-              statusBadge = '<span class="inline-block whitespace-nowrap px-2.5 py-1 bg-red-100 text-red-800 border border-red-300 font-bold rounded-lg text-xs">غير مدفوع</span>';
+              statusBadge = '<span class="inline-flex items-center justify-center whitespace-nowrap shrink-0 px-3 py-1 bg-red-100 text-red-800 border border-red-300 font-bold rounded-lg text-xs leading-none">غير مدفوع</span>';
             } else {
-              statusBadge = '<span class="inline-block whitespace-nowrap px-2.5 py-1 bg-orange-100 text-orange-800 border border-orange-300 font-bold rounded-lg text-xs">مدفوع جزئياً</span>';
+              statusBadge = '<span class="inline-flex items-center justify-center whitespace-nowrap shrink-0 px-3 py-1 bg-orange-100 text-orange-800 border border-orange-300 font-bold rounded-lg text-xs leading-none">مدفوع جزئياً</span>';
             }
 
             const tr = document.createElement('tr');
