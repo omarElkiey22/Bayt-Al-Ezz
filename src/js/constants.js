@@ -7,7 +7,8 @@ export const TABLES = {
   settings: 'merchant_settings',
   sections: 'sections',
   products: 'products',
-  variants: 'product_variants'
+  variants: 'product_variants',
+  invoices: 'invoices'
 };
 
 export const PALETTE = {

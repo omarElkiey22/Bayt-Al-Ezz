@@ -84,240 +84,316 @@
         <div>
           <h1 class="text-2xl md:text-3xl font-extrabold text-[#1A237E] flex items-center gap-2">
             <span class="material-symbols-outlined text-[#0056B3]">receipt_long</span>
-            <span>إنشاء وطباعة فاتورة جديد</span>
+            <span>إدارة وسجل الفواتير</span>
           </h1>
-          <p class="text-[#75777E] text-sm mt-1">قم بإعداد تفاصيل الفاتورة ومعاينتها مباشرة ثم طباعتها على الطابعة.</p>
+          <p class="text-[#75777E] text-sm mt-1">قم بإعداد الفواتير وطباعتها أو استعراض سجل الفواتير السابقة وحفظها.</p>
         </div>
-        <div class="flex items-center gap-3">
+      </div>
+
+      <!-- Tab Buttons Navigation (No Print) -->
+      <div class="flex border-b border-gray-200 mb-6 no-print gap-2">
+        <button id="tab-create" class="py-3 px-5 border-b-2 border-[#0056B3] text-[#0056B3] font-extrabold text-sm flex items-center gap-2 transition-all">
+          <span class="material-symbols-outlined text-lg">note_add</span>
+          <span>إنشاء فاتورة جديدة</span>
+        </button>
+        <button id="tab-history" class="py-3 px-5 border-b-2 border-transparent text-[#75777E] hover:text-[#1A237E] font-bold text-sm flex items-center gap-2 transition-all">
+          <span class="material-symbols-outlined text-lg">history</span>
+          <span>سجل الفواتير السابقة</span>
+          <span id="badge-invoices-count" class="px-2 py-0.5 bg-[#0056B3]/10 text-[#0056B3] rounded-full text-xs font-mono">0</span>
+        </button>
+      </div>
+
+      <!-- TAB 1: INVOICE CREATOR & LIVE PREVIEW VIEW -->
+      <div id="view-tab-create" class="space-y-6">
+        
+        <!-- Action Buttons Bar -->
+        <div class="flex justify-end gap-3 no-print">
           <button id="btn-reset" class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-[#1A237E] rounded-xl font-bold text-sm flex items-center gap-2 transition-all">
             <span class="material-symbols-outlined text-lg">restart_alt</span>
             <span>فاتورة جديدة</span>
+          </button>
+          <button id="btn-save-invoice" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-sm shadow-md hover:shadow-lg flex items-center gap-2 transition-all">
+            <span class="material-symbols-outlined text-lg">save</span>
+            <span>حفظ الفاتورة بالسجل</span>
           </button>
           <button id="btn-print" class="px-5 py-2.5 bg-[#0056B3] hover:bg-[#004085] text-white rounded-xl font-bold text-sm shadow-md hover:shadow-lg flex items-center gap-2 transition-all">
             <span class="material-symbols-outlined text-lg">print</span>
             <span>طباعة الفاتورة</span>
           </button>
         </div>
+
+        <!-- Main Creator Grid: Controls & Live Preview -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          
+          <!-- Form Controls Column (No Print) -->
+          <div class="lg:col-span-5 bg-white border border-[#9E9E9E]/20 rounded-2xl p-5 shadow-sm space-y-6 no-print">
+            <h2 class="font-bold text-base text-[#1A237E] border-b border-[#9E9E9E]/10 pb-3 flex items-center gap-2">
+              <span class="material-symbols-outlined text-[#0056B3]">edit_note</span>
+              <span>بيانات الفاتورة والعميل</span>
+            </h2>
+
+            <!-- Invoice Details -->
+            <div class="space-y-3 text-sm">
+              <div>
+                <label class="block text-xs font-bold text-[#75777E] mb-1">رقم الفاتورة</label>
+                <div class="flex gap-2">
+                  <input type="text" id="input-inv-number" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0056B3] font-mono text-sm" readonly />
+                  <button id="btn-regen-inv" title="توليد رقم جديد" class="p-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-[#0056B3]">
+                    <span class="material-symbols-outlined text-lg">refresh</span>
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-[#75777E] mb-1">تاريخ الفاتورة</label>
+                <input type="date" id="input-inv-date" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0056B3] text-sm" />
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-[#75777E] mb-1">اسم العميل</label>
+                <input type="text" id="input-customer-name" placeholder="أدخل اسم العميل" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0056B3] text-sm" />
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-[#75777E] mb-1">العنوان / تفاصيل التوصيل</label>
+                <input type="text" id="input-customer-address" placeholder="العنوان أو المدينة" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0056B3] text-sm" />
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-bold text-[#75777E] mb-1">طريقة الدفع</label>
+                  <select id="select-payment-method" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0056B3] text-sm">
+                    <option value="كاش عند الاستلام">كاش عند الاستلام</option>
+                    <option value="فودافون كاش">فودافون كاش</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-[#75777E] mb-1">حالة السداد</label>
+                  <select id="select-payment-status" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0056B3] text-sm">
+                    <option value="مدفوع بالكامل">مدفوع بالكامل</option>
+                    <option value="غير مدفوع">غير مدفوع</option>
+                    <option value="مدفوع جزئياً">مدفوع جزئياً</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Add Product / Line Item -->
+            <div class="border-t border-[#9E9E9E]/10 pt-4 space-y-3">
+              <h3 class="font-bold text-xs text-[#1A237E] uppercase tracking-wider">إضافة منتجات للفاتورة</h3>
+
+              <!-- Search Catalog Product -->
+              <div class="bg-gray-50 p-3 rounded-xl border border-gray-200 space-y-2">
+                <label class="block text-xs font-bold text-[#75777E]">ابحث عن منتج من المتجر</label>
+                
+                <div class="relative">
+                  <div class="relative flex items-center">
+                    <input type="text" id="input-product-search" placeholder="اكتب اسم المنتج للبحث..." class="w-full px-3 py-2 pl-9 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#0056B3] bg-white" autocomplete="off" />
+                    <span class="material-symbols-outlined absolute left-2.5 text-gray-400 text-lg pointer-events-none">search</span>
+                  </div>
+
+                  <!-- Dropdown Search Results -->
+                  <div id="search-results-list" class="hidden absolute right-0 left-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-xl max-h-56 overflow-y-auto z-50 divide-y divide-gray-100">
+                  </div>
+                </div>
+
+                <!-- Selected Product Label Indicator -->
+                <div id="selected-product-badge" class="hidden bg-[#0056B3]/10 border border-[#0056B3]/30 p-2 rounded-lg text-xs font-bold text-[#0056B3] flex justify-between items-center">
+                  <span id="selected-product-text">المنتج المحدد</span>
+                  <button id="btn-clear-selected-product" class="text-red-500 hover:text-red-700">
+                    <span class="material-symbols-outlined text-base">close</span>
+                  </button>
+                </div>
+
+                <div id="variant-selector-container" class="hidden">
+                  <label class="block text-xs font-bold text-[#75777E] mt-2 mb-1">اختر الشكل / النوع</label>
+                  <select id="select-catalog-variant" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm bg-white focus:ring-2 focus:ring-[#0056B3]">
+                  </select>
+                </div>
+
+                <button id="btn-add-catalog-item" class="w-full mt-2 py-2 bg-[#0056B3] text-white rounded-xl font-bold text-xs hover:bg-[#004085] transition-colors flex items-center justify-center gap-1 shadow-sm">
+                  <span class="material-symbols-outlined text-base">add</span>
+                  <span>إضافة المنتج المحدد</span>
+                </button>
+              </div>
+
+              <!-- Custom Line Item -->
+              <div class="bg-gray-50 p-3 rounded-xl border border-gray-200 space-y-2">
+                <label class="block text-xs font-bold text-[#75777E]">أو إضافة بند يدوي مخصص</label>
+                <input type="text" id="input-custom-title" placeholder="اسم المنتج أو الخدمة" class="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-xs" />
+                <div class="grid grid-cols-2 gap-2">
+                  <input type="number" id="input-custom-price" placeholder="السعر (ج.م)" min="0" step="0.5" class="px-3 py-1.5 border border-gray-300 rounded-lg text-xs" />
+                  <input type="number" id="input-custom-qty" placeholder="الكمية" value="1" min="1" class="px-3 py-1.5 border border-gray-300 rounded-lg text-xs" />
+                </div>
+                <button id="btn-add-custom-item" class="w-full py-1.5 bg-gray-200 hover:bg-gray-300 text-[#1A237E] rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-1">
+                  <span class="material-symbols-outlined text-base">add_circle_outline</span>
+                  <span>إضافة بند يدوي</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Adjustments & Notes -->
+            <div class="border-t border-[#9E9E9E]/10 pt-4 space-y-3 text-sm">
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-bold text-[#75777E] mb-1">مصاريف الشحن (ج.م)</label>
+                  <input type="number" id="input-shipping" value="0" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm" />
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-[#75777E] mb-1">الخصم (%)</label>
+                  <input type="number" id="input-discount" value="0" min="0" max="100" placeholder="مثلاً 10" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm" />
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-[#75777E] mb-1">ملاحظات الفاتورة</label>
+                <textarea id="input-notes" rows="2" placeholder="أية ملاحظات أو شروط الضمان..." class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Printable Invoice Preview Area -->
+          <div class="lg:col-span-7">
+            <div class="printable-invoice-container bg-white border border-[#9E9E9E]/20 rounded-2xl p-6 md:p-8 shadow-sm">
+              
+              <!-- Invoice Printable Header -->
+              <div class="flex justify-between items-start border-b-2 border-[#1A237E]/20 pb-6 mb-6">
+                <div>
+                  <h1 class="text-2xl md:text-3xl font-black text-[#0056B3] tracking-wide">بيت العز</h1>
+                  <p class="text-xs text-[#75777E] mt-0.5">تاريخ الإصدار: <span id="view-inv-date" class="font-bold text-gray-800">--</span></p>
+                </div>
+                <div class="text-left">
+                  <div class="inline-block px-3 py-1 bg-[#0056B3]/10 text-[#0056B3] font-bold text-xs rounded-lg mb-2">فاتورة مبيعات</div>
+                  <div class="text-sm md:text-base font-black text-[#1A237E] font-mono" id="view-inv-number">INV-0000</div>
+                </div>
+              </div>
+
+              <!-- Customer & Payment Details Card -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-xl mb-6 border border-gray-200/60 text-xs md:text-sm">
+                <div>
+                  <span class="text-[#75777E] block text-xs font-bold mb-1">بيانات العميل:</span>
+                  <div class="font-bold text-[#1A237E] text-base" id="view-customer-name">عميل نقدي</div>
+                  <div class="text-gray-600 mt-1" id="view-customer-address">العنوان: غير محدد</div>
+                </div>
+                <div class="md:text-left">
+                  <span class="text-[#75777E] block text-xs font-bold mb-1">تفاصيل الدفع:</span>
+                  <div>طريقة الدفع: <span id="view-payment-method" class="font-bold">كاش عند الاستلام</span></div>
+                  <div class="mt-1">الحالة: <span id="view-payment-status" class="inline-block px-2.5 py-0.5 bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold rounded-lg text-xs">مدفوع بالكامل</span></div>
+                </div>
+              </div>
+
+              <!-- Products Table Container -->
+              <div class="overflow-hidden rounded-xl border border-gray-200 mb-6">
+                <table class="w-full text-right text-xs md:text-sm border-collapse">
+                  <thead>
+                    <tr class="bg-[#1A237E] text-white">
+                      <th class="py-3 px-3 font-bold text-center w-10">#</th>
+                      <th class="py-3 px-4 font-bold text-right">المنتج / البيان</th>
+                      <th class="py-3 px-3 font-bold text-center w-24">الكمية</th>
+                      <th class="py-3 px-3 font-bold text-center w-28">السعر</th>
+                      <th class="py-3 px-4 font-bold text-left w-32">الإجمالي</th>
+                      <th class="py-3 px-2 no-print text-center w-12"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="view-items-body" class="divide-y divide-gray-200 bg-white">
+                    <!-- Dynamic items render here -->
+                  </tbody>
+                </table>
+                <div id="view-empty-msg" class="py-8 text-center text-[#75777E] text-sm bg-white">
+                  لم يتم إضافة أي منتجات إلى الفاتورة بعد.
+                </div>
+              </div>
+
+              <!-- Summary Breakdown & Notes -->
+              <div class="space-y-4 border-t border-gray-200 pt-4">
+                <!-- Totals Breakdown Table -->
+                <div class="flex justify-start">
+                  <div class="w-full sm:w-80 space-y-2 text-xs md:text-sm">
+                    <div class="flex justify-between py-1 border-b border-gray-100 text-gray-600">
+                      <span>مجموع المنتجات:</span>
+                      <span id="view-subtotal" class="font-bold">0.00 ج.م</span>
+                    </div>
+                    <div class="flex justify-between py-1 border-b border-gray-100 text-gray-600">
+                      <span>رسوم التوصيل:</span>
+                      <span id="view-shipping" class="font-bold">0.00 ج.م</span>
+                    </div>
+                    <div class="flex justify-between py-1 border-b border-gray-100 text-red-600">
+                      <span>الخصم (<span id="view-discount-percent">0</span>%):</span>
+                      <span id="view-discount" class="font-bold">- 0.00 ج.م</span>
+                    </div>
+                    <div class="flex justify-between py-2 bg-[#0056B3]/10 px-3 rounded-xl font-extrabold text-[#0056B3] text-base">
+                      <span>الإجمالي النهائي:</span>
+                      <span id="view-grand-total">0.00 ج.م</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Notes Section -->
+                <div class="text-xs text-[#75777E] pt-2">
+                  <div class="font-bold text-[#1A237E] mb-1">ملاحظات الفاتورة:</div>
+                  <p id="view-notes" class="bg-gray-50 p-2.5 rounded-lg border border-gray-200 text-gray-700 min-h-[40px]">لا توجد ملاحظات إضافية.</p>
+                </div>
+              </div>
+
+              <!-- Print Footer -->
+              <div class="mt-8 pt-4 border-t border-dashed border-gray-300 text-center text-xs text-[#75777E]">
+                <p class="font-bold text-[#1A237E]">شكراً لتسوقكم من بيت العز!</p>
+                <p class="mt-0.5">لأي استفسار أو تواصل نسعد بخدمتكم دائماً.</p>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
       </div>
 
-      <!-- Main Layout: Controls & Live Preview -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <!-- TAB 2: INVOICES HISTORY LOG VIEW (No Print) -->
+      <div id="view-tab-history" class="hidden space-y-6 no-print">
         
-        <!-- Form Controls Column (No Print) -->
-        <div class="lg:col-span-5 bg-white border border-[#9E9E9E]/20 rounded-2xl p-5 shadow-sm space-y-6 no-print">
-          <h2 class="font-bold text-base text-[#1A237E] border-b border-[#9E9E9E]/10 pb-3 flex items-center gap-2">
-            <span class="material-symbols-outlined text-[#0056B3]">edit_note</span>
-            <span>بيانات الفاتورة والعميل</span>
-          </h2>
-
-          <!-- Invoice Details -->
-          <div class="space-y-3 text-sm">
-            <div>
-              <label class="block text-xs font-bold text-[#75777E] mb-1">رقم الفاتورة</label>
-              <div class="flex gap-2">
-                <input type="text" id="input-inv-number" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0056B3] font-mono text-sm" readonly />
-                <button id="btn-regen-inv" title="توليد رقم جديد" class="p-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-[#0056B3]">
-                  <span class="material-symbols-outlined text-lg">refresh</span>
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label class="block text-xs font-bold text-[#75777E] mb-1">تاريخ الفاتورة</label>
-              <input type="date" id="input-inv-date" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0056B3] text-sm" />
-            </div>
-
-            <div>
-              <label class="block text-xs font-bold text-[#75777E] mb-1">اسم العميل</label>
-              <input type="text" id="input-customer-name" placeholder="أدخل اسم العميل" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0056B3] text-sm" />
-            </div>
-
-            <div>
-              <label class="block text-xs font-bold text-[#75777E] mb-1">العنوان / تفاصيل التوصيل</label>
-              <input type="text" id="input-customer-address" placeholder="العنوان أو المدينة" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0056B3] text-sm" />
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block text-xs font-bold text-[#75777E] mb-1">طريقة الدفع</label>
-                <select id="select-payment-method" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0056B3] text-sm">
-                  <option value="كاش عند الاستلام">كاش عند الاستلام</option>
-                  <option value="فودافون كاش">فودافون كاش</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-xs font-bold text-[#75777E] mb-1">حالة السداد</label>
-                <select id="select-payment-status" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0056B3] text-sm">
-                  <option value="مدفوع بالكامل">مدفوع بالكامل</option>
-                  <option value="غير مدفوع">غير مدفوع</option>
-                  <option value="مدفوع جزئياً">مدفوع جزئياً</option>
-                </select>
-              </div>
-            </div>
+        <!-- Filters & Search Bar -->
+        <div class="bg-white border border-[#9E9E9E]/20 rounded-2xl p-4 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+          <div class="relative w-full md:w-80">
+            <input type="text" id="input-history-search" placeholder="ابحث برقم الفاتورة أو اسم العميل..." class="w-full px-3 py-2 pl-9 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#0056B3]" />
+            <span class="material-symbols-outlined absolute left-2.5 top-2.5 text-gray-400 text-lg">search</span>
           </div>
 
-          <!-- Add Product / Line Item -->
-          <div class="border-t border-[#9E9E9E]/10 pt-4 space-y-3">
-            <h3 class="font-bold text-xs text-[#1A237E] uppercase tracking-wider">إضافة منتجات للفاتورة</h3>
+          <div class="flex items-center gap-3 w-full md:w-auto">
+            <select id="select-history-filter-status" class="px-3 py-2 border border-gray-300 rounded-xl text-sm font-bold text-[#1A237E]">
+              <option value="">جميع حالات السداد</option>
+              <option value="مدفوع بالكامل">مدفوع بالكامل</option>
+              <option value="غير مدفوع">غير مدفوع</option>
+              <option value="مدفوع جزئياً">مدفوع جزئياً</option>
+            </select>
 
-            <!-- Search Catalog Product -->
-            <div class="bg-gray-50 p-3 rounded-xl border border-gray-200 space-y-2">
-              <label class="block text-xs font-bold text-[#75777E]">ابحث عن منتج من المتجر</label>
-              
-              <div class="relative">
-                <div class="relative flex items-center">
-                  <input type="text" id="input-product-search" placeholder="اكتب اسم المنتج للبحث..." class="w-full px-3 py-2 pl-9 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#0056B3] bg-white" autocomplete="off" />
-                  <span class="material-symbols-outlined absolute left-2.5 text-gray-400 text-lg pointer-events-none">search</span>
-                </div>
-
-                <!-- Dropdown Search Results -->
-                <div id="search-results-list" class="hidden absolute right-0 left-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-xl max-h-56 overflow-y-auto z-50 divide-y divide-gray-100">
-                </div>
-              </div>
-
-              <!-- Selected Product Label Indicator -->
-              <div id="selected-product-badge" class="hidden bg-[#0056B3]/10 border border-[#0056B3]/30 p-2 rounded-lg text-xs font-bold text-[#0056B3] flex justify-between items-center">
-                <span id="selected-product-text">المنتج المحدد</span>
-                <button id="btn-clear-selected-product" class="text-red-500 hover:text-red-700">
-                  <span class="material-symbols-outlined text-base">close</span>
-                </button>
-              </div>
-
-              <div id="variant-selector-container" class="hidden">
-                <label class="block text-xs font-bold text-[#75777E] mt-2 mb-1">اختر الشكل / النوع</label>
-                <select id="select-catalog-variant" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm bg-white focus:ring-2 focus:ring-[#0056B3]">
-                </select>
-              </div>
-
-              <button id="btn-add-catalog-item" class="w-full mt-2 py-2 bg-[#0056B3] text-white rounded-xl font-bold text-xs hover:bg-[#004085] transition-colors flex items-center justify-center gap-1 shadow-sm">
-                <span class="material-symbols-outlined text-base">add</span>
-                <span>إضافة المنتج المحدد</span>
-              </button>
-            </div>
-
-            <!-- Custom Line Item -->
-            <div class="bg-gray-50 p-3 rounded-xl border border-gray-200 space-y-2">
-              <label class="block text-xs font-bold text-[#75777E]">أو إضافة بند يدوي مخصص</label>
-              <input type="text" id="input-custom-title" placeholder="اسم المنتج أو الخدمة" class="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-xs" />
-              <div class="grid grid-cols-2 gap-2">
-                <input type="number" id="input-custom-price" placeholder="السعر (ج.م)" min="0" step="0.5" class="px-3 py-1.5 border border-gray-300 rounded-lg text-xs" />
-                <input type="number" id="input-custom-qty" placeholder="الكمية" value="1" min="1" class="px-3 py-1.5 border border-gray-300 rounded-lg text-xs" />
-              </div>
-              <button id="btn-add-custom-item" class="w-full py-1.5 bg-gray-200 hover:bg-gray-300 text-[#1A237E] rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-1">
-                <span class="material-symbols-outlined text-base">add_circle_outline</span>
-                <span>إضافة بند يدوي</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Adjustments & Notes -->
-          <div class="border-t border-[#9E9E9E]/10 pt-4 space-y-3 text-sm">
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block text-xs font-bold text-[#75777E] mb-1">مصاريف الشحن (ج.م)</label>
-                <input type="number" id="input-shipping" value="0" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm" />
-              </div>
-              <div>
-                <label class="block text-xs font-bold text-[#75777E] mb-1">الخصم (%)</label>
-                <input type="number" id="input-discount" value="0" min="0" max="100" placeholder="مثلاً 10" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm" />
-              </div>
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-[#75777E] mb-1">ملاحظات الفاتورة</label>
-              <textarea id="input-notes" rows="2" placeholder="أية ملاحظات أو شروط الضمان..." class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm"></textarea>
-            </div>
+            <button id="btn-refresh-history" class="p-2 bg-gray-100 hover:bg-gray-200 text-[#0056B3] rounded-xl flex items-center gap-1 font-bold text-xs transition-colors">
+              <span class="material-symbols-outlined text-base">sync</span>
+              <span>تحديث</span>
+            </button>
           </div>
         </div>
 
-        <!-- Live Printable Invoice Preview Area -->
-        <div class="lg:col-span-7">
-          <div class="printable-invoice-container bg-white border border-[#9E9E9E]/20 rounded-2xl p-6 md:p-8 shadow-sm">
-            
-            <!-- Invoice Printable Header -->
-            <div class="flex justify-between items-start border-b-2 border-[#1A237E]/20 pb-6 mb-6">
-              <div>
-                <h1 class="text-2xl md:text-3xl font-black text-[#0056B3] tracking-wide">بيت العز</h1>
-                <p class="text-xs text-[#75777E] mt-0.5">تاريخ الإصدار: <span id="view-inv-date" class="font-bold text-gray-800">--</span></p>
-              </div>
-              <div class="text-left">
-                <div class="inline-block px-3 py-1 bg-[#0056B3]/10 text-[#0056B3] font-bold text-xs rounded-lg mb-2">فاتورة مبيعات</div>
-                <div class="text-sm md:text-base font-black text-[#1A237E] font-mono" id="view-inv-number">INV-0000</div>
-              </div>
-            </div>
-
-            <!-- Customer & Payment Details Card -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-xl mb-6 border border-gray-200/60 text-xs md:text-sm">
-              <div>
-                <span class="text-[#75777E] block text-xs font-bold mb-1">بيانات العميل:</span>
-                <div class="font-bold text-[#1A237E] text-base" id="view-customer-name">عميل نقدي</div>
-                <div class="text-gray-600 mt-1" id="view-customer-address">العنوان: غير محدد</div>
-              </div>
-              <div class="md:text-left">
-                <span class="text-[#75777E] block text-xs font-bold mb-1">تفاصيل الدفع:</span>
-                <div>طريقة الدفع: <span id="view-payment-method" class="font-bold">كاش عند الاستلام</span></div>
-                <div class="mt-1">الحالة: <span id="view-payment-status" class="inline-block px-2.5 py-0.5 bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold rounded-lg text-xs">مدفوع بالكامل</span></div>
-              </div>
-            </div>
-
-            <!-- Products Table Container -->
-            <div class="overflow-hidden rounded-xl border border-gray-200 mb-6">
-              <table class="w-full text-right text-xs md:text-sm border-collapse">
-                <thead>
-                  <tr class="bg-[#1A237E] text-white">
-                    <th class="py-3 px-3 font-bold text-center w-10">#</th>
-                    <th class="py-3 px-4 font-bold text-right">المنتج / البيان</th>
-                    <th class="py-3 px-3 font-bold text-center w-24">الكمية</th>
-                    <th class="py-3 px-3 font-bold text-center w-28">السعر</th>
-                    <th class="py-3 px-4 font-bold text-left w-32">الإجمالي</th>
-                    <th class="py-3 px-2 no-print text-center w-12"></th>
-                  </tr>
-                </thead>
-                <tbody id="view-items-body" class="divide-y divide-gray-200 bg-white">
-                  <!-- Dynamic items render here -->
-                </tbody>
-              </table>
-              <div id="view-empty-msg" class="py-8 text-center text-[#75777E] text-sm bg-white">
-                لم يتم إضافة أي منتجات إلى الفاتورة بعد.
-              </div>
-            </div>
-
-            <!-- Summary Breakdown & Notes -->
-            <div class="space-y-4 border-t border-gray-200 pt-4">
-              <!-- Totals Breakdown Table -->
-              <div class="flex justify-start">
-                <div class="w-full sm:w-80 space-y-2 text-xs md:text-sm">
-                  <div class="flex justify-between py-1 border-b border-gray-100 text-gray-600">
-                    <span>مجموع المنتجات:</span>
-                    <span id="view-subtotal" class="font-bold">0.00 ج.م</span>
-                  </div>
-                  <div class="flex justify-between py-1 border-b border-gray-100 text-gray-600">
-                    <span>رسوم التوصيل:</span>
-                    <span id="view-shipping" class="font-bold">0.00 ج.م</span>
-                  </div>
-                  <div class="flex justify-between py-1 border-b border-gray-100 text-red-600">
-                    <span>الخصم (<span id="view-discount-percent">0</span>%):</span>
-                    <span id="view-discount" class="font-bold">- 0.00 ج.م</span>
-                  </div>
-                  <div class="flex justify-between py-2 bg-[#0056B3]/10 px-3 rounded-xl font-extrabold text-[#0056B3] text-base">
-                    <span>الإجمالي النهائي:</span>
-                    <span id="view-grand-total">0.00 ج.م</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Notes Section -->
-              <div class="text-xs text-[#75777E] pt-2">
-                <div class="font-bold text-[#1A237E] mb-1">ملاحظات الفاتورة:</div>
-                <p id="view-notes" class="bg-gray-50 p-2.5 rounded-lg border border-gray-200 text-gray-700 min-h-[40px]">لا توجد ملاحظات إضافية.</p>
-              </div>
-            </div>
-
-            <!-- Print Footer -->
-            <div class="mt-8 pt-4 border-t border-dashed border-gray-300 text-center text-xs text-[#75777E]">
-              <p class="font-bold text-[#1A237E]">شكراً لتسوقكم من بيت العز!</p>
-              <p class="mt-0.5">لأي استفسار أو تواصل نسعد بخدمتكم دائماً.</p>
-            </div>
-
+        <!-- Invoices Log Table -->
+        <div class="bg-white border border-[#9E9E9E]/20 rounded-2xl shadow-sm overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-right text-xs md:text-sm border-collapse">
+              <thead>
+                <tr class="bg-[#1A237E] text-white">
+                  <th class="py-3 px-4 font-bold">#</th>
+                  <th class="py-3 px-4 font-bold">رقم الفاتورة</th>
+                  <th class="py-3 px-4 font-bold">التاريخ</th>
+                  <th class="py-3 px-4 font-bold">العميل والعنوان</th>
+                  <th class="py-3 px-4 font-bold">حالة السداد</th>
+                  <th class="py-3 px-4 font-bold text-center">البنود</th>
+                  <th class="py-3 px-4 font-bold text-left">الإجمالي النهائي</th>
+                  <th class="py-3 px-4 font-bold text-center">العمليات</th>
+                </tr>
+              </thead>
+              <tbody id="history-items-body" class="divide-y divide-gray-200">
+                <!-- Dynamic Log Rows -->
+              </tbody>
+            </table>
+          </div>
+          <div id="history-empty-msg" class="py-12 text-center text-[#75777E] text-sm">
+            لا توجد فواتير مسجلة حالياً في السجل.
           </div>
         </div>
 
@@ -332,10 +408,36 @@
     import { generateInvoiceNumber, formatCurrency, calculateItemTotal, calculateInvoiceTotals } from '../../js/admin/invoice-helper.js';
 
     if (await requireAdmin()) {
-      // In-memory invoice line items state
+      // In-memory invoice state
       let invoiceItems = [];
       let catalogProducts = [];
       let selectedProduct = null;
+      let invoicesHistory = [];
+
+      // Tabs Navigation
+      const tabCreate = document.getElementById('tab-create');
+      const tabHistory = document.getElementById('tab-history');
+      const viewTabCreate = document.getElementById('view-tab-create');
+      const viewTabHistory = document.getElementById('view-tab-history');
+      const badgeCount = document.getElementById('badge-invoices-count');
+
+      function switchTab(tab) {
+        if (tab === 'create') {
+          viewTabCreate.classList.remove('hidden');
+          viewTabHistory.classList.add('hidden');
+          tabCreate.className = 'py-3 px-5 border-b-2 border-[#0056B3] text-[#0056B3] font-extrabold text-sm flex items-center gap-2 transition-all';
+          tabHistory.className = 'py-3 px-5 border-b-2 border-transparent text-[#75777E] hover:text-[#1A237E] font-bold text-sm flex items-center gap-2 transition-all';
+        } else {
+          viewTabCreate.classList.add('hidden');
+          viewTabHistory.classList.remove('hidden');
+          tabHistory.className = 'py-3 px-5 border-b-2 border-[#0056B3] text-[#0056B3] font-extrabold text-sm flex items-center gap-2 transition-all';
+          tabCreate.className = 'py-3 px-5 border-b-2 border-transparent text-[#75777E] hover:text-[#1A237E] font-bold text-sm flex items-center gap-2 transition-all';
+          loadInvoicesHistory();
+        }
+      }
+
+      tabCreate.onclick = () => switchTab('create');
+      tabHistory.onclick = () => switchTab('history');
 
       // Element References
       const elInvNumber = document.getElementById('input-inv-number');
@@ -379,6 +481,13 @@
       const viewDiscount = document.getElementById('view-discount');
       const viewGrandTotal = document.getElementById('view-grand-total');
       const viewNotes = document.getElementById('view-notes');
+
+      // History Elements
+      const elHistorySearch = document.getElementById('input-history-search');
+      const elHistoryStatusFilter = document.getElementById('select-history-filter-status');
+      const btnRefreshHistory = document.getElementById('btn-refresh-history');
+      const historyItemsBody = document.getElementById('history-items-body');
+      const historyEmptyMsg = document.getElementById('history-empty-msg');
 
       // Initialize Defaults
       function initInvoice() {
@@ -475,12 +584,9 @@
       }
 
       btnClearSelected.onclick = clearSelectedProduct;
-
-      // Input Search Events
       elSearchInput.onfocus = () => renderSearchResults(elSearchInput.value);
       elSearchInput.oninput = (e) => renderSearchResults(e.target.value);
 
-      // Hide Search Results when clicking outside
       document.addEventListener('click', (e) => {
         if (!elSearchInput.contains(e.target) && !elSearchResultsList.contains(e.target)) {
           elSearchResultsList.classList.add('hidden');
@@ -599,7 +705,7 @@
         viewDiscount.textContent = `- ${formatCurrency(totals.discountAmount)}`;
         viewGrandTotal.textContent = formatCurrency(totals.grandTotal);
 
-        // Attach event handlers for dynamic table inputs & remove buttons
+        // Dynamic Table Handlers
         document.querySelectorAll('.item-qty-input').forEach(inp => {
           inp.onchange = (e) => {
             const itemId = e.target.getAttribute('data-id');
@@ -613,7 +719,7 @@
         });
 
         document.querySelectorAll('.btn-remove-item').forEach(btn => {
-          btn.onclick = (e) => {
+          btn.onclick = () => {
             const itemId = btn.getAttribute('data-id');
             invoiceItems = invoiceItems.filter(i => i.id !== itemId);
             updatePreview();
@@ -621,11 +727,220 @@
         });
       }
 
+      // Save Invoice to DB & LocalStorage
+      async function saveInvoice(silent = false) {
+        if (invoiceItems.length === 0) {
+          if (!silent) alert('يرجى إضافة منتجات إلى الفاتورة أولاً قبل الحفظ.');
+          return false;
+        }
+
+        const totals = calculateInvoiceTotals(invoiceItems, elShipping.value, elDiscount.value);
+        const payload = {
+          invoice_number: elInvNumber.value,
+          issue_date: elInvDate.value,
+          customer_name: elCustName.value.trim() || 'عميل نقدي',
+          customer_address: elCustAddress.value.trim() || 'غير محدد',
+          payment_method: elPayMethod.value,
+          payment_status: elPayStatus.value,
+          items: invoiceItems,
+          subtotal: totals.subtotal,
+          shipping_fee: totals.shipping,
+          discount_percent: totals.discountPercent,
+          discount_amount: totals.discountAmount,
+          grand_total: totals.grandTotal,
+          notes: elNotes.value.trim() || ''
+        };
+
+        let saved = false;
+
+        // Try Supabase first
+        try {
+          const { error } = await supabase.from('invoices').insert(payload);
+          if (error) console.warn('Supabase insert error, fallback to local:', error);
+          else saved = true;
+        } catch (err) {
+          console.warn('Supabase offline/error:', err);
+        }
+
+        // LocalStorage fallback
+        try {
+          const localList = JSON.parse(localStorage.getItem('bayt_al_ezz_invoices') || '[]');
+          localList.unshift({ ...payload, created_at: new Date().toISOString() });
+          localStorage.setItem('bayt_al_ezz_invoices', JSON.stringify(localList));
+          saved = true;
+        } catch (e) {
+          console.error('LocalStorage write error:', e);
+        }
+
+        if (saved && !silent) {
+          alert('✅ تم حفظ الفاتورة بنجاح في سجل الفواتير!');
+          updateInvoicesCount();
+        }
+        return saved;
+      }
+
+      // Load Invoices History
+      async function loadInvoicesHistory() {
+        historyEmptyMsg.textContent = 'جاري تحميل سجل الفواتير...';
+        historyItemsBody.innerHTML = '';
+        invoicesHistory = [];
+
+        try {
+          const { data, error } = await supabase
+            .from('invoices')
+            .select('*')
+            .is('deleted_at', null)
+            .order('created_at', { ascending: false });
+          
+          if (!error && data) {
+            invoicesHistory = data;
+          }
+        } catch (err) {
+          console.warn('Supabase fetch invoices error:', err);
+        }
+
+        // Fallback or merge with localStorage
+        try {
+          const localData = JSON.parse(localStorage.getItem('bayt_al_ezz_invoices') || '[]');
+          const knownNumbers = new Set(invoicesHistory.map(i => i.invoice_number));
+          localData.forEach(item => {
+            if (!knownNumbers.has(item.invoice_number)) {
+              invoicesHistory.push(item);
+            }
+          });
+        } catch (e) {}
+
+        badgeCount.textContent = invoicesHistory.length;
+        renderHistoryRows();
+      }
+
+      // Render History Rows
+      function renderHistoryRows() {
+        const query = (elHistorySearch.value || '').trim().toLowerCase();
+        const statusFilter = elHistoryStatusFilter.value;
+
+        const filtered = invoicesHistory.filter(inv => {
+          const matchesQuery = !query || 
+            (inv.invoice_number && inv.invoice_number.toLowerCase().includes(query)) ||
+            (inv.customer_name && inv.customer_name.toLowerCase().includes(query));
+          
+          const matchesStatus = !statusFilter || inv.payment_status === statusFilter;
+          return matchesQuery && matchesStatus;
+        });
+
+        historyItemsBody.innerHTML = '';
+        if (filtered.length === 0) {
+          historyEmptyMsg.classList.remove('hidden');
+          historyEmptyMsg.textContent = 'لا توجد فواتير مسجلة مطابقة للبحث.';
+        } else {
+          historyEmptyMsg.classList.add('hidden');
+          filtered.forEach((inv, idx) => {
+            let statusBadge = '';
+            if (inv.payment_status === 'مدفوع بالكامل') {
+              statusBadge = '<span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold rounded text-xs">مدفوع بالكامل</span>';
+            } else if (inv.payment_status === 'غير مدفوع') {
+              statusBadge = '<span class="px-2 py-0.5 bg-red-100 text-red-800 border border-red-300 font-bold rounded text-xs">غير مدفوع</span>';
+            } else {
+              statusBadge = '<span class="px-2 py-0.5 bg-orange-100 text-orange-800 border border-orange-300 font-bold rounded text-xs">مدفوع جزئياً</span>';
+            }
+
+            const tr = document.createElement('tr');
+            tr.className = 'hover:bg-gray-50 transition-colors border-b border-gray-100';
+            tr.innerHTML = `
+              <td class="py-3 px-4 font-bold text-gray-500">${idx + 1}</td>
+              <td class="py-3 px-4 font-mono font-bold text-[#0056B3]">${inv.invoice_number}</td>
+              <td class="py-3 px-4 text-gray-600">${inv.issue_date || '--'}</td>
+              <td class="py-3 px-4 font-bold text-[#1A237E]">
+                <div>${inv.customer_name || 'عميل نقدي'}</div>
+                <div class="text-xs text-gray-500 font-normal">${inv.customer_address || ''}</div>
+              </td>
+              <td class="py-3 px-4">${statusBadge}</td>
+              <td class="py-3 px-4 text-center font-bold">${Array.isArray(inv.items) ? inv.items.length : 0}</td>
+              <td class="py-3 px-4 text-left font-black text-[#0056B3]">${formatCurrency(inv.grand_total)}</td>
+              <td class="py-3 px-4 text-center space-x-2 space-x-reverse">
+                <button data-num="${inv.invoice_number}" class="btn-view-inv px-2.5 py-1 bg-[#0056B3]/10 hover:bg-[#0056B3] text-[#0056B3] hover:text-white rounded-lg font-bold text-xs transition-all">
+                  معاينة وطباعة
+                </button>
+                <button data-num="${inv.invoice_number}" data-id="${inv.id || ''}" class="btn-delete-inv p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all" title="حذف">
+                  <span class="material-symbols-outlined text-base">delete</span>
+                </button>
+              </td>
+            `;
+            historyItemsBody.appendChild(tr);
+          });
+        }
+
+        // Attach History Action Handlers
+        document.querySelectorAll('.btn-view-inv').forEach(btn => {
+          btn.onclick = () => {
+            const num = btn.getAttribute('data-num');
+            const target = invoicesHistory.find(i => i.invoice_number === num);
+            if (target) {
+              loadInvoiceIntoCreator(target);
+              switchTab('create');
+            }
+          };
+        });
+
+        document.querySelectorAll('.btn-delete-inv').forEach(btn => {
+          btn.onclick = async () => {
+            const num = btn.getAttribute('data-num');
+            const dbId = btn.getAttribute('data-id');
+            if (confirm(`هل أنت تأكد من حذف الفاتورة رقم ${num}؟`)) {
+              if (dbId) {
+                try {
+                  await supabase.from('invoices').update({ deleted_at: new Date().toISOString() }).eq('id', dbId);
+                } catch (e) {}
+              }
+              // Remove from localStorage
+              try {
+                let localData = JSON.parse(localStorage.getItem('bayt_al_ezz_invoices') || '[]');
+                localData = localData.filter(i => i.invoice_number !== num);
+                localStorage.setItem('bayt_al_ezz_invoices', JSON.stringify(localData));
+              } catch (e) {}
+
+              loadInvoicesHistory();
+            }
+          };
+        });
+      }
+
+      // Load Existing Invoice into Creator Form
+      function loadInvoiceIntoCreator(inv) {
+        elInvNumber.value = inv.invoice_number;
+        elInvDate.value = inv.issue_date;
+        elCustName.value = inv.customer_name || '';
+        elCustAddress.value = inv.customer_address || '';
+        elPayMethod.value = inv.payment_method || 'كاش عند الاستلام';
+        elPayStatus.value = inv.payment_status || 'مدفوع بالكامل';
+        elShipping.value = inv.shipping_fee || 0;
+        elDiscount.value = inv.discount_percent || 0;
+        elNotes.value = inv.notes || '';
+        invoiceItems = Array.isArray(inv.items) ? [...inv.items] : [];
+        updatePreview();
+      }
+
+      // Update count badge
+      async function updateInvoicesCount() {
+        try {
+          const { count } = await supabase.from('invoices').select('*', { count: 'exact', head: true }).is('deleted_at', null);
+          if (count !== null) badgeCount.textContent = count;
+        } catch (e) {}
+      }
+
       // Event Listeners for Live Updates
       [elCustName, elCustAddress, elPayMethod, elPayStatus, elShipping, elDiscount, elNotes, elInvDate].forEach(el => {
         el.addEventListener('input', updatePreview);
         el.addEventListener('change', updatePreview);
       });
+
+      [elHistorySearch, elHistoryStatusFilter].forEach(el => {
+        el.addEventListener('input', renderHistoryRows);
+        el.addEventListener('change', renderHistoryRows);
+      });
+
+      btnRefreshHistory.onclick = loadInvoicesHistory;
+      document.getElementById('btn-save-invoice').onclick = () => saveInvoice(false);
 
       document.getElementById('btn-regen-inv').onclick = () => {
         elInvNumber.value = generateInvoiceNumber();
@@ -638,12 +953,13 @@
         }
       };
 
-      document.getElementById('btn-print').onclick = () => {
+      document.getElementById('btn-print').onclick = async () => {
         if (invoiceItems.length === 0) {
           if (!confirm('الفاتورة لا تحتوي على أي منتجات بعد، هل ترغب في طباعتها على أية حال؟')) {
             return;
           }
         }
+        await saveInvoice(true); // Save automatically before printing
         window.print();
       };
 
@@ -671,6 +987,7 @@
       // Initialize on load
       initInvoice();
       loadCatalogProducts();
+      updateInvoicesCount();
     }
   </script>
 </body>
