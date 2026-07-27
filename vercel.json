@@ -11,6 +11,8 @@
     { "source": "/admin/dashboard.html", "destination": "/src/pages/admin/dashboard.html" },
     { "source": "/admin/sections.html", "destination": "/src/pages/admin/sections.html" },
     { "source": "/admin/products.html", "destination": "/src/pages/admin/products.html" },
+    { "source": "/admin/invoices.html", "destination": "/src/pages/admin/invoices.html" },
+    { "source": "/admin/:path*", "destination": "/src/pages/admin/:path*" },
     { "source": "/css/:path*", "destination": "/src/css/:path*" },
     { "source": "/js/:path*", "destination": "/src/js/:path*" },
     { "source": "/public/:path*", "destination": "/public/:path*" },
