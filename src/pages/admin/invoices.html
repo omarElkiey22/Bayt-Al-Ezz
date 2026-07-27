@@ -237,7 +237,6 @@
             <div class="flex justify-between items-start border-b-2 border-[#1A237E]/20 pb-6 mb-6">
               <div>
                 <h1 class="text-2xl md:text-3xl font-black text-[#0056B3] tracking-wide">بيت العز</h1>
-                <p class="text-xs md:text-sm text-[#75777E] font-medium mt-1">تجهيز وأدوات المنزل الحديث</p>
                 <p class="text-xs text-[#75777E] mt-0.5">تاريخ الإصدار: <span id="view-inv-date" class="font-bold text-gray-800">--</span></p>
               </div>
               <div class="text-left">
@@ -282,30 +281,34 @@
               </div>
             </div>
 
-            <!-- Summary Breakdown -->
-            <div class="flex flex-col sm:flex-row justify-between items-start gap-6 border-t border-gray-200 pt-4">
-              <div class="w-full sm:w-1/2 text-xs text-[#75777E]">
-                <div class="font-bold text-[#1A237E] mb-1">ملاحظات الفاتورة:</div>
-                <p id="view-notes" class="bg-gray-50 p-2.5 rounded-lg border border-gray-200 text-gray-700 min-h-[50px]">لا توجد ملاحظات إضافية.</p>
+            <!-- Summary Breakdown & Notes -->
+            <div class="space-y-4 border-t border-gray-200 pt-4">
+              <!-- Totals Breakdown Table -->
+              <div class="flex justify-start">
+                <div class="w-full sm:w-80 space-y-2 text-xs md:text-sm">
+                  <div class="flex justify-between py-1 border-b border-gray-100 text-gray-600">
+                    <span>مجموع المنتجات:</span>
+                    <span id="view-subtotal" class="font-bold">0.00 ج.م</span>
+                  </div>
+                  <div class="flex justify-between py-1 border-b border-gray-100 text-gray-600">
+                    <span>رسوم التوصيل:</span>
+                    <span id="view-shipping" class="font-bold">0.00 ج.م</span>
+                  </div>
+                  <div class="flex justify-between py-1 border-b border-gray-100 text-red-600">
+                    <span>الخصم (<span id="view-discount-percent">0</span>%):</span>
+                    <span id="view-discount" class="font-bold">- 0.00 ج.م</span>
+                  </div>
+                  <div class="flex justify-between py-2 bg-[#0056B3]/10 px-3 rounded-xl font-extrabold text-[#0056B3] text-base">
+                    <span>الإجمالي النهائي:</span>
+                    <span id="view-grand-total">0.00 ج.م</span>
+                  </div>
+                </div>
               </div>
 
-              <div class="w-full sm:w-1/2 space-y-2 text-xs md:text-sm">
-                <div class="flex justify-between py-1 border-b border-gray-100 text-gray-600">
-                  <span>مجموع المنتجات:</span>
-                  <span id="view-subtotal" class="font-bold">0.00 ج.م</span>
-                </div>
-                <div class="flex justify-between py-1 border-b border-gray-100 text-gray-600">
-                  <span>رسوم التوصيل:</span>
-                  <span id="view-shipping" class="font-bold">0.00 ج.م</span>
-                </div>
-                <div class="flex justify-between py-1 border-b border-gray-100 text-red-600">
-                  <span>الخصم (<span id="view-discount-percent">0</span>%):</span>
-                  <span id="view-discount" class="font-bold">- 0.00 ج.م</span>
-                </div>
-                <div class="flex justify-between py-2 bg-[#0056B3]/10 px-3 rounded-xl font-extrabold text-[#0056B3] text-base">
-                  <span>الإجمالي النهائي:</span>
-                  <span id="view-grand-total">0.00 ج.م</span>
-                </div>
+              <!-- Notes Section -->
+              <div class="text-xs text-[#75777E] pt-2">
+                <div class="font-bold text-[#1A237E] mb-1">ملاحظات الفاتورة:</div>
+                <p id="view-notes" class="bg-gray-50 p-2.5 rounded-lg border border-gray-200 text-gray-700 min-h-[40px]">لا توجد ملاحظات إضافية.</p>
               </div>
             </div>
 

@@ -3,7 +3,7 @@
 @media print {
   @page {
     size: A4 portrait;
-    margin: 10mm;
+    margin: 0 !important; /* Removes browser default headers (Date, Title) and footers (URL, Page number) */
   }
 
   /* Hide all non-printable elements */
@@ -60,7 +60,7 @@
   .printable-invoice-container {
     box-shadow: none !important;
     border: none !important;
-    padding: 0 !important;
+    padding: 12mm 10mm !important;
     margin: 0 auto !important;
     width: 100% !important;
     max-width: 100% !important;
