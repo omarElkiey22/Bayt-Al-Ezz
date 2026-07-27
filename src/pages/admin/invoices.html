@@ -400,14 +400,14 @@
         <!-- Invoices Log Table -->
         <div class="bg-white border border-[#9E9E9E]/20 rounded-2xl shadow-sm overflow-hidden">
           <div class="overflow-x-auto">
-            <table class="w-full text-right text-xs md:text-sm border-collapse">
+            <table class="w-full text-right text-xs md:text-sm border-collapse whitespace-nowrap">
               <thead>
                 <tr class="bg-[#1A237E] text-white">
-                  <th class="py-3 px-4 font-bold">#</th>
+                  <th class="py-3 px-4 font-bold text-center w-10">#</th>
                   <th class="py-3 px-4 font-bold">رقم الفاتورة</th>
                   <th class="py-3 px-4 font-bold">التاريخ</th>
                   <th class="py-3 px-4 font-bold">العميل والعنوان</th>
-                  <th class="py-3 px-4 font-bold">حالة السداد</th>
+                  <th class="py-3 px-4 font-bold text-center">حالة السداد</th>
                   <th class="py-3 px-4 font-bold text-center">البنود</th>
                   <th class="py-3 px-4 font-bold text-left">الإجمالي النهائي</th>
                   <th class="py-3 px-4 font-bold text-center">العمليات</th>
@@ -518,11 +518,19 @@
       const historyItemsBody = document.getElementById('history-items-body');
       const historyEmptyMsg = document.getElementById('history-empty-msg');
 
+      function getTodayLocalDate() {
+        const d = new Date();
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      }
+
       // Initialize Defaults
       function initInvoice() {
         const now = new Date();
         elInvNumber.value = generateInvoiceNumber(now);
-        elInvDate.value = now.toISOString().split('T')[0];
+        elInvDate.value = getTodayLocalDate();
         elCustName.value = '';
         elCustAddress.value = '';
         elPayMethod.value = 'كاش عند الاستلام';
@@ -934,24 +942,24 @@
           filtered.forEach((inv, idx) => {
             let statusBadge = '';
             if (inv.payment_status === 'مدفوع بالكامل') {
-              statusBadge = '<span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold rounded text-xs">مدفوع بالكامل</span>';
+              statusBadge = '<span class="inline-block whitespace-nowrap px-2.5 py-1 bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold rounded-lg text-xs">مدفوع بالكامل</span>';
             } else if (inv.payment_status === 'غير مدفوع') {
-              statusBadge = '<span class="px-2 py-0.5 bg-red-100 text-red-800 border border-red-300 font-bold rounded text-xs">غير مدفوع</span>';
+              statusBadge = '<span class="inline-block whitespace-nowrap px-2.5 py-1 bg-red-100 text-red-800 border border-red-300 font-bold rounded-lg text-xs">غير مدفوع</span>';
             } else {
-              statusBadge = '<span class="px-2 py-0.5 bg-orange-100 text-orange-800 border border-orange-300 font-bold rounded text-xs">مدفوع جزئياً</span>';
+              statusBadge = '<span class="inline-block whitespace-nowrap px-2.5 py-1 bg-orange-100 text-orange-800 border border-orange-300 font-bold rounded-lg text-xs">مدفوع جزئياً</span>';
             }
 
             const tr = document.createElement('tr');
             tr.className = 'hover:bg-gray-50 transition-colors border-b border-gray-100';
             tr.innerHTML = `
-              <td class="py-3 px-4 font-bold text-gray-500">${idx + 1}</td>
+              <td class="py-3 px-4 font-bold text-gray-500 text-center">${idx + 1}</td>
               <td class="py-3 px-4 font-mono font-bold text-[#0056B3]">${inv.invoice_number}</td>
               <td class="py-3 px-4 text-gray-600">${inv.issue_date || '--'}</td>
               <td class="py-3 px-4 font-bold text-[#1A237E]">
                 <div>${inv.customer_name || 'عميل نقدي'}</div>
                 <div class="text-xs text-gray-500 font-normal">${inv.customer_address || ''}</div>
               </td>
-              <td class="py-3 px-4">${statusBadge}</td>
+              <td class="py-3 px-4 text-center whitespace-nowrap">${statusBadge}</td>
               <td class="py-3 px-4 text-center font-bold">${Array.isArray(inv.items) ? inv.items.length : 0}</td>
               <td class="py-3 px-4 text-left font-black text-[#0056B3]">${formatCurrency(inv.grand_total)}</td>
               <td class="py-3 px-4 text-center space-x-2 space-x-reverse">
