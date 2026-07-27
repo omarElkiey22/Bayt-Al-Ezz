@@ -142,9 +142,7 @@
                 <label class="block text-xs font-bold text-[#75777E] mb-1">طريقة الدفع</label>
                 <select id="select-payment-method" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0056B3] text-sm">
                   <option value="كاش عند الاستلام">كاش عند الاستلام</option>
-                  <option value="تحويل بنكي">تحويل بنكي</option>
                   <option value="فودافون كاش">فودافون كاش</option>
-                  <option value="بطاقة ائتمان">بطاقة ائتمان</option>
                 </select>
               </div>
               <div>
@@ -162,18 +160,36 @@
           <div class="border-t border-[#9E9E9E]/10 pt-4 space-y-3">
             <h3 class="font-bold text-xs text-[#1A237E] uppercase tracking-wider">إضافة منتجات للفاتورة</h3>
 
-            <!-- Catalog Selector -->
+            <!-- Search Catalog Product -->
             <div class="bg-gray-50 p-3 rounded-xl border border-gray-200 space-y-2">
-              <label class="block text-xs font-bold text-[#75777E]">اختر من منتجات المتجر</label>
-              <select id="select-catalog-product" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm">
-                <option value="">جاري تحميل المنتجات...</option>
-              </select>
+              <label class="block text-xs font-bold text-[#75777E]">ابحث عن منتج من المتجر</label>
+              
+              <div class="relative">
+                <div class="relative flex items-center">
+                  <input type="text" id="input-product-search" placeholder="اكتب اسم المنتج للبحث..." class="w-full px-3 py-2 pl-9 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#0056B3] bg-white" autocomplete="off" />
+                  <span class="material-symbols-outlined absolute left-2.5 text-gray-400 text-lg pointer-events-none">search</span>
+                </div>
+
+                <!-- Dropdown Search Results -->
+                <div id="search-results-list" class="hidden absolute right-0 left-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-xl max-h-56 overflow-y-auto z-50 divide-y divide-gray-100">
+                </div>
+              </div>
+
+              <!-- Selected Product Label Indicator -->
+              <div id="selected-product-badge" class="hidden bg-[#0056B3]/10 border border-[#0056B3]/30 p-2 rounded-lg text-xs font-bold text-[#0056B3] flex justify-between items-center">
+                <span id="selected-product-text">المنتج المحدد</span>
+                <button id="btn-clear-selected-product" class="text-red-500 hover:text-red-700">
+                  <span class="material-symbols-outlined text-base">close</span>
+                </button>
+              </div>
+
               <div id="variant-selector-container" class="hidden">
                 <label class="block text-xs font-bold text-[#75777E] mt-2 mb-1">اختر الشكل / النوع</label>
-                <select id="select-catalog-variant" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm">
+                <select id="select-catalog-variant" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm bg-white focus:ring-2 focus:ring-[#0056B3]">
                 </select>
               </div>
-              <button id="btn-add-catalog-item" class="w-full mt-2 py-2 bg-[#0056B3] text-white rounded-xl font-bold text-xs hover:bg-[#004085] transition-colors flex items-center justify-center gap-1">
+
+              <button id="btn-add-catalog-item" class="w-full mt-2 py-2 bg-[#0056B3] text-white rounded-xl font-bold text-xs hover:bg-[#004085] transition-colors flex items-center justify-center gap-1 shadow-sm">
                 <span class="material-symbols-outlined text-base">add</span>
                 <span>إضافة المنتج المحدد</span>
               </button>
@@ -240,28 +256,28 @@
               <div class="md:text-left">
                 <span class="text-[#75777E] block text-xs font-bold mb-1">تفاصيل الدفع:</span>
                 <div>طريقة الدفع: <span id="view-payment-method" class="font-bold">كاش عند الاستلام</span></div>
-                <div class="mt-1">الحالة: <span id="view-payment-status" class="inline-block px-2 py-0.5 bg-emerald-100 text-emerald-800 font-bold rounded text-xs">مدفوع بالكامل</span></div>
+                <div class="mt-1">الحالة: <span id="view-payment-status" class="inline-block px-2.5 py-0.5 bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold rounded-lg text-xs">مدفوع بالكامل</span></div>
               </div>
             </div>
 
-            <!-- Products Table -->
-            <div class="overflow-x-auto mb-6">
+            <!-- Products Table Container -->
+            <div class="overflow-hidden rounded-xl border border-gray-200 mb-6">
               <table class="w-full text-right text-xs md:text-sm border-collapse">
                 <thead>
                   <tr class="bg-[#1A237E] text-white">
-                    <th class="py-2.5 px-3 rounded-r-lg font-bold">#</th>
-                    <th class="py-2.5 px-3 font-bold">المنتج / البيان</th>
-                    <th class="py-2.5 px-3 font-bold text-center">الكمية</th>
-                    <th class="py-2.5 px-3 font-bold text-center">السعر</th>
-                    <th class="py-2.5 px-3 rounded-l-lg font-bold text-left">الإجمالي</th>
-                    <th class="py-2.5 px-2 no-print w-10"></th>
+                    <th class="py-3 px-3 font-bold text-center w-10">#</th>
+                    <th class="py-3 px-4 font-bold text-right">المنتج / البيان</th>
+                    <th class="py-3 px-3 font-bold text-center w-24">الكمية</th>
+                    <th class="py-3 px-3 font-bold text-center w-28">السعر</th>
+                    <th class="py-3 px-4 font-bold text-left w-32">الإجمالي</th>
+                    <th class="py-3 px-2 no-print text-center w-12"></th>
                   </tr>
                 </thead>
-                <tbody id="view-items-body" class="divide-y divide-gray-200">
+                <tbody id="view-items-body" class="divide-y divide-gray-200 bg-white">
                   <!-- Dynamic items render here -->
                 </tbody>
               </table>
-              <div id="view-empty-msg" class="py-8 text-center text-[#75777E] text-sm">
+              <div id="view-empty-msg" class="py-8 text-center text-[#75777E] text-sm bg-white">
                 لم يتم إضافة أي منتجات إلى الفاتورة بعد.
               </div>
             </div>
@@ -316,6 +332,7 @@
       // In-memory invoice line items state
       let invoiceItems = [];
       let catalogProducts = [];
+      let selectedProduct = null;
 
       // Element References
       const elInvNumber = document.getElementById('input-inv-number');
@@ -325,7 +342,13 @@
       const elPayMethod = document.getElementById('select-payment-method');
       const elPayStatus = document.getElementById('select-payment-status');
 
-      const elSelectProduct = document.getElementById('select-catalog-product');
+      // Product Search Elements
+      const elSearchInput = document.getElementById('input-product-search');
+      const elSearchResultsList = document.getElementById('search-results-list');
+      const elSelectedBadge = document.getElementById('selected-product-badge');
+      const elSelectedText = document.getElementById('selected-product-text');
+      const btnClearSelected = document.getElementById('btn-clear-selected-product');
+
       const elSelectVariant = document.getElementById('select-catalog-variant');
       const elVariantBox = document.getElementById('variant-selector-container');
       const btnAddCatalog = document.getElementById('btn-add-catalog-item');
@@ -367,6 +390,7 @@
         elDiscount.value = 0;
         elNotes.value = '';
         invoiceItems = [];
+        clearSelectedProduct();
         updatePreview();
       }
 
@@ -382,30 +406,49 @@
           
           if (error) throw error;
           catalogProducts = data || [];
-
-          elSelectProduct.innerHTML = '<option value="">-- اختر منتجاً من الميزانية --</option>';
-          catalogProducts.forEach(p => {
-            const opt = document.createElement('option');
-            opt.value = p.id;
-            opt.textContent = `${p.name} - (${p.base_price} ج.م)`;
-            elSelectProduct.appendChild(opt);
-          });
         } catch (err) {
           console.error('Error fetching products catalog:', err);
-          elSelectProduct.innerHTML = '<option value="">تعذر تحميل المنتجات</option>';
         }
       }
 
-      // Variant Selector Change Handler
-      elSelectProduct.onchange = () => {
-        const prodId = elSelectProduct.value;
-        const prod = catalogProducts.find(p => p.id === prodId);
-        
-        if (prod && prod.product_variants && prod.product_variants.filter(v => !v.deleted_at).length > 0) {
-          const validVariants = prod.product_variants.filter(v => !v.deleted_at);
+      // Render Live Product Search Results Dropdown
+      function renderSearchResults(query = '') {
+        const q = query.trim().toLowerCase();
+        const matches = catalogProducts.filter(p => p.name.toLowerCase().includes(q));
+
+        elSearchResultsList.innerHTML = '';
+        if (matches.length === 0) {
+          elSearchResultsList.innerHTML = '<div class="p-3 text-xs text-gray-500 text-center">لا توجد نتائج مطابقة</div>';
+        } else {
+          matches.forEach(prod => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'p-2.5 hover:bg-[#0056B3]/10 cursor-pointer flex justify-between items-center text-xs transition-colors';
+            itemDiv.innerHTML = `
+              <span class="font-bold text-[#1A237E]">${prod.name}</span>
+              <span class="font-bold text-[#0056B3]">${prod.base_price} ج.م</span>
+            `;
+            itemDiv.onclick = () => selectCatalogProduct(prod);
+            elSearchResultsList.appendChild(itemDiv);
+          });
+        }
+        elSearchResultsList.classList.remove('hidden');
+      }
+
+      // Handle Selecting a Product from Search
+      function selectCatalogProduct(prod) {
+        selectedProduct = prod;
+        elSearchInput.value = prod.name;
+        elSearchResultsList.classList.add('hidden');
+
+        elSelectedText.textContent = `المنتج المحدد: ${prod.name} (${prod.base_price} ج.م)`;
+        elSelectedBadge.classList.remove('hidden');
+
+        // Check for Variants
+        const validVariants = (prod.product_variants || []).filter(v => !v.deleted_at);
+        if (validVariants.length > 0) {
           elSelectVariant.innerHTML = '';
           validVariants.forEach(v => {
-            const price = v.price_override ?? prod.base_price;
+            const price = (v.price_override !== null && v.price_override !== undefined) ? v.price_override : prod.base_price;
             const opt = document.createElement('option');
             opt.value = v.id;
             opt.textContent = `${v.label} - (${price} ج.م)`;
@@ -416,21 +459,42 @@
           elVariantBox.classList.add('hidden');
           elSelectVariant.innerHTML = '';
         }
-      };
+      }
+
+      // Clear Selected Product
+      function clearSelectedProduct() {
+        selectedProduct = null;
+        elSearchInput.value = '';
+        elSearchResultsList.classList.add('hidden');
+        elSelectedBadge.classList.add('hidden');
+        elVariantBox.classList.add('hidden');
+        elSelectVariant.innerHTML = '';
+      }
+
+      btnClearSelected.onclick = clearSelectedProduct;
+
+      // Input Search Events
+      elSearchInput.onfocus = () => renderSearchResults(elSearchInput.value);
+      elSearchInput.oninput = (e) => renderSearchResults(e.target.value);
+
+      // Hide Search Results when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!elSearchInput.contains(e.target) && !elSearchResultsList.contains(e.target)) {
+          elSearchResultsList.classList.add('hidden');
+        }
+      });
 
       // Add Catalog Item to Invoice
       btnAddCatalog.onclick = () => {
-        const prodId = elSelectProduct.value;
-        if (!prodId) return alert('برجاء اختيار منتج من القائمة أولاً');
-        const prod = catalogProducts.find(p => p.id === prodId);
-        if (!prod) return;
+        if (!selectedProduct) return alert('برجاء البحث واختيار منتج من القائمة أولاً');
 
-        let title = prod.name;
-        let price = prod.base_price;
+        let title = selectedProduct.name;
+        let price = selectedProduct.base_price;
 
-        if (prod.product_variants && prod.product_variants.length > 0) {
+        const validVariants = (selectedProduct.product_variants || []).filter(v => !v.deleted_at);
+        if (validVariants.length > 0) {
           const varId = elSelectVariant.value;
-          const variant = prod.product_variants.find(v => v.id === varId);
+          const variant = validVariants.find(v => v.id === varId);
           if (variant) {
             title += ` (${variant.label})`;
             if (variant.price_override !== null && variant.price_override !== undefined) {
@@ -446,6 +510,7 @@
           quantity: 1
         });
 
+        clearSelectedProduct();
         updatePreview();
       };
 
@@ -480,8 +545,19 @@
         viewCustName.textContent = elCustName.value.trim() || 'عميل نقدي';
         viewCustAddress.textContent = elCustAddress.value.trim() ? `العنوان: ${elCustAddress.value.trim()}` : 'العنوان: غير محدد';
         viewPayMethod.textContent = elPayMethod.value;
-        viewPayStatus.textContent = elPayStatus.value;
         viewNotes.textContent = elNotes.value.trim() || 'لا توجد ملاحظات إضافية.';
+
+        // Payment Status Styling (Green for مدفوع بالكامل, Red for غير مدفوع, Orange for مدفوع جزئياً)
+        const statusValue = elPayStatus.value;
+        viewPayStatus.textContent = statusValue;
+
+        if (statusValue === 'مدفوع بالكامل') {
+          viewPayStatus.className = 'inline-block px-2.5 py-0.5 bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold rounded-lg text-xs';
+        } else if (statusValue === 'غير مدفوع') {
+          viewPayStatus.className = 'inline-block px-2.5 py-0.5 bg-red-100 text-red-800 border border-red-300 font-bold rounded-lg text-xs';
+        } else if (statusValue === 'مدفوع جزئياً') {
+          viewPayStatus.className = 'inline-block px-2.5 py-0.5 bg-orange-100 text-orange-800 border border-orange-300 font-bold rounded-lg text-xs';
+        }
 
         // Render Table Rows
         viewItemsBody.innerHTML = '';
@@ -491,19 +567,19 @@
           viewEmptyMsg.classList.add('hidden');
           invoiceItems.forEach((item, index) => {
             const tr = document.createElement('tr');
-            tr.className = 'hover:bg-gray-50';
+            tr.className = 'hover:bg-gray-50 border-b border-gray-100 transition-colors';
             tr.innerHTML = `
-              <td class="py-2.5 px-3 font-bold text-gray-500">${index + 1}</td>
-              <td class="py-2.5 px-3 font-bold text-[#1A237E]">${item.title}</td>
-              <td class="py-2.5 px-3 text-center">
-                <input type="number" min="1" value="${item.quantity}" data-id="${item.id}" class="item-qty-input no-print w-14 text-center border border-gray-300 rounded p-1 text-xs" />
+              <td class="py-3 px-3 font-bold text-gray-500 text-center">${index + 1}</td>
+              <td class="py-3 px-4 font-bold text-[#1A237E]">${item.title}</td>
+              <td class="py-3 px-3 text-center">
+                <input type="number" min="1" value="${item.quantity}" data-id="${item.id}" class="item-qty-input no-print w-14 text-center border border-gray-300 rounded-lg p-1 text-xs font-bold focus:ring-2 focus:ring-[#0056B3]" />
                 <span class="print:inline hidden font-bold">${item.quantity}</span>
               </td>
-              <td class="py-2.5 px-3 text-center font-medium">${formatCurrency(item.unitPrice)}</td>
-              <td class="py-2.5 px-3 text-left font-bold text-[#0056B3]">${formatCurrency(calculateItemTotal(item.unitPrice, item.quantity))}</td>
-              <td class="py-2.5 px-2 no-print text-center">
-                <button data-id="${item.id}" class="btn-remove-item text-red-500 hover:text-red-700 p-1" title="حذف البند">
-                  <span class="material-symbols-outlined text-base">delete</span>
+              <td class="py-3 px-3 text-center font-medium">${formatCurrency(item.unitPrice)}</td>
+              <td class="py-3 px-4 text-left font-bold text-[#0056B3]">${formatCurrency(calculateItemTotal(item.unitPrice, item.quantity))}</td>
+              <td class="py-3 px-2 no-print text-center">
+                <button data-id="${item.id}" class="btn-remove-item text-red-500 hover:text-red-700 p-1.5 rounded-lg hover:bg-red-50 transition-colors" title="حذف البند">
+                  <span class="material-symbols-outlined text-lg">delete</span>
                 </button>
               </td>
             `;
