@@ -1,1 +1,41 @@
 /* Admin page styles - styling handled by Tailwind CSS via CDN */
+
+@media print {
+  /* Hide non-printable elements */
+  header,
+  aside,
+  #sidebar-backdrop,
+  .no-print,
+  .no-print * {
+    display: none !important;
+  }
+
+  /* Reset main page container layout for printing */
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  main {
+    margin-right: 0 !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .printable-invoice-container {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 15px !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .page-break {
+    page-break-before: always;
+  }
+}
