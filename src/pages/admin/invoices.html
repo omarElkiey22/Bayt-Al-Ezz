@@ -106,17 +106,17 @@
       <!-- TAB 1: INVOICE CREATOR & LIVE PREVIEW VIEW -->
       <div id="view-tab-create" class="space-y-6">
         
-        <!-- Action Buttons Bar -->
-        <div class="flex justify-end gap-3 no-print">
-          <button id="btn-reset" class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-[#1A237E] rounded-xl font-bold text-sm flex items-center gap-2 transition-all">
+        <!-- Desktop Action Buttons Bar -->
+        <div class="hidden lg:flex justify-end gap-3 no-print">
+          <button class="btn-reset-action px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-[#1A237E] rounded-xl font-bold text-sm flex items-center gap-2 transition-all">
             <span class="material-symbols-outlined text-lg">restart_alt</span>
             <span>فاتورة جديدة</span>
           </button>
-          <button id="btn-save-invoice" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-sm shadow-md hover:shadow-lg flex items-center gap-2 transition-all">
+          <button class="btn-save-action px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-sm shadow-md hover:shadow-lg flex items-center gap-2 transition-all">
             <span class="material-symbols-outlined text-lg">save</span>
             <span>حفظ الفاتورة بالسجل</span>
           </button>
-          <button id="btn-print" class="px-5 py-2.5 bg-[#0056B3] hover:bg-[#004085] text-white rounded-xl font-bold text-sm shadow-md hover:shadow-lg flex items-center gap-2 transition-all">
+          <button class="btn-print-action px-5 py-2.5 bg-[#0056B3] hover:bg-[#004085] text-white rounded-xl font-bold text-sm shadow-md hover:shadow-lg flex items-center gap-2 transition-all">
             <span class="material-symbols-outlined text-lg">print</span>
             <span>طباعة الفاتورة</span>
           </button>
@@ -209,6 +209,11 @@
                   <label class="block text-xs font-bold text-[#75777E] mt-2 mb-1">اختر الشكل / النوع</label>
                   <select id="select-catalog-variant" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm bg-white focus:ring-2 focus:ring-[#0056B3]">
                   </select>
+                </div>
+
+                <div id="catalog-qty-container" class="mt-2">
+                  <label class="block text-xs font-bold text-[#75777E] mb-1">الكمية المطلوبة</label>
+                  <input type="number" id="input-catalog-qty" value="1" min="1" placeholder="أدخل الكمية" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm bg-white focus:ring-2 focus:ring-[#0056B3]" />
                 </div>
 
                 <button id="btn-add-catalog-item" class="w-full mt-2 py-2 bg-[#0056B3] text-white rounded-xl font-bold text-xs hover:bg-[#004085] transition-colors flex items-center justify-center gap-1 shadow-sm">
@@ -344,6 +349,22 @@
           </div>
 
         </div>
+
+        <!-- Mobile & Tablet Bottom Action Buttons Bar -->
+        <div class="lg:hidden flex flex-col sm:flex-row justify-end gap-3 no-print mt-6 bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
+          <button class="btn-reset-action w-full sm:w-auto px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-[#1A237E] rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all">
+            <span class="material-symbols-outlined text-lg">restart_alt</span>
+            <span>فاتورة جديدة</span>
+          </button>
+          <button class="btn-save-action w-full sm:w-auto px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-sm shadow-md hover:shadow-lg flex items-center justify-center gap-2 transition-all">
+            <span class="material-symbols-outlined text-lg">save</span>
+            <span>حفظ الفاتورة بالسجل</span>
+          </button>
+          <button class="btn-print-action w-full sm:w-auto px-5 py-2.5 bg-[#0056B3] hover:bg-[#004085] text-white rounded-xl font-bold text-sm shadow-md hover:shadow-lg flex items-center justify-center gap-1.5 transition-all">
+            <span class="material-symbols-outlined text-lg">print</span>
+            <span>طباعة الفاتورة</span>
+          </button>
+        </div>
       </div>
 
       <!-- TAB 2: INVOICES HISTORY LOG VIEW (No Print) -->
@@ -456,6 +477,7 @@
 
       const elSelectVariant = document.getElementById('select-catalog-variant');
       const elVariantBox = document.getElementById('variant-selector-container');
+      const elCatalogQty = document.getElementById('input-catalog-qty');
       const btnAddCatalog = document.getElementById('btn-add-catalog-item');
 
       const elCustomTitle = document.getElementById('input-custom-title');
@@ -597,6 +619,9 @@
       btnAddCatalog.onclick = () => {
         if (!selectedProduct) return alert('برجاء البحث واختيار منتج من القائمة أولاً');
 
+        const qty = parseInt(elCatalogQty.value, 10);
+        if (isNaN(qty) || qty < 1) return alert('يرجى إدخال كمية صحيحة');
+
         let title = selectedProduct.name;
         let price = selectedProduct.base_price;
 
@@ -616,9 +641,10 @@
           id: Date.now().toString(),
           title,
           unitPrice: parseFloat(price) || 0,
-          quantity: 1
+          quantity: qty
         });
 
+        elCatalogQty.value = '1';
         clearSelectedProduct();
         updatePreview();
       };
@@ -940,27 +966,34 @@
       });
 
       btnRefreshHistory.onclick = loadInvoicesHistory;
-      document.getElementById('btn-save-invoice').onclick = () => saveInvoice(false);
+
+      document.querySelectorAll('.btn-save-action').forEach(btn => {
+        btn.onclick = () => saveInvoice(false);
+      });
+
+      document.querySelectorAll('.btn-reset-action').forEach(btn => {
+        btn.onclick = () => {
+          if (confirm('هل أنت تأكد من إلغاء الفاتورة الحالية والبدء بفاتورة جديدة؟')) {
+            initInvoice();
+          }
+        };
+      });
+
+      document.querySelectorAll('.btn-print-action').forEach(btn => {
+        btn.onclick = async () => {
+          if (invoiceItems.length === 0) {
+            if (!confirm('الفاتورة لا تحتوي على أي منتجات بعد، هل ترغب في طباعتها على أية حال؟')) {
+              return;
+            }
+          }
+          await saveInvoice(true); // Save automatically before printing
+          window.print();
+        };
+      });
 
       document.getElementById('btn-regen-inv').onclick = () => {
         elInvNumber.value = generateInvoiceNumber();
         updatePreview();
-      };
-
-      document.getElementById('btn-reset').onclick = () => {
-        if (confirm('هل أنت تأكد من إلغاء الفاتورة الحالية والبدء بفاتورة جديدة؟')) {
-          initInvoice();
-        }
-      };
-
-      document.getElementById('btn-print').onclick = async () => {
-        if (invoiceItems.length === 0) {
-          if (!confirm('الفاتورة لا تحتوي على أي منتجات بعد، هل ترغب في طباعتها على أية حال؟')) {
-            return;
-          }
-        }
-        await saveInvoice(true); // Save automatically before printing
-        window.print();
       };
 
       // Mobile Menu Sidebar Setup

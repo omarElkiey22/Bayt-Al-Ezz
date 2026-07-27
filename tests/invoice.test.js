@@ -14,19 +14,21 @@ describe('Invoice Helper Functions', () => {
     expect(calculateItemTotal(100, 'invalid')).toBe(0);
   });
 
-  it('calculates total invoice amounts with percentage discount and shipping', () => {
+  it('calculates total invoice amounts with percentage discount on (subtotal + shipping)', () => {
     const items = [
-      { unitPrice: 100, quantity: 2 }, // 200
-      { unitPrice: 50, quantity: 1 }    // 50 => subtotal 250
+      { unitPrice: 1310, quantity: 1 } // subtotal = 1310
     ];
 
-    // 10% discount on 250 = 25 EGP discount
-    const result = calculateInvoiceTotals(items, 30, 10);
-    expect(result.subtotal).toBe(250);
-    expect(result.shipping).toBe(30);
+    // Subtotal 1310, Shipping 10 => Total before discount 1320
+    // 10% discount on 1320 = 132 EGP discount
+    // Grand total = 1320 - 132 = 1188
+    const result = calculateInvoiceTotals(items, 10, 10);
+    expect(result.subtotal).toBe(1310);
+    expect(result.shipping).toBe(10);
+    expect(result.totalBeforeDiscount).toBe(1320);
     expect(result.discountPercent).toBe(10);
-    expect(result.discountAmount).toBe(25);
-    expect(result.grandTotal).toBe(255); // 250 + 30 - 25 = 255
+    expect(result.discountAmount).toBe(132);
+    expect(result.grandTotal).toBe(1188);
   });
 
   it('handles negative or invalid values safely in totals', () => {

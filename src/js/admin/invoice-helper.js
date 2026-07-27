@@ -28,13 +28,17 @@ export function calculateInvoiceTotals(items = [], shippingFee = 0, discountPerc
 
   const shipping = Math.max(0, parseFloat(shippingFee) || 0);
   const percent = Math.min(100, Math.max(0, parseFloat(discountPercent) || 0));
-  const discountAmount = Math.round((subtotal * (percent / 100)) * 100) / 100;
+  
+  // Calculate discount percentage on total order amount (subtotal + shipping)
+  const totalBeforeDiscount = subtotal + shipping;
+  const discountAmount = Math.round((totalBeforeDiscount * (percent / 100)) * 100) / 100;
 
-  const grandTotal = Math.max(0, subtotal + shipping - discountAmount);
+  const grandTotal = Math.max(0, totalBeforeDiscount - discountAmount);
 
   return {
     subtotal,
     shipping,
+    totalBeforeDiscount,
     discountPercent: percent,
     discountAmount,
     discount: discountAmount,
