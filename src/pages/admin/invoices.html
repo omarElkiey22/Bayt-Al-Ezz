@@ -925,10 +925,7 @@
           if (existingData && existingData.id) {
             const { error } = await supabase
               .from('invoices')
-              .update({
-                ...payload,
-                updated_at: new Date().toISOString()
-              })
+              .update(payload)
               .eq('id', existingData.id);
 
             if (!error) {
@@ -1016,13 +1013,23 @@
         // Fallback or merge with localStorage
         try {
           const localData = JSON.parse(localStorage.getItem('bayt_al_ezz_invoices') || '[]');
-          const knownNumbers = new Set(invoicesHistory.map(i => i.invoice_number));
-          localData.forEach(item => {
-            if (!knownNumbers.has(item.invoice_number)) {
-              invoicesHistory.push(item);
+          const localMap = new Map(localData.map(i => [i.invoice_number, i]));
+
+          invoicesHistory = invoicesHistory.map(inv => {
+            if (localMap.has(inv.invoice_number)) {
+              const localInv = localMap.get(inv.invoice_number);
+              localMap.delete(inv.invoice_number);
+              return { ...inv, ...localInv };
             }
+            return inv;
           });
-        } catch (e) {}
+
+          localMap.forEach(localInv => {
+            invoicesHistory.push(localInv);
+          });
+        } catch (e) {
+          console.error('Error merging local invoices:', e);
+        }
 
         badgeCount.textContent = invoicesHistory.length;
         renderHistoryRows();
@@ -1103,7 +1110,12 @@
             if (confirm(`هل أنت تأكد من حذف الفاتورة رقم ${num}؟`)) {
               if (dbId) {
                 try {
-                  await supabase.from('invoices').update({ deleted_at: new Date().toISOString() }).eq('id', dbId);
+                  await supabase.from('invoices').delete().eq('id', dbId);
+                } catch (e) {}
+              }
+              if (num) {
+                try {
+                  await supabase.from('invoices').delete().eq('invoice_number', num);
                 } catch (e) {}
               }
               // Remove from localStorage
@@ -1169,13 +1181,14 @@
       });
 
       document.querySelectorAll('.btn-print-action').forEach(btn => {
-        btn.onclick = async () => {
+        btn.onclick = () => {
           if (invoiceItems.length === 0) {
             if (!confirm('الفاتورة لا تحتوي على أي منتجات بعد، هل ترغب في طباعتها على أية حال؟')) {
               return;
             }
           }
-          await saveInvoice(true); // Save automatically before printing
+          switchTab('create');
+          saveInvoice(true);
           window.print();
         };
       });
