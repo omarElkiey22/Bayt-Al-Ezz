@@ -442,6 +442,7 @@
     if (await requireAdmin()) {
       // In-memory invoice state
       let invoiceItems = [];
+      let currentEditingInvoiceId = null;
       let catalogProducts = [];
       let selectedProduct = null;
       let invoicesHistory = [];
@@ -535,6 +536,7 @@
 
       // Initialize Defaults
       function initInvoice() {
+        currentEditingInvoiceId = null;
         const now = new Date();
         elInvNumber.value = generateInvoiceNumber(now);
         elInvDate.value = getTodayLocalDate();
@@ -872,16 +874,22 @@
         });
       }
 
-      // Save Invoice to DB & LocalStorage
+      // Save or Update Invoice in DB & LocalStorage
       async function saveInvoice(silent = false) {
         if (invoiceItems.length === 0) {
           if (!silent) alert('يرجى إضافة منتجات إلى الفاتورة أولاً قبل الحفظ.');
           return false;
         }
 
+        const invNum = elInvNumber.value.trim();
+        if (!invNum) {
+          if (!silent) alert('يرجى إدخال رقم الفاتورة.');
+          return false;
+        }
+
         const totals = calculateInvoiceTotals(invoiceItems, elShipping.value, elDiscount.value);
         const payload = {
-          invoice_number: elInvNumber.value,
+          invoice_number: invNum,
           issue_date: elInvDate.value,
           customer_name: elCustName.value.trim() || 'عميل نقدي',
           customer_address: elCustAddress.value.trim() || 'غير محدد',
@@ -897,20 +905,78 @@
         };
 
         let saved = false;
+        let isUpdate = false;
 
         // Try Supabase first
         try {
-          const { error } = await supabase.from('invoices').insert(payload);
-          if (error) console.warn('Supabase insert error, fallback to local:', error);
-          else saved = true;
+          let existingData = null;
+          if (currentEditingInvoiceId) {
+            existingData = { id: currentEditingInvoiceId };
+          } else {
+            const { data } = await supabase
+              .from('invoices')
+              .select('id')
+              .eq('invoice_number', invNum)
+              .is('deleted_at', null)
+              .maybeSingle();
+            existingData = data;
+          }
+
+          if (existingData && existingData.id) {
+            const { error } = await supabase
+              .from('invoices')
+              .update({
+                ...payload,
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', existingData.id);
+
+            if (!error) {
+              saved = true;
+              isUpdate = true;
+              currentEditingInvoiceId = existingData.id;
+            } else {
+              console.warn('Supabase update error:', error);
+            }
+          } else {
+            const { data, error } = await supabase
+              .from('invoices')
+              .insert(payload)
+              .select('id')
+              .maybeSingle();
+
+            if (!error) {
+              saved = true;
+              isUpdate = false;
+              if (data && data.id) {
+                currentEditingInvoiceId = data.id;
+              }
+            } else {
+              console.warn('Supabase insert error:', error);
+            }
+          }
         } catch (err) {
-          console.warn('Supabase offline/error:', err);
+          console.warn('Supabase offline/error during save:', err);
         }
 
-        // LocalStorage fallback
+        // LocalStorage Sync (Update or Insert)
         try {
-          const localList = JSON.parse(localStorage.getItem('bayt_al_ezz_invoices') || '[]');
-          localList.unshift({ ...payload, created_at: new Date().toISOString() });
+          let localList = JSON.parse(localStorage.getItem('bayt_al_ezz_invoices') || '[]');
+          const localIndex = localList.findIndex(i => i.invoice_number === invNum);
+
+          if (localIndex >= 0) {
+            localList[localIndex] = {
+              ...localList[localIndex],
+              ...payload,
+              updated_at: new Date().toISOString()
+            };
+            isUpdate = true;
+          } else {
+            localList.unshift({
+              ...payload,
+              created_at: new Date().toISOString()
+            });
+          }
           localStorage.setItem('bayt_al_ezz_invoices', JSON.stringify(localList));
           saved = true;
         } catch (e) {
@@ -918,7 +984,10 @@
         }
 
         if (saved && !silent) {
-          alert('✅ تم حفظ الفاتورة بنجاح في سجل الفواتير!');
+          const msg = isUpdate
+            ? '✅ تم تحديث بيانات الفاتورة بنجاح في سجل الفواتير!'
+            : '✅ تم حفظ الفاتورة بنجاح في سجل الفواتير!';
+          alert(msg);
           updateInvoicesCount();
         }
         return saved;
@@ -1052,6 +1121,7 @@
 
       // Load Existing Invoice into Creator Form
       function loadInvoiceIntoCreator(inv) {
+        currentEditingInvoiceId = inv.id || null;
         elInvNumber.value = inv.invoice_number;
         elInvDate.value = inv.issue_date;
         elCustName.value = inv.customer_name || '';
@@ -1111,6 +1181,7 @@
       });
 
       document.getElementById('btn-regen-inv').onclick = () => {
+        currentEditingInvoiceId = null;
         elInvNumber.value = generateInvoiceNumber();
         updatePreview();
       };
