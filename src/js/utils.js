@@ -21,3 +21,4 @@ export function buildOrderText(items,date=new Date()){
 }
 export function makeWhatsAppUrl(number,text){return `https://wa.me/${String(number||'').replace(/\D/g,'')}?text=${encodeURIComponent(text)}`}
 export function sanitizeInput(text){return typeof text==='string'?text.replace(/<[^>]*>?/gm,''):text}
+export function escapeHtml(str){if(str===null||str===undefined)return '';return String(str).replace(/[&<>"']/g,match=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[match]))}

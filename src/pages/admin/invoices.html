@@ -438,6 +438,7 @@
     import { supabase } from '../../js/supabase-client.js';
     import { requireAdmin } from '../../js/admin/auth-gate.js';
     import { generateInvoiceNumber, formatCurrency, calculateItemTotal, calculateInvoiceTotals } from '../../js/admin/invoice-helper.js';
+    import { escapeHtml } from '../../js/utils.js';
 
     if (await requireAdmin()) {
       // In-memory invoice state
@@ -582,7 +583,7 @@
             const itemDiv = document.createElement('div');
             itemDiv.className = 'p-2.5 hover:bg-[#0056B3]/10 cursor-pointer flex justify-between items-center text-xs transition-colors';
             itemDiv.innerHTML = `
-              <span class="font-bold text-[#1A237E]">${prod.name}</span>
+              <span class="font-bold text-[#1A237E]">${escapeHtml(prod.name)}</span>
               <span class="font-bold text-[#0056B3]">${prod.base_price} ج.م</span>
             `;
             itemDiv.onclick = () => selectCatalogProduct(prod);
@@ -811,7 +812,7 @@
             tr.className = 'hover:bg-gray-50 border-b border-gray-100 transition-colors';
             tr.innerHTML = `
               <td class="py-3 px-3 font-bold text-gray-500 text-center">${index + 1}</td>
-              <td class="py-3 px-4 font-bold text-[#1A237E]">${item.title}</td>
+              <td class="py-3 px-4 font-bold text-[#1A237E]">${escapeHtml(item.title)}</td>
               <td class="py-3 px-3 text-center">
                 <input type="number" min="1" value="${item.quantity}" data-id="${item.id}" class="item-qty-input no-print w-14 text-center border border-gray-300 rounded-lg p-1 text-xs font-bold focus:ring-2 focus:ring-[#0056B3]" />
                 <span class="print:inline hidden font-bold">${item.quantity}</span>
@@ -1069,11 +1070,11 @@
             tr.className = 'hover:bg-gray-50 transition-colors border-b border-gray-100';
             tr.innerHTML = `
               <td class="py-3 px-4 font-bold text-gray-500 text-center">${idx + 1}</td>
-              <td class="py-3 px-4 font-mono font-bold text-[#0056B3]">${inv.invoice_number}</td>
-              <td class="py-3 px-4 text-gray-600">${inv.issue_date || '--'}</td>
+              <td class="py-3 px-4 font-mono font-bold text-[#0056B3]">${escapeHtml(inv.invoice_number)}</td>
+              <td class="py-3 px-4 text-gray-600">${escapeHtml(inv.issue_date || '--')}</td>
               <td class="py-3 px-4 font-bold text-[#1A237E]">
-                <div>${inv.customer_name || 'عميل نقدي'}</div>
-                <div class="text-xs text-gray-500 font-normal">${inv.customer_address || ''}</div>
+                <div>${escapeHtml(inv.customer_name || 'عميل نقدي')}</div>
+                <div class="text-xs text-gray-500 font-normal">${escapeHtml(inv.customer_address || '')}</div>
               </td>
               <td class="py-3 px-4 text-center whitespace-nowrap">${statusBadge}</td>
               <td class="py-3 px-4 text-center font-bold">${Array.isArray(inv.items) ? inv.items.length : 0}</td>

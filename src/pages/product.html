@@ -73,7 +73,7 @@
   </footer>
 
   <script type="module">
-    import { getQueryParam, isValidUUID, resolveVariant, formatPrice } from '../js/utils.js';
+    import { getQueryParam, isValidUUID, resolveVariant, formatPrice, escapeHtml } from '../js/utils.js';
     import { fetchProductDetails } from '../js/products-api.js';
     import { addToCart, getCartItems, calculateCartTotals } from '../js/cart.js';
     import { initializeSearchBar } from '../js/search-bar.js';
@@ -115,9 +115,9 @@
               <ol class="inline-flex items-center gap-2">
                 <li><a class="hover:text-primary transition-colors" href="index.html">الرئيسية</a></li>
                 <li><span class="material-symbols-outlined text-xs">chevron_left</span></li>
-                <li><a class="hover:text-primary transition-colors" href="category.html?section=${product.sections?.slug || ''}">${product.sections?.name || 'القسم'}</a></li>
+                <li><a class="hover:text-primary transition-colors" href="category.html?section=${product.sections?.slug || ''}">${escapeHtml(product.sections?.name || 'القسم')}</a></li>
                 <li><span class="material-symbols-outlined text-xs">chevron_left</span></li>
-                <li class="font-semibold text-primary">${product.name}</li>
+                <li class="font-semibold text-primary">${escapeHtml(product.name)}</li>
               </ol>
             </nav>
 
@@ -126,15 +126,15 @@
               
               <!-- Product Image Section -->
               <div class="w-full md:w-1/2 aspect-square bg-gray-50 rounded-2xl overflow-hidden border border-[#9E9E9E]/10">
-                <img class="w-full h-full object-cover transition-transform duration-500 hover:scale-[1.03]" src="${value.image || '../public/assets/placeholder.svg'}" alt="${product.name}">
+                <img class="w-full h-full object-cover transition-transform duration-500 hover:scale-[1.03]" src="${value.image || '../public/assets/placeholder.svg'}" alt="${escapeHtml(product.name)}">
               </div>
 
               <!-- Product Details Section -->
               <div class="w-full md:w-1/2 flex flex-col justify-between">
                 <div>
-                  <span class="inline-block bg-[#0056B3]/10 text-[#0056B3] text-xs font-bold px-3 py-1 rounded-full mb-3">${product.sections?.name || ''}</span>
-                  <h1 class="text-2xl md:text-3xl font-extrabold text-[#1A237E] mb-3">${product.name}</h1>
-                  <p class="text-[#75777E] leading-relaxed mb-6 text-sm md:text-base">${product.description || ''}</p>
+                  <span class="inline-block bg-[#0056B3]/10 text-[#0056B3] text-xs font-bold px-3 py-1 rounded-full mb-3">${escapeHtml(product.sections?.name || '')}</span>
+                  <h1 class="text-2xl md:text-3xl font-extrabold text-[#1A237E] mb-3">${escapeHtml(product.name)}</h1>
+                  <p class="text-[#75777E] leading-relaxed mb-6 text-sm md:text-base">${escapeHtml(product.description || '')}</p>
 
                   <!-- Swatches / Variants -->
                   ${product.variants.length > 1 || (product.variants.length === 1 && product.variants[0].label !== 'افتراضي') ? `
@@ -156,7 +156,7 @@
 
                         return `
                           <button class="swatch ${btnClass}" data-id="${v.id}" ${inStock ? '' : 'disabled'}>
-                            ${v.label}
+                            ${escapeHtml(v.label)}
                           </button>
                         `;
                       }).join('')}

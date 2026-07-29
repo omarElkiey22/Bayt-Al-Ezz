@@ -64,10 +64,66 @@
 
     const form = document.querySelector('#login');
     const errorEl = document.querySelector('#error');
+    const submitBtn = form.querySelector('button');
+
+    const MAX_ATTEMPTS = 5;
+    const LOCKOUT_MS = 60 * 1000; // 60 seconds lockout
+    const ATTEMPTS_WINDOW_MS = 15 * 60 * 1000; // 15 minutes window
+
+    function getFailedAttempts() {
+      try {
+        const stored = JSON.parse(sessionStorage.getItem('admin_login_failures') || '[]');
+        const now = Date.now();
+        const valid = stored.filter(ts => (now - ts) < ATTEMPTS_WINDOW_MS);
+        sessionStorage.setItem('admin_login_failures', JSON.stringify(valid));
+        return valid;
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function recordFailedAttempt() {
+      const attempts = getFailedAttempts();
+      attempts.push(Date.now());
+      sessionStorage.setItem('admin_login_failures', JSON.stringify(attempts));
+      checkLockout();
+    }
+
+    function clearFailedAttempts() {
+      sessionStorage.removeItem('admin_login_failures');
+    }
+
+    function checkLockout() {
+      const attempts = getFailedAttempts();
+      if (attempts.length >= MAX_ATTEMPTS) {
+        const lastAttempt = attempts[attempts.length - 1];
+        const remainingSec = Math.ceil((LOCKOUT_MS - (Date.now() - lastAttempt)) / 1000);
+
+        if (remainingSec > 0) {
+          submitBtn.disabled = true;
+          errorEl.textContent = `⚠️ تم حظر المحاولات مؤقتاً بسبب تكرار الفشل. يرجى الانتظار ${remainingSec} ثانية.`;
+          errorEl.classList.remove('hidden', 'text-green-600');
+          errorEl.classList.add('text-red-500');
+
+          setTimeout(checkLockout, 1000);
+          return true;
+        } else {
+          clearFailedAttempts();
+          submitBtn.disabled = false;
+          errorEl.classList.add('hidden');
+        }
+      }
+      return false;
+    }
+
+    // Check lockout status on initial page load
+    checkLockout();
 
     form.onsubmit = async e => {
       e.preventDefault();
       errorEl.classList.add('hidden');
+
+      if (checkLockout()) return;
 
       if (!supabase) {
         errorEl.textContent = 'إعدادات Supabase غير مضافة.';
@@ -75,6 +131,7 @@
         return;
       }
 
+      submitBtn.disabled = true;
       const v = Object.fromEntries(new FormData(e.target));
       const { error } = await supabase.auth.signInWithPassword({
         email: v.email,
@@ -82,13 +139,17 @@
       });
 
       if (error) {
-        errorEl.textContent = error.message;
-        errorEl.classList.remove('hidden');
+        recordFailedAttempt();
+        if (!checkLockout()) {
+          submitBtn.disabled = false;
+          errorEl.textContent = error.message || 'بيانات الدخول غير صحيحة.';
+          errorEl.classList.remove('hidden');
+        }
       } else {
+        clearFailedAttempts();
         errorEl.textContent = 'تم تسجيل الدخول بنجاح. جاري توجيهك...';
         errorEl.classList.remove('text-red-500', 'hidden');
         errorEl.classList.add('text-green-600');
-        form.querySelector('button').disabled = true;
 
         setTimeout(() => {
           window.location.replace('dashboard.html');
