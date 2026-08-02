@@ -665,7 +665,7 @@
         updatePreview();
       }
 
-      // Load Catalog Products from DB
+      // Load Catalog Products from DB (Wholesale Products Only)
       async function loadCatalogProducts() {
         try {
           const { data, error } = await supabase
@@ -676,27 +676,30 @@
             .order('name');
           
           if (error) throw error;
-          catalogProducts = data || [];
+          const allProds = data || [];
+          // Filter to include ONLY products that have a wholesale price
+          catalogProducts = allProds.filter(p => p.wholesale_price !== null && p.wholesale_price !== undefined && p.wholesale_price > 0);
         } catch (err) {
           console.error('Error fetching products catalog:', err);
         }
       }
 
-      // Render Live Product Search Results Dropdown
+      // Render Live Product Search Results Dropdown (Wholesale Only)
       function renderSearchResults(query = '') {
         const q = query.trim().toLowerCase();
         const matches = catalogProducts.filter(p => p.name.toLowerCase().includes(q));
 
         elSearchResultsList.innerHTML = '';
         if (matches.length === 0) {
-          elSearchResultsList.innerHTML = '<div class="p-3 text-xs text-gray-500 text-center">لا توجد نتائج مطابقة</div>';
+          elSearchResultsList.innerHTML = '<div class="p-3 text-xs text-gray-500 text-center">لا توجد منتجات جملة مطابقة</div>';
         } else {
           matches.forEach(prod => {
+            const wholesalePrice = prod.wholesale_price || prod.base_price;
             const itemDiv = document.createElement('div');
             itemDiv.className = 'p-2.5 hover:bg-[#0056B3]/10 cursor-pointer flex justify-between items-center text-xs transition-colors';
             itemDiv.innerHTML = `
               <span class="font-bold text-[#1A237E]">${escapeHtml(prod.name)}</span>
-              <span class="font-bold text-[#0056B3]">${prod.base_price} ج.م</span>
+              <span class="font-bold text-emerald-600 font-mono">${wholesalePrice} ج.م (جملة)</span>
             `;
             itemDiv.onclick = () => selectCatalogProduct(prod);
             elSearchResultsList.appendChild(itemDiv);
@@ -708,6 +711,7 @@
       // Extract all available sizes, colors, and variant options from product DB record
       function getAvailableProductOptions(prod) {
         const options = [];
+        const effectivePrice = prod.wholesale_price || prod.base_price;
 
         // 1. Check sizes array column in products table
         if (Array.isArray(prod.sizes) && prod.sizes.length > 0) {
@@ -718,7 +722,7 @@
                 id: `size_${label}`,
                 label: `المقاس: ${label}`,
                 rawLabel: `مقاس ${label}`,
-                price: prod.base_price
+                price: effectivePrice
               });
             }
           });
@@ -733,7 +737,7 @@
                 id: `color_${label}`,
                 label: `اللون / النوع: ${label}`,
                 rawLabel: label,
-                price: prod.base_price
+                price: effectivePrice
               });
             }
           });
@@ -743,7 +747,7 @@
         const validVariants = (prod.product_variants || []).filter(v => !v.deleted_at);
         const realVariants = validVariants.filter(v => v.label && v.label.trim() !== 'افتراضي');
         realVariants.forEach(v => {
-          const price = (v.price_override !== null && v.price_override !== undefined) ? v.price_override : prod.base_price;
+          const price = (v.price_override !== null && v.price_override !== undefined) ? v.price_override : effectivePrice;
           const label = v.label.trim();
           options.push({
             id: `variant_${v.id}`,
@@ -762,11 +766,12 @@
         elSearchInput.value = prod.name;
         elSearchResultsList.classList.add('hidden');
 
-        elSelectedText.textContent = `المنتج المحدد: ${prod.name} (${prod.base_price} ج.م)`;
+        const effectivePrice = prod.wholesale_price || prod.base_price;
+        elSelectedText.textContent = `المنتج المحدد: ${prod.name} (${effectivePrice} ج.م جملة)`;
         elSelectedBadge.classList.remove('hidden');
 
         if (elCatalogPrice) {
-          elCatalogPrice.value = prod.base_price;
+          elCatalogPrice.value = effectivePrice;
         }
 
         // Extract options from sizes, colors, and product_variants
@@ -1371,10 +1376,8 @@
           document.title = originalTitle;
         }, 1000);
 
-        // 2. Open WhatsApp Web chat with clean text
-        const msgText = `مرحباً ${name}\nيسعدنا خدمتكم في متجر بيت العز.\nمرفق لكم الفاتورة رقم: ${invNum}\nالإجمالي المطلوب: ${total}\n\nشكراً لتسوقكم معنا!`;
-
-        const waUrl = `https://wa.me/${phoneToUse}?text=${encodeURIComponent(msgText)}`;
+        // 2. Open WhatsApp Web chat directly for customer (without pre-filled text message)
+        const waUrl = `https://wa.me/${phoneToUse}`;
         window.open(waUrl, '_blank');
       };
 
