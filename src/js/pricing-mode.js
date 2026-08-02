@@ -1,6 +1,6 @@
 /**
  * Pricing Mode Module
- * Handles wholesale pricing mode detection, link rewrites, banner display, and product filtering.
+ * Handles wholesale pricing mode detection, link rewrites, and product filtering.
  */
 
 const STORAGE_KEY = 'bayt_pricing_mode';
@@ -37,26 +37,8 @@ export function getProductPrice(product) {
 }
 
 export function renderWholesaleBanner() {
-  if (typeof document === 'undefined') return;
-  if (!isWholesaleMode()) return;
-  if (document.getElementById('wholesale-top-banner')) return;
-
-  const banner = document.createElement('div');
-  banner.id = 'wholesale-top-banner';
-  banner.className = 'bg-[#1A237E] text-white text-xs md:text-sm font-bold py-2.5 px-4 text-center sticky top-0 z-50 flex items-center justify-center gap-2 shadow-sm border-b border-white/20';
-  banner.innerHTML = `
-    <span class="material-symbols-outlined text-base">local_offer</span>
-    <span>أنتم تتصفحون المتجر حالياً بأسعار الجملة 🏷️</span>
-  `;
-
-  document.body.prepend(banner);
-  
-  // Adjust sticky nav top position if exists
-  const nav = document.querySelector('nav');
-  if (nav && nav.classList.contains('sticky')) {
-    nav.classList.remove('top-0');
-    nav.style.top = `${banner.offsetHeight}px`;
-  }
+  // Banner removed per user request
+  return;
 }
 
 export function initPricingMode() {
@@ -65,19 +47,22 @@ export function initPricingMode() {
   const active = isWholesaleMode();
   if (!active) return;
 
-  renderWholesaleBanner();
-
   const updateLinks = () => {
     document.querySelectorAll('a[href]').forEach(a => {
       const href = a.getAttribute('href');
-      if (!href || href.startsWith('http') || href.startsWith('//') || href.startsWith('javascript:') || href.startsWith('#')) return;
+      if (!href || href.startsWith('http://') || href.startsWith('https://') || href.startsWith('//') || href.startsWith('javascript:') || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')) return;
+
+      // Skip admin links so admin login and dashboard remain intact
+      if (href.includes('admin/')) return;
 
       try {
-        const url = new URL(href, window.location.origin + window.location.pathname);
-        if (!url.searchParams.has('pricing')) {
-          url.searchParams.set('pricing', 'wholesale');
-          const relativePath = url.pathname.substring(url.pathname.lastIndexOf('/') + 1) + url.search + url.hash;
-          a.setAttribute('href', relativePath);
+        const u = new URL(a.href);
+        if (u.origin === window.location.origin && !u.searchParams.has('pricing')) {
+          u.searchParams.set('pricing', 'wholesale');
+          const originalPath = href.split('?')[0].split('#')[0];
+          const newSearch = u.search;
+          const hash = u.hash;
+          a.setAttribute('href', `${originalPath}${newSearch}${hash}`);
         }
       } catch (e) {
         // ignore invalid URLs
