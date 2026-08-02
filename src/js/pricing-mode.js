@@ -43,7 +43,7 @@ export function renderWholesaleBanner() {
 
   const banner = document.createElement('div');
   banner.id = 'wholesale-top-banner';
-  banner.className = 'bg-amber-600 text-white text-xs md:text-sm font-bold py-2 px-4 text-center sticky top-0 z-50 flex items-center justify-center gap-2 shadow-sm';
+  banner.className = 'bg-[#1A237E] text-white text-xs md:text-sm font-bold py-2.5 px-4 text-center sticky top-0 z-50 flex items-center justify-center gap-2 shadow-sm border-b border-white/20';
   banner.innerHTML = `
     <span class="material-symbols-outlined text-base">local_offer</span>
     <span>أنتم تتصفحون المتجر حالياً بأسعار الجملة 🏷️</span>
