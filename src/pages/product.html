@@ -77,7 +77,9 @@
     import { fetchProductDetails } from '../js/products-api.js';
     import { addToCart, getCartItems, calculateCartTotals } from '../js/cart.js';
     import { initializeSearchBar } from '../js/search-bar.js';
+    import { initPricingMode, isWholesaleMode } from '../js/pricing-mode.js';
 
+    initPricingMode();
     initializeSearchBar(document.getElementById('search-bar-slot'));
 
     const app = document.querySelector('#app');
@@ -102,176 +104,193 @@
     } else {
       try {
         const product = await fetchProductDetails(id);
-        let selected = product.variants.find(v => v.is_in_stock) || product.variants[0];
-        let selectedSize = product.sizes && product.sizes.length > 0 ? product.sizes[0] : null;
-        let selectedColor = product.colors && product.colors.length > 0 ? product.colors[0] : null;
 
-        function render() {
-          const value = resolveVariant(selected, product);
-          
+        if (isWholesaleMode() && (!product.wholesale_price || product.wholesale_price <= 0)) {
           app.innerHTML = `
-            <!-- Breadcrumbs -->
-            <nav class="text-[#75777E] text-sm mb-6" aria-label="Breadcrumb">
-              <ol class="inline-flex items-center gap-2">
-                <li><a class="hover:text-primary transition-colors" href="index.html">الرئيسية</a></li>
-                <li><span class="material-symbols-outlined text-xs">chevron_left</span></li>
-                <li><a class="hover:text-primary transition-colors" href="category.html?section=${product.sections?.slug || ''}">${escapeHtml(product.sections?.name || 'القسم')}</a></li>
-                <li><span class="material-symbols-outlined text-xs">chevron_left</span></li>
-                <li class="font-semibold text-primary">${escapeHtml(product.name)}</li>
-              </ol>
-            </nav>
-
-            <!-- Product Layout Card -->
-            <div class="bg-white border border-[#9E9E9E]/20 rounded-3xl p-6 md:p-8 shadow-sm flex flex-col md:flex-row gap-8">
-              
-              <!-- Product Image Section -->
-              <div class="w-full md:w-1/2 aspect-square bg-gray-50 rounded-2xl overflow-hidden border border-[#9E9E9E]/10">
-                <img class="w-full h-full object-cover transition-transform duration-500 hover:scale-[1.03]" src="${value.image || '../public/assets/placeholder.svg'}" alt="${escapeHtml(product.name)}">
-              </div>
-
-              <!-- Product Details Section -->
-              <div class="w-full md:w-1/2 flex flex-col justify-between">
-                <div>
-                  <span class="inline-block bg-[#0056B3]/10 text-[#0056B3] text-xs font-bold px-3 py-1 rounded-full mb-3">${escapeHtml(product.sections?.name || '')}</span>
-                  <h1 class="text-2xl md:text-3xl font-extrabold text-[#1A237E] mb-3">${escapeHtml(product.name)}</h1>
-                  <p class="text-[#75777E] leading-relaxed mb-6 text-sm md:text-base">${escapeHtml(product.description || '')}</p>
-
-                  <!-- Swatches / Variants -->
-                  ${product.variants.length > 1 || (product.variants.length === 1 && product.variants[0].label !== 'افتراضي') ? `
-                  <div class="mb-6">
-                    <h3 class="font-bold text-[#1A237E] mb-2 text-sm">الأنواع المتاحة:</h3>
-                    <div class="flex flex-wrap gap-2 swatches">
-                      ${product.variants.map(v => {
-                        const isSelected = v.id === selected.id;
-                        const inStock = v.is_in_stock;
-                        let btnClass = 'px-4 py-2 border rounded-full text-sm transition-all duration-200 ';
-                        
-                        if (!inStock) {
-                          btnClass += 'opacity-40 line-through bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed';
-                        } else if (isSelected) {
-                          btnClass += 'bg-[#0056B3]/10 text-[#0056B3] border-[#0056B3] font-bold ring-2 ring-[#0056B3]/25';
-                        } else {
-                          btnClass += 'bg-white text-[#75777E] border-gray-200 hover:border-[#0056B3] hover:text-[#0056B3]';
-                        }
-
-                        return `
-                          <button class="swatch ${btnClass}" data-id="${v.id}" ${inStock ? '' : 'disabled'}>
-                            ${escapeHtml(v.label)}
-                          </button>
-                        `;
-                      }).join('')}
-                    </div>
-                  </div>
-                  ` : ''}
-
-                  <!-- Sizes -->
-                  ${product.sizes && product.sizes.length > 0 ? `
-                  <div class="mb-6">
-                    <h3 class="font-bold text-[#1A237E] mb-2 text-sm">المقاس المتاح:</h3>
-                    <div class="flex flex-wrap gap-2 sizes">
-                      ${product.sizes.map(s => {
-                        const isSelected = s === selectedSize;
-                        let btnClass = 'px-4 py-2 border rounded-full text-sm transition-all duration-200 ';
-                        if (isSelected) {
-                          btnClass += 'bg-[#0056B3]/10 text-[#0056B3] border-[#0056B3] font-bold ring-2 ring-[#0056B3]/25';
-                        } else {
-                          btnClass += 'bg-white text-[#75777E] border-gray-200 hover:border-[#0056B3] hover:text-[#0056B3]';
-                        }
-                        return `
-                          <button class="size-swatch ${btnClass}" data-size="${s}">
-                            ${s}
-                          </button>
-                        `;
-                      }).join('')}
-                    </div>
-                  </div>
-                  ` : ''}
-
-                  <!-- Colors -->
-                  ${product.colors && product.colors.length > 0 ? `
-                  <div class="mb-6">
-                    <h3 class="font-bold text-[#1A237E] mb-2 text-sm">اللون المتاح:</h3>
-                    <div class="flex flex-wrap gap-2 colors">
-                      ${product.colors.map(c => {
-                        const isSelected = c === selectedColor;
-                        let btnClass = 'px-4 py-2 border rounded-full text-sm transition-all duration-200 ';
-                        if (isSelected) {
-                          btnClass += 'bg-[#0056B3]/10 text-[#0056B3] border-[#0056B3] font-bold ring-2 ring-[#0056B3]/25';
-                        } else {
-                          btnClass += 'bg-white text-[#75777E] border-gray-200 hover:border-[#0056B3] hover:text-[#0056B3]';
-                        }
-                        return `
-                          <button class="color-swatch ${btnClass}" data-color="${c}">
-                            ${c}
-                          </button>
-                        `;
-                      }).join('')}
-                    </div>
-                  </div>
-                  ` : ''}
-                </div>
-
-                <!-- Price and CTA -->
-                <div class="pt-6 border-t border-[#9E9E9E]/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div class="flex flex-col">
-                    <span class="text-xs text-[#75777E]">السعر</span>
-                    <strong class="text-2xl md:text-3xl font-extrabold text-[#0056B3] transition-all" id="price">${formatPrice(value.price)}</strong>
-                  </div>
-                  <button class="flex-grow sm:flex-grow-0 bg-[#0056B3] hover:bg-[#004491] active:scale-95 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-3 px-8 rounded-xl flex items-center justify-center gap-2 shadow-md transition-all" id="add" ${value.is_in_stock ? '' : 'disabled'}>
-                    <span class="material-symbols-outlined">${value.is_in_stock ? 'shopping_cart' : 'info'}</span>
-                    <span>${value.is_in_stock ? 'أضف للسلة' : 'غير متوفر'}</span>
-                  </button>
-                </div>
-
-              </div>
-
+            <div class="flex flex-col items-center justify-center py-16 bg-white border border-[#9E9E9E]/20 rounded-3xl text-center p-8">
+              <span class="material-symbols-outlined text-6xl text-amber-500 mb-4">sell</span>
+              <h3 class="text-xl font-bold text-[#1A237E] mb-2">عفواً، هذا المنتج غير متاح للبيع بالجملة</h3>
+              <p class="text-[#75777E] mb-6">لم يتم تحديد سعر جملة لهذا المنتج حالياً. يرجى تصفح باقي المنتجات المسعرة بالجملة.</p>
+              <a class="inline-flex items-center gap-2 bg-[#0056B3] hover:bg-[#004491] text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm" href="index.html">
+                <span class="material-symbols-outlined text-sm">home</span>
+                تصفح متجر الجملة
+              </a>
             </div>
           `;
+        } else {
+          let selected = product.variants.find(v => v.is_in_stock) || product.variants[0];
+          let selectedSize = product.sizes && product.sizes.length > 0 ? product.sizes[0] : null;
+          let selectedColor = product.colors && product.colors.length > 0 ? product.colors[0] : null;
 
-          // Handle back navigation safely
-          app.querySelectorAll('.swatch').forEach(button => {
-            button.onclick = () => {
-              selected = product.variants.find(v => v.id === button.dataset.id);
-              render();
-            };
-          });
-
-          app.querySelectorAll('.size-swatch').forEach(button => {
-            button.onclick = () => {
-              selectedSize = button.dataset.size;
-              render();
-            };
-          });
-
-          app.querySelectorAll('.color-swatch').forEach(button => {
-            button.onclick = () => {
-              selectedColor = button.dataset.color;
-              render();
-            };
-          });
-
-          app.querySelector('#add')?.addEventListener('click', function() {
-            const btn = this;
-            if (btn.disabled) return;
-            btn.disabled = true;
-            const originalText = btn.innerHTML;
-            btn.innerHTML = `<span class="material-symbols-outlined">done</span><span>تمت الإضافة ✓</span>`;
-            btn.classList.remove('bg-[#0056B3]', 'hover:bg-[#004491]');
-            btn.classList.add('bg-green-600', 'hover:bg-green-700');
+          function render() {
+            const value = resolveVariant(selected, product);
+            const activePrice = isWholesaleMode() ? product.wholesale_price : value.price;
+            const priceColorClass = isWholesaleMode() ? 'text-amber-700' : 'text-[#0056B3]';
             
-            addToCart(product.id, selected.id, selected.label, value.price, value.image, product.name, selectedSize, selectedColor);
-            updateCartBadge();
-            
-            setTimeout(() => {
-              btn.disabled = false;
-              btn.innerHTML = originalText;
-              btn.classList.remove('bg-green-600', 'hover:bg-green-700');
-              btn.classList.add('bg-[#0056B3]', 'hover:bg-[#004491]');
-            }, 1500);
-          });
+            app.innerHTML = `
+              <!-- Breadcrumbs -->
+              <nav class="text-[#75777E] text-sm mb-6" aria-label="Breadcrumb">
+                <ol class="inline-flex items-center gap-2">
+                  <li><a class="hover:text-primary transition-colors" href="index.html">الرئيسية</a></li>
+                  <li><span class="material-symbols-outlined text-xs">chevron_left</span></li>
+                  <li><a class="hover:text-primary transition-colors" href="category.html?section=${product.sections?.slug || ''}">${escapeHtml(product.sections?.name || 'القسم')}</a></li>
+                  <li><span class="material-symbols-outlined text-xs">chevron_left</span></li>
+                  <li class="font-semibold text-primary">${escapeHtml(product.name)}</li>
+                </ol>
+              </nav>
+
+              <!-- Product Layout Card -->
+              <div class="bg-white border border-[#9E9E9E]/20 rounded-3xl p-6 md:p-8 shadow-sm flex flex-col md:flex-row gap-8">
+                
+                <!-- Product Image Section -->
+                <div class="w-full md:w-1/2 aspect-square bg-gray-50 rounded-2xl overflow-hidden border border-[#9E9E9E]/10">
+                  <img class="w-full h-full object-cover transition-transform duration-500 hover:scale-[1.03]" src="${value.image || '../public/assets/placeholder.svg'}" alt="${escapeHtml(product.name)}">
+                </div>
+
+                <!-- Product Details Section -->
+                <div class="w-full md:w-1/2 flex flex-col justify-between">
+                  <div>
+                    <span class="inline-block bg-[#0056B3]/10 text-[#0056B3] text-xs font-bold px-3 py-1 rounded-full mb-3">${escapeHtml(product.sections?.name || '')}</span>
+                    <h1 class="text-2xl md:text-3xl font-extrabold text-[#1A237E] mb-3">${escapeHtml(product.name)}</h1>
+                    <p class="text-[#75777E] leading-relaxed mb-6 text-sm md:text-base">${escapeHtml(product.description || '')}</p>
+
+                    <!-- Swatches / Variants -->
+                    ${product.variants.length > 1 || (product.variants.length === 1 && product.variants[0].label !== 'افتراضي') ? `
+                    <div class="mb-6">
+                      <h3 class="font-bold text-[#1A237E] mb-2 text-sm">الأنواع المتاحة:</h3>
+                      <div class="flex flex-wrap gap-2 swatches">
+                        ${product.variants.map(v => {
+                          const isSelected = v.id === selected.id;
+                          const inStock = v.is_in_stock;
+                          let btnClass = 'px-4 py-2 border rounded-full text-sm transition-all duration-200 ';
+                          
+                          if (!inStock) {
+                            btnClass += 'opacity-40 line-through bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed';
+                          } else if (isSelected) {
+                            btnClass += 'bg-[#0056B3]/10 text-[#0056B3] border-[#0056B3] font-bold ring-2 ring-[#0056B3]/25';
+                          } else {
+                            btnClass += 'bg-white text-[#75777E] border-gray-200 hover:border-[#0056B3] hover:text-[#0056B3]';
+                          }
+
+                          return `
+                            <button class="swatch ${btnClass}" data-id="${v.id}" ${inStock ? '' : 'disabled'}>
+                              ${escapeHtml(v.label)}
+                            </button>
+                          `;
+                        }).join('')}
+                      </div>
+                    </div>
+                    ` : ''}
+
+                    <!-- Sizes -->
+                    ${product.sizes && product.sizes.length > 0 ? `
+                    <div class="mb-6">
+                      <h3 class="font-bold text-[#1A237E] mb-2 text-sm">المقاس المتاح:</h3>
+                      <div class="flex flex-wrap gap-2 sizes">
+                        ${product.sizes.map(s => {
+                          const isSelected = s === selectedSize;
+                          let btnClass = 'px-4 py-2 border rounded-full text-sm transition-all duration-200 ';
+                          if (isSelected) {
+                            btnClass += 'bg-[#0056B3]/10 text-[#0056B3] border-[#0056B3] font-bold ring-2 ring-[#0056B3]/25';
+                          } else {
+                            btnClass += 'bg-white text-[#75777E] border-gray-200 hover:border-[#0056B3] hover:text-[#0056B3]';
+                          }
+                          return `
+                            <button class="size-swatch ${btnClass}" data-size="${s}">
+                              ${s}
+                            </button>
+                          `;
+                        }).join('')}
+                      </div>
+                    </div>
+                    ` : ''}
+
+                    <!-- Colors -->
+                    ${product.colors && product.colors.length > 0 ? `
+                    <div class="mb-6">
+                      <h3 class="font-bold text-[#1A237E] mb-2 text-sm">اللون المتاح:</h3>
+                      <div class="flex flex-wrap gap-2 colors">
+                        ${product.colors.map(c => {
+                          const isSelected = c === selectedColor;
+                          let btnClass = 'px-4 py-2 border rounded-full text-sm transition-all duration-200 ';
+                          if (isSelected) {
+                            btnClass += 'bg-[#0056B3]/10 text-[#0056B3] border-[#0056B3] font-bold ring-2 ring-[#0056B3]/25';
+                          } else {
+                            btnClass += 'bg-white text-[#75777E] border-gray-200 hover:border-[#0056B3] hover:text-[#0056B3]';
+                          }
+                          return `
+                            <button class="color-swatch ${btnClass}" data-color="${c}">
+                              ${c}
+                            </button>
+                          `;
+                        }).join('')}
+                      </div>
+                    </div>
+                    ` : ''}
+                  </div>
+
+                  <!-- Price and CTA -->
+                  <div class="pt-6 border-t border-[#9E9E9E]/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div class="flex flex-col">
+                      <span class="text-xs text-[#75777E]">${isWholesaleMode() ? 'سعر الجملة' : 'السعر'}</span>
+                      <strong class="text-2xl md:text-3xl font-extrabold ${priceColorClass} transition-all" id="price">${formatPrice(activePrice)}</strong>
+                    </div>
+                    <button class="flex-grow sm:flex-grow-0 bg-[#0056B3] hover:bg-[#004491] active:scale-95 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-3 px-8 rounded-xl flex items-center justify-center gap-2 shadow-md transition-all" id="add" ${value.is_in_stock ? '' : 'disabled'}>
+                      <span class="material-symbols-outlined">${value.is_in_stock ? 'shopping_cart' : 'info'}</span>
+                      <span>${value.is_in_stock ? 'أضف للسلة' : 'غير متوفر'}</span>
+                    </button>
+                  </div>
+
+                </div>
+
+              </div>
+            `;
+
+            // Handle back navigation safely
+            app.querySelectorAll('.swatch').forEach(button => {
+              button.onclick = () => {
+                selected = product.variants.find(v => v.id === button.dataset.id);
+                render();
+              };
+            });
+
+            app.querySelectorAll('.size-swatch').forEach(button => {
+              button.onclick = () => {
+                selectedSize = button.dataset.size;
+                render();
+              };
+            });
+
+            app.querySelectorAll('.color-swatch').forEach(button => {
+              button.onclick = () => {
+                selectedColor = button.dataset.color;
+                render();
+              };
+            });
+
+            app.querySelector('#add')?.addEventListener('click', function() {
+              const btn = this;
+              if (btn.disabled) return;
+              btn.disabled = true;
+              const originalText = btn.innerHTML;
+              btn.innerHTML = `<span class="material-symbols-outlined">done</span><span>تمت الإضافة ✓</span>`;
+              btn.classList.remove('bg-[#0056B3]', 'hover:bg-[#004491]');
+              btn.classList.add('bg-green-600', 'hover:bg-green-700');
+              
+              addToCart(product.id, selected.id, selected.label, activePrice, value.image, product.name, selectedSize, selectedColor);
+              updateCartBadge();
+              
+              setTimeout(() => {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                btn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                btn.classList.add('bg-[#0056B3]', 'hover:bg-[#004491]');
+              }, 1500);
+            });
+          }
+
+          render();
         }
-
-        render();
 
       } catch (e) {
         console.error("Product render error:", e);

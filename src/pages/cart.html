@@ -134,7 +134,9 @@
     import { fetchMerchantNumber } from '../js/settings-api.js';
     import { validateCartItems } from '../js/products-api.js';
     import { initializeSearchBar } from '../js/search-bar.js';
+    import { initPricingMode, isWholesaleMode } from '../js/pricing-mode.js';
 
+    initPricingMode();
     initializeSearchBar(document.getElementById('search-bar-slot'));
 
     let items = getCartItems();
@@ -167,7 +169,7 @@
 
     function render() {
       const total = calculateCartTotals(items);
-      const text = buildOrderText(items);
+      const text = buildOrderText(items, new Date(), isWholesaleMode());
       updateCartBadge();
 
       // Display Cart Lines
@@ -303,7 +305,7 @@
       btn.disabled = true;
       const originalText = btn.innerHTML;
       btn.innerHTML = `<span class="material-symbols-outlined">hourglass_empty</span><span>جاري التحويل...</span>`;
-      const text = buildOrderText(items);
+      const text = buildOrderText(items, new Date(), isWholesaleMode());
       window.open(makeWhatsAppUrl(phone, text), '_blank');
       setTimeout(() => {
         btn.disabled = false;
@@ -314,7 +316,7 @@
 
     // Clipboard copy action
     document.getElementById('copy').onclick = async () => {
-      const text = buildOrderText(items);
+      const text = buildOrderText(items, new Date(), isWholesaleMode());
       const copyBtn = document.getElementById('copy');
       try {
         await navigator.clipboard.writeText(text);

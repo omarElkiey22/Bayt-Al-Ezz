@@ -79,6 +79,12 @@ export async function initializeProductsPage(root) {
             </div>
 
             <div>
+              <label class="block text-xs font-semibold text-[#1A237E] mb-1.5">سعر الجملة (ج.م) <span class="text-gray-400 font-normal">(اختياري)</span></label>
+              <input class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-[#1A237E] focus:border-[#0056B3] focus:ring-1 focus:ring-[#0056B3] focus:outline-none" name="wholesale_price" type="number" min="0" placeholder="اتركه فارغاً إذا لم تكن له تسعيرة جملة" value="${editing?.wholesale_price ?? ''}">
+              <p class="text-[10px] text-[#75777E] mt-1">عند كتابة سعر جملة، سيظهر هذا المنتج في رابط الجملة الخاطف للعملاء.</p>
+            </div>
+
+            <div>
               <label class="block text-xs font-semibold text-[#1A237E] mb-1.5">صورة المنتج</label>
               <input class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-[#0056B3]/10 file:text-[#0056B3] hover:file:bg-[#0056B3]/20" name="image" type="file" accept="image/jpeg,image/png,image/webp">
               <p class="text-[10px] text-[#75777E] mt-1">اختياري: اتركه فارغاً إذا لم تكن هناك صورة.</p>
@@ -171,7 +177,10 @@ export async function initializeProductsPage(root) {
                         <td class="p-4">
                           <span class="bg-gray-100 text-gray-600 text-xs font-semibold px-2.5 py-0.5 rounded-full">${section?.name || 'غير محدد'}</span>
                         </td>
-                        <td class="p-4 font-bold text-[#0056B3]">${formatPrice(p.base_price)}</td>
+                        <td class="p-4">
+                          <div class="font-bold text-[#0056B3]">${formatPrice(p.base_price)}</div>
+                          ${p.wholesale_price ? `<div class="text-xs text-amber-700 font-bold bg-amber-50 px-2 py-0.5 rounded border border-amber-200 w-fit mt-1">جملة: ${formatPrice(p.wholesale_price)}</div>` : ''}
+                        </td>
                         <td class="p-4">
                           <div class="flex items-center justify-center gap-2">
                             <button class="w-8 h-8 rounded-full flex items-center justify-center text-primary hover:bg-[#0056B3]/10 transition-colors" data-edit="${p.id}" title="تعديل">
@@ -309,7 +318,10 @@ export async function initializeProductsPage(root) {
                   <td class="p-4">
                     <span class="bg-gray-100 text-gray-600 text-xs font-semibold px-2.5 py-0.5 rounded-full">${section?.name || 'غير محدد'}</span>
                   </td>
-                  <td class="p-4 font-bold text-[#0056B3]">${formatPrice(p.base_price)}</td>
+                  <td class="p-4">
+                    <div class="font-bold text-[#0056B3]">${formatPrice(p.base_price)}</div>
+                    ${p.wholesale_price ? `<div class="text-xs text-amber-700 font-bold bg-amber-50 px-2 py-0.5 rounded border border-amber-200 w-fit mt-1">جملة: ${formatPrice(p.wholesale_price)}</div>` : ''}
+                  </td>
                   <td class="p-4">
                     <div class="flex items-center justify-center gap-2">
                       <button class="w-8 h-8 rounded-full flex items-center justify-center text-primary hover:bg-[#0056B3]/10 transition-colors" data-edit="${p.id}" title="تعديل">
@@ -430,6 +442,7 @@ export async function initializeProductsPage(root) {
           description: data.description,
           section_id: data.section_id,
           base_price: Number(data.base_price),
+          wholesale_price: data.wholesale_price !== undefined && data.wholesale_price !== '' && data.wholesale_price !== null ? Number(data.wholesale_price) : null,
           primary_image_url: imageUrl,
           sizes: sizesArray,
           colors: colorsArray

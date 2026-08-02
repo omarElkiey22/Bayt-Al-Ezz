@@ -102,6 +102,10 @@
     import { initializeHouse } from '../js/house-interactions.js';
     import { getCartItems, calculateCartTotals } from '../js/cart.js';
     import { initializeSearchBar } from '../js/search-bar.js';
+    import { initPricingMode } from '../js/pricing-mode.js';
+
+    // Initialize wholesale / pricing mode if query param or session active
+    initPricingMode();
 
     // Initialize search bar
     initializeSearchBar(document.getElementById('search-bar-slot'));
