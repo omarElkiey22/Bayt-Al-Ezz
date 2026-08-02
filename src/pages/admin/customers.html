@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>إدارة بيانات العملاء | بيت العز</title>
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <!-- Google Fonts Cairo & Material Symbols -->
+  <link rel="stylesheet" href="../../css/tokens.css">
+  <link rel="stylesheet" href="../../css/admin.css">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <script id="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#0056B3',
+            navy: '#1A237E',
+            light: '#F8F9FA'
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-[#F8F9FA] text-[#1A237E] min-h-screen flex flex-col md:flex-row antialiased">
+
+  <!-- Mobile Top Bar -->
+  <header class="md:hidden bg-[#1A237E] text-white w-full h-16 flex justify-between items-center px-4 shrink-0 shadow-md relative z-40">
+    <div class="flex items-center gap-3">
+      <button class="p-2 hover:bg-white/10 rounded-xl transition-colors flex items-center justify-center" id="menu-toggle" aria-label="القائمة">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+      <div class="font-bold text-lg">بيت العز</div>
+    </div>
+    <button class="p-2 hover:bg-white/10 rounded-full transition-colors flex items-center justify-center" id="logout-mobile" aria-label="تسجيل الخروج">
+      <span class="material-symbols-outlined">logout</span>
+    </button>
+  </header>
+
+  <!-- Side Navigation Bar (Desktop & Mobile) -->
+  <div class="fixed inset-0 bg-black/40 z-40 hidden md:hidden transition-opacity duration-300" id="sidebar-backdrop"></div>
+  
+  <aside class="fixed right-0 top-0 h-full w-72 flex flex-col bg-white border-l border-[#9E9E9E]/20 shadow-xl z-50 transition-transform duration-300 ease-in-out translate-x-full md:translate-x-0" id="admin-sidebar">
+    <div class="p-6 border-b border-[#9E9E9E]/10 flex flex-col gap-1">
+      <span class="font-extrabold text-xl text-[#0056B3] tracking-wide">بيت العز</span>
+      <span class="text-xs text-[#75777E]">لوحة تحكم التاجر</span>
+    </div>
+    
+    <nav class="flex-grow p-4 flex flex-col gap-2">
+      <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-[#75777E] hover:bg-gray-100 hover:text-[#1A237E]" href="dashboard.html">
+        <span class="material-symbols-outlined">dashboard</span>
+        <span>الرئيسية</span>
+      </a>
+      <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-[#75777E] hover:bg-gray-100 hover:text-[#1A237E]" href="sections.html">
+        <span class="material-symbols-outlined">layers</span>
+        <span>إدارة الأقسام</span>
+      </a>
+      <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-[#75777E] hover:bg-gray-100 hover:text-[#1A237E]" href="products.html">
+        <span class="material-symbols-outlined">inventory_2</span>
+        <span>إدارة المنتجات</span>
+      </a>
+      <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-[#75777E] hover:bg-gray-100 hover:text-[#1A237E]" href="invoices.html">
+        <span class="material-symbols-outlined">receipt_long</span>
+        <span>إنشاء وطباعة فاتورة</span>
+      </a>
+      <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 bg-[#0056B3]/10 text-[#0056B3] font-bold border-r-4 border-[#0056B3]" href="customers.html">
+        <span class="material-symbols-outlined">group</span>
+        <span>إدارة العملاء</span>
+      </a>
+    </nav>
+
+    <div class="p-4 border-t border-[#9E9E9E]/10">
+      <button class="w-full bg-[#1A237E]/5 hover:bg-red-50 hover:text-red-600 text-[#1A237E] font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all" id="logout">
+        <span class="material-symbols-outlined">logout</span>
+        <span>تسجيل الخروج</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="flex-grow md:mr-72 p-4 md:p-8">
+    <div class="max-w-6xl mx-auto space-y-6">
+      
+      <!-- Top Title Bar -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 class="text-2xl md:text-3xl font-extrabold text-[#1A237E] flex items-center gap-2">
+            <span class="material-symbols-outlined text-[#0056B3]">group</span>
+            <span>دليل وإدارة بيانات العملاء</span>
+          </h1>
+          <p class="text-[#75777E] text-sm mt-1">استعرض قائمة العملاء المسجلين، وعدّل أرقام الهواتف أو العناوين لسهولة التعبئة والواتساب.</p>
+        </div>
+      </div>
+
+      <!-- Search & Action Bar -->
+      <div class="bg-white border border-[#9E9E9E]/20 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row gap-4 items-center justify-between">
+        <div class="relative w-full sm:w-96">
+          <input type="text" id="input-customer-search" placeholder="ابحث باسم العميل، رقم الهاتف، أو العنوان..." class="w-full px-3 py-2.5 pl-10 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#0056B3] focus:outline-none" />
+          <span class="material-symbols-outlined absolute left-3 top-3 text-gray-400 text-lg">search</span>
+        </div>
+        
+        <div class="flex items-center gap-2 text-xs text-[#75777E] font-bold">
+          <span>إجمالي العملاء:</span>
+          <span id="customers-count-badge" class="px-3 py-1 bg-[#0056B3]/10 text-[#0056B3] rounded-full font-mono text-sm">0</span>
+        </div>
+      </div>
+
+      <!-- Customers Table Card -->
+      <div class="bg-white border border-[#9E9E9E]/20 rounded-2xl shadow-sm overflow-hidden">
+        <div class="overflow-x-auto w-full">
+          <table class="w-full text-right text-xs md:text-sm border-collapse whitespace-nowrap">
+            <thead>
+              <tr class="bg-[#1A237E] text-white">
+                <th class="py-3.5 px-4 font-bold text-center w-12">#</th>
+                <th class="py-3.5 px-4 font-bold">اسم العميل</th>
+                <th class="py-3.5 px-4 font-bold">رقم الواتساب / الهاتف</th>
+                <th class="py-3.5 px-4 font-bold">العنوان والتوصيل</th>
+                <th class="py-3.5 px-4 font-bold text-center">العمليات</th>
+              </tr>
+            </thead>
+            <tbody id="customers-tbody" class="divide-y divide-gray-200">
+              <!-- Dynamic Rows -->
+            </tbody>
+          </table>
+        </div>
+        
+        <div id="empty-customers-msg" class="py-16 text-center text-[#75777E] text-sm">
+          <span class="material-symbols-outlined text-5xl block mb-2 text-gray-300">person_search</span>
+          <span>لا يوجد عملاء مسجلين حالياً. سيتم حفظ بيانات كل عميل تلقائياً عند إجراء أول فاتورة له.</span>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Edit Customer Modal Dialog -->
+  <div id="edit-customer-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4 relative">
+      <div class="flex justify-between items-center border-b pb-3">
+        <h3 class="font-bold text-base text-[#1A237E] flex items-center gap-2">
+          <span class="material-symbols-outlined text-[#0056B3]">edit</span>
+          <span>تعديل بيانات العميل</span>
+        </h3>
+        <button id="close-modal-btn" class="text-gray-400 hover:text-gray-600">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-sm">
+        <div>
+          <label class="block text-xs font-bold text-[#75777E] mb-1">اسم العميل</label>
+          <input type="text" id="modal-cust-name" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#0056B3]" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-[#75777E] mb-1">رقم الواتساب / الهاتف</label>
+          <input type="text" id="modal-cust-phone" placeholder="مثال: 01012345678" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#0056B3]" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-[#75777E] mb-1">العنوان والتوصيل</label>
+          <textarea id="modal-cust-address" rows="2" placeholder="العنوان أو المدينة" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#0056B3]"></textarea>
+        </div>
+      </div>
+
+      <div class="flex gap-2 pt-2">
+        <button id="save-cust-btn" class="flex-grow bg-[#0056B3] hover:bg-[#004085] text-white font-bold py-2.5 px-4 rounded-xl text-sm transition-all flex items-center justify-center gap-1 shadow-md">
+          <span class="material-symbols-outlined text-base">save</span>
+          <span>حفظ التعديلات</span>
+        </button>
+        <button id="cancel-cust-btn" class="bg-gray-100 hover:bg-gray-200 text-[#1A237E] font-bold py-2.5 px-4 rounded-xl text-sm">
+          إلغاء
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { supabase } from '../../js/supabase-client.js';
+    import { requireAdmin } from '../../js/admin/auth-gate.js';
+    import { fetchCustomers, updateCustomer, deleteCustomer } from '../../js/admin/customers-api.js';
+    import { escapeHtml } from '../../js/utils.js';
+
+    if (await requireAdmin()) {
+      let customersList = [];
+      let editingCustomer = null;
+
+      const tbody = document.getElementById('customers-tbody');
+      const emptyMsg = document.getElementById('empty-customers-msg');
+      const countBadge = document.getElementById('customers-count-badge');
+      const searchInput = document.getElementById('input-customer-search');
+
+      const modal = document.getElementById('edit-customer-modal');
+      const modalName = document.getElementById('modal-cust-name');
+      const modalPhone = document.getElementById('modal-cust-phone');
+      const modalAddress = document.getElementById('modal-cust-address');
+      const btnSaveCust = document.getElementById('save-cust-btn');
+      const btnCancelCust = document.getElementById('cancel-cust-btn');
+      const btnCloseModal = document.getElementById('close-modal-btn');
+
+      async function loadData() {
+        emptyMsg.textContent = 'جاري التحميل...';
+        tbody.innerHTML = '';
+        customersList = await fetchCustomers(searchInput.value);
+        renderTable();
+      }
+
+      function renderTable() {
+        countBadge.textContent = customersList.length;
+        tbody.innerHTML = '';
+
+        if (customersList.length === 0) {
+          emptyMsg.classList.remove('hidden');
+          emptyMsg.innerHTML = searchInput.value ? `
+            <span class="material-symbols-outlined text-4xl block mb-2 text-gray-300">search_off</span>
+            <span>لا توجد نتائج بحث مطابقة لكلمة "${escapeHtml(searchInput.value)}"</span>
+          ` : `
+            <span class="material-symbols-outlined text-5xl block mb-2 text-gray-300">person_search</span>
+            <span>لا يوجد عملاء مسجلين حالياً. سيتم حفظ بيانات كل عميل تلقائياً عند إجراء أول فاتورة له.</span>
+          `;
+        } else {
+          emptyMsg.classList.add('hidden');
+          customersList.forEach((cust, idx) => {
+            const tr = document.createElement('tr');
+            tr.className = 'hover:bg-gray-50 transition-colors border-b border-gray-100';
+            const phoneDisplay = cust.phone ? `<a href="https://wa.me/${cust.phone.replace(/\D/g,'')}" target="_blank" class="font-mono font-bold text-[#0056B3] hover:underline flex items-center gap-1"><span class="material-symbols-outlined text-sm text-green-600">chat</span>${escapeHtml(cust.phone)}</a>` : '<span class="text-gray-400">غير مسجل</span>';
+            
+            tr.innerHTML = `
+              <td class="py-3.5 px-4 font-bold text-gray-500 text-center">${idx + 1}</td>
+              <td class="py-3.5 px-4 font-bold text-[#1A237E]">${escapeHtml(cust.name)}</td>
+              <td class="py-3.5 px-4">${phoneDisplay}</td>
+              <td class="py-3.5 px-4 text-gray-600">${escapeHtml(cust.address || 'غير محدد')}</td>
+              <td class="py-3.5 px-4 text-center space-x-2 space-x-reverse">
+                <button data-id="${cust.id || ''}" data-name="${escapeHtml(cust.name)}" class="btn-edit-cust px-3 py-1 bg-[#0056B3]/10 hover:bg-[#0056B3] text-[#0056B3] hover:text-white rounded-lg font-bold text-xs transition-all inline-flex items-center gap-1">
+                  <span class="material-symbols-outlined text-xs">edit</span>
+                  تعديل
+                </button>
+                <button data-id="${cust.id || ''}" data-name="${escapeHtml(cust.name)}" class="btn-delete-cust p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all" title="حذف العميل">
+                  <span class="material-symbols-outlined text-base">delete</span>
+                </button>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          });
+
+          // Attach click listeners
+          tbody.querySelectorAll('.btn-edit-cust').forEach(btn => {
+            btn.onclick = () => {
+              const name = btn.getAttribute('data-name');
+              editingCustomer = customersList.find(c => c.name === name || c.id === btn.getAttribute('data-id'));
+              if (editingCustomer) {
+                modalName.value = editingCustomer.name || '';
+                modalPhone.value = editingCustomer.phone || '';
+                modalAddress.value = editingCustomer.address || '';
+                modal.classList.remove('hidden');
+              }
+            };
+          });
+
+          tbody.querySelectorAll('.btn-delete-cust').forEach(btn => {
+            btn.onclick = async () => {
+              const name = btn.getAttribute('data-name');
+              const id = btn.getAttribute('data-id');
+              if (confirm(`هل أنت تأكد من حذف العميل "${name}"؟`)) {
+                await deleteCustomer(id, name);
+                await loadData();
+              }
+            };
+          });
+        }
+      }
+
+      searchInput.oninput = async () => {
+        customersList = await fetchCustomers(searchInput.value);
+        renderTable();
+      };
+
+      const closeModal = () => modal.classList.add('hidden');
+      btnCancelCust.onclick = closeModal;
+      btnCloseModal.onclick = closeModal;
+
+      btnSaveCust.onclick = async () => {
+        if (!editingCustomer) return;
+        const newName = modalName.value.trim();
+        if (!newName) return alert('يرجى إدخال اسم العميل');
+
+        await updateCustomer(editingCustomer.id, {
+          name: newName,
+          phone: modalPhone.value.trim(),
+          address: modalAddress.value.trim()
+        });
+
+        closeModal();
+        await loadData();
+      };
+
+      // Logout triggers
+      const doLogout = async () => {
+        await supabase.auth.signOut();
+        location.href = 'login.html';
+      };
+      document.querySelector('#logout').onclick = doLogout;
+      document.querySelector('#logout-mobile').onclick = doLogout;
+
+      // Sidebar Toggle for Mobile
+      const menuToggle = document.getElementById('menu-toggle');
+      const sidebar = document.getElementById('admin-sidebar');
+      const backdrop = document.getElementById('sidebar-backdrop');
+      if (menuToggle && sidebar && backdrop) {
+        const toggleSidebar = () => {
+          sidebar.classList.toggle('translate-x-full');
+          backdrop.classList.toggle('hidden');
+        };
+        menuToggle.onclick = toggleSidebar;
+        backdrop.onclick = toggleSidebar;
+      }
+
+      loadData();
+    }
+  </script>
+</body>
+</html>
