@@ -1,6 +1,6 @@
 /**
  * Pricing Mode Module
- * Handles wholesale pricing mode detection, link rewrites, and product filtering.
+ * Handles wholesale pricing mode detection, link rewrites, hero text updates, and product filtering.
  */
 
 const STORAGE_KEY = 'bayt_pricing_mode';
@@ -36,6 +36,25 @@ export function getProductPrice(product) {
   return product.base_price || 0;
 }
 
+export function updateWholesaleHeroText() {
+  if (typeof document === 'undefined') return;
+  if (!isWholesaleMode()) return;
+
+  const titleEl = document.getElementById('hero-title');
+  const desc1El = document.getElementById('hero-desc-1');
+  const desc2El = document.getElementById('hero-desc-2');
+
+  if (titleEl) {
+    titleEl.textContent = 'مرحباً بك في بيت العز 🏷️';
+  }
+  if (desc1El) {
+    desc1El.textContent = 'زوارونا الكرام ، نضع بين أيديكم أجود مستلزمات البيت بأفضل أسعار الجملة 💼✨';
+  }
+  if (desc2El) {
+    desc2El.textContent = 'تصفحوا الغرف وأقسام المتجر واستمتعوا بتجربة تسوق سريعة، ومريحة 🚀📦';
+  }
+}
+
 export function renderWholesaleBanner() {
   // Banner removed per user request
   return;
@@ -46,6 +65,8 @@ export function initPricingMode() {
   
   const active = isWholesaleMode();
   if (!active) return;
+
+  updateWholesaleHeroText();
 
   const updateLinks = () => {
     document.querySelectorAll('a[href]').forEach(a => {
@@ -72,11 +93,13 @@ export function initPricingMode() {
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
+      updateHeroText();
       updateLinks();
       const observer = new MutationObserver(updateLinks);
       observer.observe(document.body, { childList: true, subtree: true });
     });
   } else {
+    updateWholesaleHeroText();
     updateLinks();
     const observer = new MutationObserver(updateLinks);
     observer.observe(document.body, { childList: true, subtree: true });

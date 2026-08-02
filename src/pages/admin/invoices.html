@@ -163,8 +163,8 @@
               </div>
 
               <div>
-                <label class="block text-xs font-bold text-[#75777E] mb-1">رقم الواتساب / الهاتف</label>
-                <input type="text" id="input-customer-phone" placeholder="مثال: 01012345678" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0056B3] text-sm" />
+                <label class="block text-xs font-bold text-[#75777E] mb-1">رقم الواتساب (أرقام فقط)</label>
+                <input type="tel" inputmode="numeric" pattern="[0-9]*" id="input-customer-phone" placeholder="أرقام فقط مثال: 01012345678" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0056B3] text-sm font-mono" />
               </div>
 
               <div>
@@ -1298,6 +1298,13 @@
           const { count } = await supabase.from('invoices').select('*', { count: 'exact', head: true }).is('deleted_at', null);
           if (count !== null) badgeCount.textContent = count;
         } catch (e) {}
+      }
+
+      // Enforce numeric keypad and digits-only for WhatsApp phone field
+      if (elCustPhone) {
+        elCustPhone.addEventListener('input', (e) => {
+          e.target.value = e.target.value.replace(/\D/g, '');
+        });
       }
 
       // Event Listeners for Live Updates
