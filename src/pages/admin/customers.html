@@ -288,7 +288,7 @@
           name: newName,
           phone: modalPhone.value.trim(),
           address: modalAddress.value.trim()
-        });
+        }, editingCustomer.name);
 
         closeModal();
         await loadData();

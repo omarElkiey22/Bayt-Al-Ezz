@@ -1258,13 +1258,26 @@
       }
 
       // Load Existing Invoice into Creator Form
-      function loadInvoiceIntoCreator(inv) {
+      async function loadInvoiceIntoCreator(inv) {
         currentEditingInvoiceId = inv.id || null;
         elInvNumber.value = inv.invoice_number;
         elInvDate.value = inv.issue_date;
         elCustName.value = inv.customer_name || '';
-        if (elCustPhone) elCustPhone.value = inv.customer_phone || '';
         elCustAddress.value = inv.customer_address || '';
+        if (elCustPhone) elCustPhone.value = inv.customer_phone || '';
+
+        // Sync latest customer data if updated in customers DB
+        if (inv.customer_name) {
+          try {
+            const matches = await fetchCustomers(inv.customer_name);
+            const matched = matches.find(c => c.name.trim().toLowerCase() === inv.customer_name.trim().toLowerCase());
+            if (matched) {
+              if (matched.phone) elCustPhone.value = matched.phone;
+              if (matched.address) elCustAddress.value = matched.address;
+            }
+          } catch (e) {}
+        }
+
         elPayMethod.value = inv.payment_method || 'كاش عند الاستلام';
         elPayStatus.value = inv.payment_status || 'مدفوع بالكامل';
         elShipping.value = inv.shipping_fee || 0;
@@ -1347,7 +1360,19 @@
         const invNum = elInvNumber.value.trim();
         const total = viewGrandTotal.textContent;
 
-        const msgText = `مرحباً ${name} 🌹\nيسعدنا خدمتكم في متجر بيت العز.\nمرفق لكم الفاتورة رقم: ${invNum}\nالإجمالي المطلوب: ${total}\n\nشكراً لتسوقكم معنا!`;
+        const originalTitle = document.title;
+        document.title = `فاتورة - ${name} - ${invNum}`;
+        printActionModal.classList.add('hidden');
+
+        // 1. Open print/Save PDF window for admin to download PDF with customer name
+        window.print();
+
+        setTimeout(() => {
+          document.title = originalTitle;
+        }, 1000);
+
+        // 2. Open WhatsApp Web chat with clean text
+        const msgText = `مرحباً ${name}\nيسعدنا خدمتكم في متجر بيت العز.\nمرفق لكم الفاتورة رقم: ${invNum}\nالإجمالي المطلوب: ${total}\n\nشكراً لتسوقكم معنا!`;
 
         const waUrl = `https://wa.me/${phoneToUse}?text=${encodeURIComponent(msgText)}`;
         window.open(waUrl, '_blank');

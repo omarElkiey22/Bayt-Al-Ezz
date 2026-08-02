@@ -119,25 +119,64 @@ export async function saveOrUpdateCustomer(name, phone = '', address = '') {
   return savedCustomer || { name: sanitizedName, phone: sanitizedPhone, address: sanitizedAddress };
 }
 
-export async function updateCustomer(id, data) {
+export async function updateCustomer(id, data, oldName = '') {
   const payload = {
     name: sanitizeInput(data.name || '').trim(),
     phone: sanitizeInput(data.phone || '').trim(),
     address: sanitizeInput(data.address || '').trim()
   };
 
+  const nameToMatch = oldName || payload.name;
+
+  // 1. Update customer in Supabase customers table
   try {
     if (id) {
       await supabase.from('customers').update(payload).eq('id', id);
+    } else {
+      await supabase.from('customers').update(payload).eq('name', nameToMatch);
     }
   } catch (e) {}
 
+  // 2. Cascade update customer details in existing invoices in Supabase
+  try {
+    if (nameToMatch) {
+      await supabase.from('invoices').update({
+        customer_name: payload.name,
+        customer_phone: payload.phone,
+        customer_address: payload.address
+      }).eq('customer_name', nameToMatch);
+    }
+  } catch (e) {}
+
+  // 3. LocalStorage update for customers
   try {
     let localList = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]');
-    const index = localList.findIndex(c => c.id === id || c.name === payload.name);
+    const index = localList.findIndex(c => c.id === id || c.name === nameToMatch || c.name === payload.name);
     if (index >= 0) {
       localList[index] = { ...localList[index], ...payload };
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(localList));
+    }
+  } catch (e) {}
+
+  // 4. Cascade update existing invoices in LocalStorage
+  try {
+    let localInvoices = JSON.parse(localStorage.getItem('bayt_al_ezz_invoices') || '[]');
+    let updatedAny = false;
+    localInvoices = localInvoices.map(inv => {
+      if (inv.customer_name === nameToMatch || (id && inv.customer_id === id)) {
+        updatedAny = true;
+        return {
+          ...inv,
+          customer_name: payload.name,
+          customer_phone: payload.phone,
+          customer_address: payload.address,
+          updated_at: new Date().toISOString()
+        };
+      }
+      return inv;
+    });
+    if (updatedAny) {
+      localStorage.setItem('bayt_al_ezz_invoices', JSON.stringify(localInvoices));
     }
   } catch (e) {}
 }
