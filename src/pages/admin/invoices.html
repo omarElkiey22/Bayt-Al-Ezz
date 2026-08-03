@@ -443,7 +443,7 @@
         <!-- Invoices Log Table -->
         <div class="bg-white border border-[#9E9E9E]/20 rounded-2xl shadow-sm overflow-hidden">
           <div class="overflow-x-auto w-full">
-            <table class="min-w-[700px] w-full text-right text-xs md:text-sm border-collapse whitespace-nowrap">
+            <table class="min-w-[900px] w-full text-right text-xs md:text-sm border-collapse whitespace-nowrap">
               <thead>
                 <tr class="bg-[#1A237E] text-white">
                   <th class="py-3.5 px-4 font-bold text-center w-10 whitespace-nowrap">#</th>
@@ -453,6 +453,8 @@
                   <th class="py-3.5 px-4 font-bold text-center whitespace-nowrap">حالة السداد</th>
                   <th class="py-3.5 px-4 font-bold text-center whitespace-nowrap">البنود</th>
                   <th class="py-3.5 px-4 font-bold text-left whitespace-nowrap">الإجمالي النهائي</th>
+                  <th class="py-3.5 px-4 font-bold text-left whitespace-nowrap">المبلغ المدفوع</th>
+                  <th class="py-3.5 px-4 font-bold text-left whitespace-nowrap">المديونية (المتبقي)</th>
                   <th class="py-3.5 px-4 font-bold text-center whitespace-nowrap">العمليات</th>
                 </tr>
               </thead>
@@ -672,6 +674,25 @@
           elCustAutocompleteList.classList.add('hidden');
         }
       });
+
+      // Check and display customer previous debt alert
+      async function checkCustomerPreviousDebt(customerName) {
+        if (!customerName || !customerName.trim()) {
+          customerDebtAlert.classList.add('hidden');
+          return;
+        }
+        const name = customerName.trim();
+        const currentNum = elInvNumber ? elInvNumber.value.trim() : null;
+        const debt = await getCustomerDebt(name, currentNum);
+
+        if (debt > 0) {
+          customerDebtAlertText.textContent = `تنبيه: العميل (${name}) عليه مديونية سابقة بقيمة`;
+          customerDebtAlertAmount.textContent = formatCurrency(debt);
+          customerDebtAlert.classList.remove('hidden');
+        } else {
+          customerDebtAlert.classList.add('hidden');
+        }
+      }
 
       // History Elements
       const elHistorySearch = document.getElementById('input-history-search');
@@ -1277,12 +1298,26 @@
           historyEmptyMsg.classList.add('hidden');
           filtered.forEach((inv, idx) => {
             let statusBadge = '';
+            let paidCell = '';
+            let debtCell = '';
+
+            const grandTotal = Number(inv.grand_total || 0);
+
             if (inv.payment_status === 'مدفوع بالكامل') {
               statusBadge = '<span class="inline-flex items-center justify-center whitespace-nowrap shrink-0 px-3 py-1 bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold rounded-lg text-xs leading-none">مدفوع بالكامل</span>';
+              paidCell = `<span class="font-bold text-emerald-600">${formatCurrency(grandTotal)}</span>`;
+              debtCell = `<span class="text-gray-400 font-normal">0.00 ج.م</span>`;
             } else if (inv.payment_status === 'غير مدفوع') {
               statusBadge = '<span class="inline-flex items-center justify-center whitespace-nowrap shrink-0 px-3 py-1 bg-red-100 text-red-800 border border-red-300 font-bold rounded-lg text-xs leading-none">غير مدفوع</span>';
+              paidCell = `<span class="text-gray-400 font-normal">--</span>`;
+              const remaining = (inv.remaining_amount !== undefined && inv.remaining_amount !== null) ? Number(inv.remaining_amount) : grandTotal;
+              debtCell = `<span class="font-bold text-red-600">${formatCurrency(remaining)}</span>`;
             } else {
               statusBadge = '<span class="inline-flex items-center justify-center whitespace-nowrap shrink-0 px-3 py-1 bg-orange-100 text-orange-800 border border-orange-300 font-bold rounded-lg text-xs leading-none">مدفوع جزئياً</span>';
+              const paid = (inv.paid_amount !== undefined && inv.paid_amount !== null) ? Number(inv.paid_amount) : 0;
+              const remaining = (inv.remaining_amount !== undefined && inv.remaining_amount !== null) ? Number(inv.remaining_amount) : Math.max(0, grandTotal - paid);
+              paidCell = `<span class="font-bold text-emerald-700">${formatCurrency(paid)}</span>`;
+              debtCell = `<span class="font-bold text-orange-600">${formatCurrency(remaining)}</span>`;
             }
 
             const tr = document.createElement('tr');
@@ -1297,7 +1332,9 @@
               </td>
               <td class="py-3 px-4 text-center whitespace-nowrap">${statusBadge}</td>
               <td class="py-3 px-4 text-center font-bold">${Array.isArray(inv.items) ? inv.items.length : 0}</td>
-              <td class="py-3 px-4 text-left font-black text-[#0056B3]">${formatCurrency(inv.grand_total)}</td>
+              <td class="py-3 px-4 text-left font-black text-[#0056B3]">${formatCurrency(grandTotal)}</td>
+              <td class="py-3 px-4 text-left">${paidCell}</td>
+              <td class="py-3 px-4 text-left">${debtCell}</td>
               <td class="py-3 px-4 text-center space-x-2 space-x-reverse">
                 <button data-num="${inv.invoice_number}" class="btn-view-inv px-2.5 py-1 bg-[#0056B3]/10 hover:bg-[#0056B3] text-[#0056B3] hover:text-white rounded-lg font-bold text-xs transition-all">
                   معاينة وطباعة

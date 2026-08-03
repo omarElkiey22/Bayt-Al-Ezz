@@ -3,56 +3,65 @@ import { sanitizeInput } from '../utils.js';
 
 const LOCAL_STORAGE_KEY = 'bayt_al_ezz_customers';
 
-export async function getCustomerDebt(customerName) {
+export async function getCustomerDebt(customerName, currentInvoiceNumber = null) {
   const name = sanitizeInput(customerName || '').trim();
   if (!name) return 0;
 
-  let totalDebt = 0;
+  const invoicesMap = new Map();
 
   // Supabase Fetch
   try {
     const { data } = await supabase
       .from('invoices')
-      .select('remaining_amount, grand_total, paid_amount, payment_status')
-      .eq('customer_name', name)
+      .select('invoice_number, remaining_amount, grand_total, paid_amount, payment_status')
+      .ilike('customer_name', name)
       .is('deleted_at', null);
 
     if (data && data.length > 0) {
       data.forEach(inv => {
-        if (inv.payment_status === 'غير مدفوع') {
-          totalDebt += (inv.remaining_amount !== undefined && inv.remaining_amount !== null) ? Number(inv.remaining_amount) : Number(inv.grand_total || 0);
-        } else if (inv.payment_status === 'مدفوع جزئياً') {
-          if (inv.remaining_amount !== undefined && inv.remaining_amount !== null) {
-            totalDebt += Number(inv.remaining_amount);
-          } else {
-            const paid = Number(inv.paid_amount || 0);
-            totalDebt += Math.max(0, Number(inv.grand_total || 0) - paid);
-          }
+        if (inv.invoice_number) {
+          invoicesMap.set(inv.invoice_number, inv);
         }
       });
-      return totalDebt;
     }
   } catch (err) {
     console.warn('Supabase fetch customer debt error:', err);
   }
 
-  // LocalStorage Fallback / Sync
+  // LocalStorage Sync
   try {
     const localInvoices = JSON.parse(localStorage.getItem('bayt_al_ezz_invoices') || '[]');
-    const matching = localInvoices.filter(i => i.customer_name && i.customer_name.trim().toLowerCase() === name.toLowerCase());
-    
-    matching.forEach(inv => {
-      if (inv.payment_status === 'غير مدفوع') {
-        const rem = inv.remaining_amount !== undefined ? Number(inv.remaining_amount) : Number(inv.grand_total || 0);
-        totalDebt += rem;
-      } else if (inv.payment_status === 'مدفوع جزئياً') {
-        const rem = inv.remaining_amount !== undefined ? Number(inv.remaining_amount) : Math.max(0, Number(inv.grand_total || 0) - Number(inv.paid_amount || 0));
-        totalDebt += rem;
+    localInvoices.forEach(inv => {
+      if (inv.customer_name && inv.customer_name.trim().toLowerCase() === name.toLowerCase()) {
+        if (inv.invoice_number && !invoicesMap.has(inv.invoice_number)) {
+          invoicesMap.set(inv.invoice_number, inv);
+        }
       }
     });
   } catch (e) {
     console.error('LocalStorage fetch debt error:', e);
   }
+
+  let totalDebt = 0;
+  invoicesMap.forEach((inv) => {
+    if (currentInvoiceNumber && inv.invoice_number === currentInvoiceNumber) {
+      return;
+    }
+
+    if (inv.payment_status === 'غير مدفوع') {
+      const rem = (inv.remaining_amount !== undefined && inv.remaining_amount !== null)
+        ? Number(inv.remaining_amount)
+        : Number(inv.grand_total || 0);
+      totalDebt += rem;
+    } else if (inv.payment_status === 'مدفوع جزئياً') {
+      if (inv.remaining_amount !== undefined && inv.remaining_amount !== null) {
+        totalDebt += Number(inv.remaining_amount);
+      } else {
+        const paid = Number(inv.paid_amount || 0);
+        totalDebt += Math.max(0, Number(inv.grand_total || 0) - paid);
+      }
+    }
+  });
 
   return totalDebt;
 }

@@ -67,6 +67,10 @@
     background: #ffffff !important;
   }
 
+  .print-show {
+    display: inline !important;
+  }
+
   .page-break {
     page-break-before: always;
   }

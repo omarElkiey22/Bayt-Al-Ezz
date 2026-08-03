@@ -18,6 +18,7 @@ vi.mock('../src/js/supabase-client.js', () => ({
       select: vi.fn().mockReturnThis(),
       is: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
+      ilike: vi.fn().mockReturnThis(),
       or: vi.fn().mockReturnThis(),
       order: vi.fn().mockReturnThis(),
       maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
@@ -66,14 +67,18 @@ describe('Customers API', () => {
 
   it('should calculate customer total debt from partial and unpaid invoices', async () => {
     const invoices = [
-      { customer_name: 'خالد عبد الله', payment_status: 'غير مدفوع', grand_total: 500, remaining_amount: 500, paid_amount: 0 },
-      { customer_name: 'خالد عبد الله', payment_status: 'مدفوع جزئياً', grand_total: 300, remaining_amount: 100, paid_amount: 200 },
-      { customer_name: 'خالد عبد الله', payment_status: 'مدفوع بالكامل', grand_total: 400, remaining_amount: 0, paid_amount: 400 }
+      { invoice_number: 'INV-1001', customer_name: 'خالد عبد الله', payment_status: 'غير مدفوع', grand_total: 500, remaining_amount: 500, paid_amount: 0 },
+      { invoice_number: 'INV-1002', customer_name: 'خالد عبد الله', payment_status: 'مدفوع جزئياً', grand_total: 300, remaining_amount: 100, paid_amount: 200 },
+      { invoice_number: 'INV-1003', customer_name: 'خالد عبد الله', payment_status: 'مدفوع بالكامل', grand_total: 400, remaining_amount: 0, paid_amount: 400 }
     ];
     localStorage.setItem('bayt_al_ezz_invoices', JSON.stringify(invoices));
 
     const debt = await getCustomerDebt('خالد عبد الله');
     expect(debt).toBe(600); // 500 (unpaid) + 100 (partially paid remaining)
+
+    // When editing INV-1002, previous debt from other invoices should be 500
+    const debtExcludingCurrent = await getCustomerDebt('خالد عبد الله', 'INV-1002');
+    expect(debtExcludingCurrent).toBe(500);
   });
 
   it('should delete a customer', async () => {
