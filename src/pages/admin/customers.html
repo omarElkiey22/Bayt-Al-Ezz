@@ -117,6 +117,7 @@
                 <th class="py-3.5 px-4 font-bold">اسم العميل</th>
                 <th class="py-3.5 px-4 font-bold">رقم الواتساب / الهاتف</th>
                 <th class="py-3.5 px-4 font-bold">العنوان والتوصيل</th>
+                <th class="py-3.5 px-4 font-bold text-center">إجمالي المديونية</th>
                 <th class="py-3.5 px-4 font-bold text-center">العمليات</th>
               </tr>
             </thead>
@@ -163,14 +164,9 @@
         </div>
       </div>
 
-      <div class="flex gap-2 pt-2">
-        <button id="save-cust-btn" class="flex-grow bg-[#0056B3] hover:bg-[#004085] text-white font-bold py-2.5 px-4 rounded-xl text-sm transition-all flex items-center justify-center gap-1 shadow-md">
-          <span class="material-symbols-outlined text-base">save</span>
-          <span>حفظ التعديلات</span>
-        </button>
-        <button id="cancel-cust-btn" class="bg-gray-100 hover:bg-gray-200 text-[#1A237E] font-bold py-2.5 px-4 rounded-xl text-sm">
-          إلغاء
-        </button>
+      <div class="flex justify-end gap-2 border-t pt-3">
+        <button id="cancel-cust-btn" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold text-xs">إلغاء</button>
+        <button id="save-cust-btn" class="px-5 py-2 bg-[#0056B3] hover:bg-[#004085] text-white rounded-xl font-bold text-xs shadow-md">حفظ التغييرات</button>
       </div>
     </div>
   </div>
@@ -230,12 +226,17 @@
             const tr = document.createElement('tr');
             tr.className = 'hover:bg-gray-50 transition-colors border-b border-gray-100';
             const phoneDisplay = cust.phone ? `<a href="https://wa.me/${cust.phone.replace(/\D/g,'')}" target="_blank" class="font-mono font-bold text-[#0056B3] hover:underline flex items-center gap-1"><span class="material-symbols-outlined text-sm text-green-600">chat</span>${escapeHtml(cust.phone)}</a>` : '<span class="text-gray-400">غير مسجل</span>';
-            
+            const debt = Number(cust.total_debt || 0);
+            const debtBadge = debt > 0 
+              ? `<span class="inline-flex items-center gap-1 font-mono font-extrabold text-amber-900 bg-amber-100 border border-amber-300 px-2.5 py-1 rounded-full text-xs"><span class="material-symbols-outlined text-amber-600 text-xs">warning</span>${debt} ج.م</span>`
+              : `<span class="font-mono text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full text-xs font-bold">0 ج.م</span>`;
+
             tr.innerHTML = `
               <td class="py-3.5 px-4 font-bold text-gray-500 text-center">${idx + 1}</td>
               <td class="py-3.5 px-4 font-bold text-[#1A237E]">${escapeHtml(cust.name)}</td>
               <td class="py-3.5 px-4">${phoneDisplay}</td>
               <td class="py-3.5 px-4 text-gray-600">${escapeHtml(cust.address || 'غير محدد')}</td>
+              <td class="py-3.5 px-4 text-center">${debtBadge}</td>
               <td class="py-3.5 px-4 text-center space-x-2 space-x-reverse">
                 <button data-id="${cust.id || ''}" data-name="${escapeHtml(cust.name)}" class="btn-edit-cust px-3 py-1 bg-[#0056B3]/10 hover:bg-[#0056B3] text-[#0056B3] hover:text-white rounded-lg font-bold text-xs transition-all inline-flex items-center gap-1">
                   <span class="material-symbols-outlined text-xs">edit</span>

@@ -3,6 +3,60 @@ import { sanitizeInput } from '../utils.js';
 
 const LOCAL_STORAGE_KEY = 'bayt_al_ezz_customers';
 
+export async function getCustomerDebt(customerName) {
+  const name = sanitizeInput(customerName || '').trim();
+  if (!name) return 0;
+
+  let totalDebt = 0;
+
+  // Supabase Fetch
+  try {
+    const { data } = await supabase
+      .from('invoices')
+      .select('remaining_amount, grand_total, paid_amount, payment_status')
+      .eq('customer_name', name)
+      .is('deleted_at', null);
+
+    if (data && data.length > 0) {
+      data.forEach(inv => {
+        if (inv.payment_status === 'غير مدفوع') {
+          totalDebt += (inv.remaining_amount !== undefined && inv.remaining_amount !== null) ? Number(inv.remaining_amount) : Number(inv.grand_total || 0);
+        } else if (inv.payment_status === 'مدفوع جزئياً') {
+          if (inv.remaining_amount !== undefined && inv.remaining_amount !== null) {
+            totalDebt += Number(inv.remaining_amount);
+          } else {
+            const paid = Number(inv.paid_amount || 0);
+            totalDebt += Math.max(0, Number(inv.grand_total || 0) - paid);
+          }
+        }
+      });
+      return totalDebt;
+    }
+  } catch (err) {
+    console.warn('Supabase fetch customer debt error:', err);
+  }
+
+  // LocalStorage Fallback / Sync
+  try {
+    const localInvoices = JSON.parse(localStorage.getItem('bayt_al_ezz_invoices') || '[]');
+    const matching = localInvoices.filter(i => i.customer_name && i.customer_name.trim().toLowerCase() === name.toLowerCase());
+    
+    matching.forEach(inv => {
+      if (inv.payment_status === 'غير مدفوع') {
+        const rem = inv.remaining_amount !== undefined ? Number(inv.remaining_amount) : Number(inv.grand_total || 0);
+        totalDebt += rem;
+      } else if (inv.payment_status === 'مدفوع جزئياً') {
+        const rem = inv.remaining_amount !== undefined ? Number(inv.remaining_amount) : Math.max(0, Number(inv.grand_total || 0) - Number(inv.paid_amount || 0));
+        totalDebt += rem;
+      }
+    });
+  } catch (e) {
+    console.error('LocalStorage fetch debt error:', e);
+  }
+
+  return totalDebt;
+}
+
 export async function fetchCustomers(searchQuery = '') {
   const query = sanitizeInput(searchQuery || '').trim().toLowerCase();
   let customers = [];
@@ -41,6 +95,11 @@ export async function fetchCustomers(searchQuery = '') {
       (c.phone && c.phone.toLowerCase().includes(query)) ||
       (c.address && c.address.toLowerCase().includes(query))
     );
+  }
+
+  // Compute live dynamic total_debt for each customer
+  for (let cust of customers) {
+    cust.total_debt = await getCustomerDebt(cust.name);
   }
 
   return customers;

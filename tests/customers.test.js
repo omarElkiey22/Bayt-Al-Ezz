@@ -28,7 +28,7 @@ vi.mock('../src/js/supabase-client.js', () => ({
   }
 }));
 
-import { fetchCustomers, saveOrUpdateCustomer, updateCustomer, deleteCustomer } from '../src/js/admin/customers-api.js';
+import { fetchCustomers, saveOrUpdateCustomer, updateCustomer, deleteCustomer, getCustomerDebt } from '../src/js/admin/customers-api.js';
 
 describe('Customers API', () => {
   beforeEach(() => {
@@ -62,6 +62,18 @@ describe('Customers API', () => {
     expect(list.length).toBe(1);
     expect(list[0].phone).toBe('01099999999');
     expect(list[0].address).toBe('المنصورة');
+  });
+
+  it('should calculate customer total debt from partial and unpaid invoices', async () => {
+    const invoices = [
+      { customer_name: 'خالد عبد الله', payment_status: 'غير مدفوع', grand_total: 500, remaining_amount: 500, paid_amount: 0 },
+      { customer_name: 'خالد عبد الله', payment_status: 'مدفوع جزئياً', grand_total: 300, remaining_amount: 100, paid_amount: 200 },
+      { customer_name: 'خالد عبد الله', payment_status: 'مدفوع بالكامل', grand_total: 400, remaining_amount: 0, paid_amount: 400 }
+    ];
+    localStorage.setItem('bayt_al_ezz_invoices', JSON.stringify(invoices));
+
+    const debt = await getCustomerDebt('خالد عبد الله');
+    expect(debt).toBe(600); // 500 (unpaid) + 100 (partially paid remaining)
   });
 
   it('should delete a customer', async () => {

@@ -136,6 +136,15 @@
               <span>بيانات الفاتورة والعميل</span>
             </h2>
 
+            <!-- Previous Debt Alert Banner -->
+            <div id="customer-debt-alert" class="hidden bg-amber-50 border-2 border-amber-400/60 rounded-xl p-3 text-xs font-bold text-amber-900 flex items-center justify-between shadow-sm">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-amber-600 text-lg">warning</span>
+                <span id="customer-debt-alert-text">تنبيه: هذا العميل عليه مديونية سابقة</span>
+              </div>
+              <span id="customer-debt-alert-amount" class="font-mono bg-amber-200/80 px-2 py-0.5 rounded-md text-amber-950 font-extrabold text-sm">0 ج.م</span>
+            </div>
+
             <!-- Invoice Details -->
             <div class="space-y-3 text-sm">
               <div>
@@ -188,6 +197,12 @@
                     <option value="مدفوع جزئياً">مدفوع جزئياً</option>
                   </select>
                 </div>
+              </div>
+
+              <!-- Partial Payment Input Field -->
+              <div id="container-paid-amount" class="hidden mt-2 bg-emerald-50/60 p-3 rounded-xl border border-emerald-200">
+                <label class="block text-xs font-bold text-emerald-800 mb-1">المبلغ المدفوع كاش (ج.م)</label>
+                <input type="number" id="input-paid-amount" min="0" step="0.5" placeholder="أدخل المبلغ المدفوع من الفاتورة" class="w-full px-3 py-2 border border-emerald-300 rounded-xl focus:ring-2 focus:ring-emerald-500 text-sm font-bold text-emerald-900 bg-white" />
               </div>
             </div>
 
@@ -354,6 +369,14 @@
                       <span>الإجمالي النهائي:</span>
                       <span id="view-grand-total">0.00 ج.م</span>
                     </div>
+                    <div id="view-paid-container" class="hidden flex justify-between py-1 border-b border-gray-100 text-emerald-700 font-bold">
+                      <span>المبلغ المدفوع:</span>
+                      <span id="view-paid-amount">0.00 ج.م</span>
+                    </div>
+                    <div id="view-debt-container" class="hidden flex justify-between py-1 border-b border-gray-100 text-orange-700 font-bold">
+                      <span>المتبقي (المديونية):</span>
+                      <span id="view-remaining-amount">0.00 ج.م</span>
+                    </div>
                   </div>
                 </div>
 
@@ -493,7 +516,7 @@
     import { requireAdmin } from '../../js/admin/auth-gate.js';
     import { generateInvoiceNumber, formatCurrency, calculateItemTotal, calculateInvoiceTotals } from '../../js/admin/invoice-helper.js';
     import { escapeHtml } from '../../js/utils.js';
-    import { fetchCustomers, saveOrUpdateCustomer } from '../../js/admin/customers-api.js';
+    import { fetchCustomers, saveOrUpdateCustomer, getCustomerDebt } from '../../js/admin/customers-api.js';
 
     if (await requireAdmin()) {
       // In-memory invoice state
@@ -538,6 +561,11 @@
       const elCustAutocompleteList = document.getElementById('customer-autocomplete-list');
       const elPayMethod = document.getElementById('select-payment-method');
       const elPayStatus = document.getElementById('select-payment-status');
+      const containerPaidAmount = document.getElementById('container-paid-amount');
+      const elPaidAmount = document.getElementById('input-paid-amount');
+      const customerDebtAlert = document.getElementById('customer-debt-alert');
+      const customerDebtAlertText = document.getElementById('customer-debt-alert-text');
+      const customerDebtAlertAmount = document.getElementById('customer-debt-alert-amount');
 
       // Product Search Elements
       const elSearchInput = document.getElementById('input-product-search');
@@ -576,6 +604,10 @@
       const viewShipping = document.getElementById('view-shipping');
       const viewDiscount = document.getElementById('view-discount');
       const viewGrandTotal = document.getElementById('view-grand-total');
+      const viewPaidContainer = document.getElementById('view-paid-container');
+      const viewPaidAmount = document.getElementById('view-paid-amount');
+      const viewDebtContainer = document.getElementById('view-debt-container');
+      const viewRemainingAmount = document.getElementById('view-remaining-amount');
       const viewNotes = document.getElementById('view-notes');
 
       // Modal Elements
@@ -614,6 +646,7 @@
             elCustPhone.value = cust.phone || '';
             elCustAddress.value = cust.address || '';
             elCustAutocompleteList.classList.add('hidden');
+            checkCustomerPreviousDebt(cust.name);
             updatePreview();
           };
           elCustAutocompleteList.appendChild(div);
@@ -622,8 +655,17 @@
         elCustAutocompleteList.classList.remove('hidden');
       }
 
-      elCustName.addEventListener('input', (e) => renderCustomerAutocomplete(e.target.value));
-      elCustName.addEventListener('focus', (e) => renderCustomerAutocomplete(e.target.value));
+      elCustName.addEventListener('input', (e) => {
+        renderCustomerAutocomplete(e.target.value);
+        checkCustomerPreviousDebt(e.target.value);
+      });
+      elCustName.addEventListener('focus', (e) => {
+        renderCustomerAutocomplete(e.target.value);
+        checkCustomerPreviousDebt(e.target.value);
+      });
+      elCustName.addEventListener('blur', (e) => {
+        checkCustomerPreviousDebt(e.target.value);
+      });
 
       document.addEventListener('click', (e) => {
         if (elCustName && elCustAutocompleteList && !elCustName.contains(e.target) && !elCustAutocompleteList.contains(e.target)) {
@@ -657,6 +699,9 @@
         elCustAddress.value = '';
         elPayMethod.value = 'كاش عند الاستلام';
         elPayStatus.value = 'مدفوع بالكامل';
+        containerPaidAmount.classList.add('hidden');
+        if (elPaidAmount) elPaidAmount.value = '';
+        customerDebtAlert.classList.add('hidden');
         elShipping.value = 0;
         elDiscount.value = 0;
         elNotes.value = '';
@@ -952,7 +997,7 @@
           });
         }
 
-        // Calculate Totals
+        // Calculate Totals & Payment Breakdown
         const totals = calculateInvoiceTotals(invoiceItems, elShipping.value, elDiscount.value);
         viewSubtotal.textContent = formatCurrency(totals.subtotal);
         viewShipping.textContent = formatCurrency(totals.shipping);
@@ -960,6 +1005,34 @@
         if (elDiscPercent) elDiscPercent.textContent = totals.discountPercent;
         viewDiscount.textContent = `- ${formatCurrency(totals.discountAmount)}`;
         viewGrandTotal.textContent = formatCurrency(totals.grandTotal);
+
+        let paidVal = 0;
+        let remainingVal = 0;
+
+        if (statusValue === 'مدفوع بالكامل') {
+          containerPaidAmount.classList.add('hidden');
+          paidVal = totals.grandTotal;
+          remainingVal = 0;
+          viewPaidContainer.classList.add('hidden');
+          viewDebtContainer.classList.add('hidden');
+        } else if (statusValue === 'غير مدفوع') {
+          containerPaidAmount.classList.add('hidden');
+          paidVal = 0;
+          remainingVal = totals.grandTotal;
+          viewPaidContainer.classList.remove('hidden');
+          viewDebtContainer.classList.remove('hidden');
+          viewPaidAmount.textContent = formatCurrency(0);
+          viewRemainingAmount.textContent = formatCurrency(remainingVal);
+        } else if (statusValue === 'مدفوع جزئياً') {
+          containerPaidAmount.classList.remove('hidden');
+          paidVal = parseFloat(elPaidAmount.value);
+          if (isNaN(paidVal) || paidVal < 0) paidVal = 0;
+          remainingVal = Math.max(0, totals.grandTotal - paidVal);
+          viewPaidContainer.classList.remove('hidden');
+          viewDebtContainer.classList.remove('hidden');
+          viewPaidAmount.textContent = formatCurrency(paidVal);
+          viewRemainingAmount.textContent = formatCurrency(remainingVal);
+        }
 
         // Dynamic Table Handlers
         document.querySelectorAll('.item-qty-input').forEach(inp => {
@@ -1009,6 +1082,20 @@
         }
 
         const totals = calculateInvoiceTotals(invoiceItems, elShipping.value, elDiscount.value);
+        let paidVal = 0;
+        let remainingVal = 0;
+
+        if (elPayStatus.value === 'مدفوع بالكامل') {
+          paidVal = totals.grandTotal;
+          remainingVal = 0;
+        } else if (elPayStatus.value === 'غير مدفوع') {
+          paidVal = 0;
+          remainingVal = totals.grandTotal;
+        } else if (elPayStatus.value === 'مدفوع جزئياً') {
+          paidVal = parseFloat(elPaidAmount.value) || 0;
+          remainingVal = Math.max(0, totals.grandTotal - paidVal);
+        }
+
         const payload = {
           invoice_number: invNum,
           issue_date: elInvDate.value,
@@ -1017,6 +1104,8 @@
           customer_address: elCustAddress.value.trim() || 'غير محدد',
           payment_method: elPayMethod.value,
           payment_status: elPayStatus.value,
+          paid_amount: paidVal,
+          remaining_amount: remainingVal,
           items: invoiceItems,
           subtotal: totals.subtotal,
           shipping_fee: totals.shipping,
@@ -1285,6 +1374,16 @@
 
         elPayMethod.value = inv.payment_method || 'كاش عند الاستلام';
         elPayStatus.value = inv.payment_status || 'مدفوع بالكامل';
+
+        if (inv.payment_status === 'مدفوع جزئياً') {
+          containerPaidAmount.classList.remove('hidden');
+          elPaidAmount.value = (inv.paid_amount !== undefined && inv.paid_amount !== null) ? inv.paid_amount : '';
+        } else {
+          containerPaidAmount.classList.add('hidden');
+          elPaidAmount.value = '';
+        }
+
+        checkCustomerPreviousDebt(inv.customer_name);
         elShipping.value = inv.shipping_fee || 0;
         elDiscount.value = inv.discount_percent || 0;
         elNotes.value = inv.notes || '';
