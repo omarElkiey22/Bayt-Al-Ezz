@@ -1,4 +1,5 @@
 import {fetchActiveSections} from './sections-api.js';
+import {buildRoomLabelHTML} from './room-label-html.js';
 async function loadCoordinates(){return fetch('../../public/assets/house-coordinates.json').then(r=>r.json())}
 function openHouse(root){
   root.classList.add('house-open');
@@ -61,10 +62,7 @@ function createLabel(section, bounds, fallback, delay, options = {}) {
   }
 
   label.style.transitionDelay = `${delay * 35}ms`;
-  label.innerHTML = `
-    <img src="../../public/assets/icons/${section.icon_name || 'placeholder.svg'}" class="room-label__icon object-contain pointer-events-none" alt="" onerror="this.style.display='none'">
-    <span class="room-label__text text-center font-extrabold">${section.name}</span>
-  `;
+  label.innerHTML = buildRoomLabelHTML(section);
   label.setAttribute('aria-label', section.name);
   label.addEventListener('click', () => location.href = `category.html?section=${encodeURIComponent(section.slug)}`);
   return label;

@@ -48,7 +48,7 @@ export function updateWholesaleHeroText() {
     titleEl.textContent = 'مرحباً بك في بيت العز 🏷️';
   }
   if (desc1El) {
-    desc1El.textContent = 'زوارونا الكرام ، نضع بين أيديكم أجود مستلزمات البيت بأفضل أسعار الجملة 💼✨';
+    desc1El.textContent = 'زوارنا الكرام ، نضع بين أيديكم أجود مستلزمات البيت بأفضل أسعار الجملة 💼✨';
   }
   if (desc2El) {
     desc2El.textContent = 'تصفحوا الغرف وأقسام المتجر واستمتعوا بتجربة تسوق سريعة، ومريحة 🚀📦';

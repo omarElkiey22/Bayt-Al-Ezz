@@ -1,16 +1,19 @@
 import { searchProducts } from './products-api.js';
-import { formatPrice } from './utils.js';
+import { formatPrice, escapeHtml } from './utils.js';
+import { buildMockHiddenInputHTML } from './mock-param-html.js';
 
 export function initializeSearchBar(containerElement) {
   if (!containerElement) return;
 
   const isMock = new URLSearchParams(location.search).get('mock');
-  const mockParam = isMock ? `&mock=${isMock}` : '';
+  // Escaped once here so every href/attribute reuse below is already safe --
+  // `mock` is attacker-controlled URL input, reflected in several places.
+  const mockParam = isMock ? `&mock=${escapeHtml(isMock)}` : '';
 
   containerElement.innerHTML = `
     <div class="relative flex-grow max-w-xs md:max-w-md mx-2 md:mx-4" id="header-search-container">
       <form id="header-search-form" class="relative flex items-center w-full" action="category.html" method="GET">
-        ${isMock ? `<input type="hidden" name="mock" value="${isMock}">` : ''}
+        ${buildMockHiddenInputHTML(isMock)}
         <input 
           type="text" 
           id="header-search-input" 
@@ -84,7 +87,7 @@ export function initializeSearchBar(containerElement) {
       const itemsHtml = results.slice(0, 5).map(p => `
         <a href="product.html?id=${p.id}${mockParam}" class="flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors group">
           <div class="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 shrink-0 border border-gray-200">
-            <img src="${p.primary_image_url || '../../public/assets/placeholder.svg'}" alt="${escapeHtml(p.name)}" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+            <img src="${escapeHtml(p.primary_image_url || '../../public/assets/placeholder.svg')}" alt="${escapeHtml(p.name)}" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />
           </div>
           <div class="flex-grow min-w-0">
             <div class="text-sm font-bold text-[#1A237E] truncate group-hover:text-[#0056B3] transition-colors">${escapeHtml(p.name)}</div>
@@ -130,13 +133,5 @@ export function initializeSearchBar(containerElement) {
     if (input.value.trim() && dropdown.children.length > 0) {
       dropdown.classList.remove('hidden');
     }
-  });
-}
-
-function escapeHtml(str) {
-  if (!str) return '';
-  return str.replace(/[&<>"']/g, match => {
-    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-    return map[match];
   });
 }

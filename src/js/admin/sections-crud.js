@@ -1,6 +1,7 @@
 import { fetchAllSectionsAdmin, createSection, updateSection, softDeleteSection } from '../sections-api.js';
-import { slugify, sanitizeInput } from '../utils.js';
+import { slugify, sanitizeInput, escapeHtml } from '../utils.js';
 import { requireAdmin } from './auth-gate.js';
+import { renderSectionFormFieldValues, renderSectionRow } from './admin-templates.js';
 
 const ICONS = ['laundry.svg', 'kitchen-shelving.svg', 'paper-goods.svg', 'bathroom.svg', 'women.svg', 'men.svg', 'reception.svg', 'baby.svg', 'footwear.svg', 'vanity.svg', 'garage.svg', 'cleaning.svg', 'Gift_Home.svg', 'Medications.svg', 'library-book.svg'];
 const ICON_DIRECTORY = '../../../public/assets/icons/';
@@ -16,6 +17,7 @@ export async function initializeSectionsPage(root) {
   const render = async () => {
     await requireAdmin();
     const sections = await fetchAllSectionsAdmin();
+    const formValues = renderSectionFormFieldValues(editing);
 
     root.innerHTML = `
       <!-- Page Title -->
@@ -37,12 +39,12 @@ export async function initializeSectionsPage(root) {
             
             <div>
               <label class="block text-xs font-semibold text-[#1A237E] mb-1.5">اسم القسم (بالعربية)</label>
-              <input class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-[#1A237E] focus:border-[#0056B3] focus:ring-1 focus:ring-[#0056B3] focus:outline-none" name="name" placeholder="مثال: رفايع المطبخ" value="${editing?.name || ''}" required>
+              <input class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-[#1A237E] focus:border-[#0056B3] focus:ring-1 focus:ring-[#0056B3] focus:outline-none" name="name" placeholder="مثال: رفايع المطبخ" value="${formValues.name}" required>
             </div>
 
             <div>
               <label class="block text-xs font-semibold text-[#1A237E] mb-1.5">الكلمة التعريفية للقسم (الوصف)</label>
-              <textarea class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-[#1A237E] focus:border-[#0056B3] focus:ring-1 focus:ring-[#0056B3] focus:outline-none h-20" name="description" placeholder="مثال: المجموعات المختارة بعناية لأثاثك المنزلي.">${editing?.description || 'المجموعات المختارة بعناية لأثاثك المنزلي.'}</textarea>
+              <textarea class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-[#1A237E] focus:border-[#0056B3] focus:ring-1 focus:ring-[#0056B3] focus:outline-none h-20" name="description" placeholder="مثال: المجموعات المختارة بعناية لأثاثك المنزلي.">${formValues.description || 'المجموعات المختارة بعناية لأثاثك المنزلي.'}</textarea>
             </div>
 
 
@@ -104,28 +106,7 @@ export async function initializeSectionsPage(root) {
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-[#9E9E9E]/10 text-[#1A237E]">
-                  ${sections.map((s, index) => `
-                    <tr class="hover:bg-gray-50 transition-colors">
-                      <td class="p-4 font-semibold text-gray-400">#${index + 1}</td>
-                      <td class="p-4 font-bold">
-                        <div>${s.name}</div>
-                        <div class="text-xs text-[#75777E] mt-0.5 max-w-[200px] truncate" title="${s.description || ''}">${s.description || ''}</div>
-                      </td>
-                      <td class="p-4">
-                        <img src="${iconSource(s.icon_name)}" class="w-16 h-16 rounded object-contain" alt="">
-                      </td>
-                      <td class="p-4">
-                        <div class="flex items-center justify-center gap-2">
-                          <button class="w-8 h-8 rounded-full flex items-center justify-center text-primary hover:bg-[#0056B3]/10 transition-colors" data-edit="${s.id}" title="تعديل">
-                            <span class="material-symbols-outlined text-[18px]">edit</span>
-                          </button>
-                          <button class="w-8 h-8 rounded-full flex items-center justify-center text-red-500 hover:bg-red-50 transition-colors" data-delete="${s.id}" title="حذف">
-                            <span class="material-symbols-outlined text-[18px]">delete</span>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  `).join('')}
+                  ${sections.map((s, index) => renderSectionRow(s, index, iconSource(s.icon_name))).join('')}
                 </tbody>
               </table>
             </div>

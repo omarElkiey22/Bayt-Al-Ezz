@@ -126,6 +126,8 @@
     import { addToCart, getCartItems, calculateCartTotals } from '../js/cart.js';
     import { initializeSearchBar } from '../js/search-bar.js';
     import { initPricingMode, isWholesaleMode, filterWholesaleProducts } from '../js/pricing-mode.js';
+    import { buildSidebarNavLinkHTML, buildMobileNavLinkHTML } from '../js/section-nav-html.js';
+    import { buildNoResultsHTML } from '../js/no-results-html.js';
 
     initPricingMode();
     initializeSearchBar(document.getElementById('search-bar-slot'));
@@ -153,25 +155,14 @@
       const mockParam = isMock ? `&mock=${isMock}` : '';
 
       // Render Sidebar
-      sidebarNav.innerHTML = sections.map(s => {
-        const isActive = s.slug === slug;
-        return `
-          <a class="flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200 ${isActive ? 'bg-[#0056B3]/10 text-[#0056B3] font-bold border-r-4 border-[#0056B3]' : 'text-[#75777E] hover:bg-gray-100 hover:text-[#1A237E]'}" href="category.html?section=${s.slug}${mockParam}">
-            <img src="../../public/assets/icons/${s.icon_name || 'laundry.svg'}" class="w-7 h-7 object-contain pointer-events-none" alt="" onerror="this.style.display='none'">
-            <span>${s.name}</span>
-          </a>
-        `;
-      }).join('');
+      sidebarNav.innerHTML = sections.map(s =>
+        buildSidebarNavLinkHTML(s, { isActive: s.slug === slug, mockParam })
+      ).join('');
 
       // Render Mobile Bar
-      mobileNav.innerHTML = sections.map(s => {
-        const isActive = s.slug === slug;
-        return `
-          <a class="flex-shrink-0 px-4 py-2 rounded-full border text-sm font-semibold transition-all ${isActive ? 'bg-[#0056B3] text-white border-[#0056B3]' : 'bg-white text-[#75777E] border-gray-200 hover:bg-gray-50'}" href="category.html?section=${s.slug}${mockParam}">
-            ${s.name}
-          </a>
-        `;
-      }).join('');
+      mobileNav.innerHTML = sections.map(s =>
+        buildMobileNavLinkHTML(s, { isActive: s.slug === slug, mockParam })
+      ).join('');
     }
 
     async function render() {
@@ -186,8 +177,8 @@
 
         let products = [];
         const isMock = new URLSearchParams(location.search).get('mock');
-        const indexMockParam = isMock ? `?mock=${isMock}` : '';
-        const productMockParam = isMock ? `&mock=${isMock}` : '';
+        const indexMockParam = isMock ? `?mock=${escapeHtml(isMock)}` : '';
+        const productMockParam = isMock ? `&mock=${escapeHtml(isMock)}` : '';
 
         if (searchQuery) {
           breadcrumbActive.textContent = `البحث: ${searchQuery}`;
@@ -211,15 +202,7 @@
 
         if (!products.length) {
           content.className = 'col-span-full flex flex-col items-center justify-center py-16 bg-white border border-[#9E9E9E]/20 rounded-2xl text-center p-8';
-          content.innerHTML = searchQuery ? `
-            <span class="material-symbols-outlined text-6xl text-[#75777E] mb-4">search_off</span>
-            <h3 class="text-xl font-bold text-[#1A237E] mb-2">لا توجد نتائج بحث مطابقة</h3>
-            <p class="text-[#75777E] mb-6">لم نعثر على أي منتج يطابق كلمة "${searchQuery}". جرب البحث باسم منتج آخر.</p>
-            <a class="inline-flex items-center gap-2 bg-[#0056B3] hover:bg-[#004491] text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm" href="index.html${indexMockParam}">
-              <span class="material-symbols-outlined text-sm">home</span>
-              العودة للرئيسية
-            </a>
-          ` : `
+          content.innerHTML = searchQuery ? buildNoResultsHTML({ searchQuery, indexMockParam }) : `
             <span class="material-symbols-outlined text-6xl text-[#75777E] mb-4">folder_open</span>
             <h3 class="text-xl font-bold text-[#1A237E] mb-2">لا توجد منتجات متاحة</h3>
             <p class="text-[#75777E] mb-6">${isWholesaleMode() ? 'لا توجد منتجات مسعرة بالجملة في هذا القسم حالياً.' : 'لم يتم إضافة منتجات في هذا القسم بعد.'}</p>
@@ -242,7 +225,7 @@
             <article class="relative bg-white border border-[#9E9E9E]/20 rounded-2xl overflow-hidden group hover:border-[#0056B3] hover:shadow-md transition-all duration-300 flex flex-col">
               <a class="absolute inset-0 z-10" href="product.html?id=${p.id}${productMockParam}" aria-label="${escapeHtml(p.name)}"></a>
               <div class="relative aspect-square w-full bg-gray-50 overflow-hidden">
-                <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="${p.primary_image_url || '../../public/assets/placeholder.svg'}" alt="${escapeHtml(p.name)}">
+                <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="${escapeHtml(p.primary_image_url || '../../public/assets/placeholder.svg')}" alt="${escapeHtml(p.name)}">
               </div>
               <div class="p-5 flex flex-col flex-grow">
                 <h3 class="text-lg font-bold text-[#1A237E] line-clamp-1 mb-2 group-hover:text-primary transition-colors">${escapeHtml(p.name)}</h3>

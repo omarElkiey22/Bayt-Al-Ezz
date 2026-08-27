@@ -144,7 +144,7 @@
                 
                 <!-- Product Image Section -->
                 <div class="w-full md:w-1/2 aspect-square bg-gray-50 rounded-2xl overflow-hidden border border-[#9E9E9E]/10">
-                  <img class="w-full h-full object-cover transition-transform duration-500 hover:scale-[1.03]" src="${value.image || '../public/assets/placeholder.svg'}" alt="${escapeHtml(product.name)}">
+                  <img class="w-full h-full object-cover transition-transform duration-500 hover:scale-[1.03]" src="${escapeHtml(value.image || '../public/assets/placeholder.svg')}" alt="${escapeHtml(product.name)}">
                 </div>
 
                 <!-- Product Details Section -->
@@ -196,8 +196,8 @@
                             btnClass += 'bg-white text-[#75777E] border-gray-200 hover:border-[#0056B3] hover:text-[#0056B3]';
                           }
                           return `
-                            <button class="size-swatch ${btnClass}" data-size="${s}">
-                              ${s}
+                            <button class="size-swatch ${btnClass}" data-size="${escapeHtml(s)}">
+                              ${escapeHtml(s)}
                             </button>
                           `;
                         }).join('')}
@@ -219,8 +219,8 @@
                             btnClass += 'bg-white text-[#75777E] border-gray-200 hover:border-[#0056B3] hover:text-[#0056B3]';
                           }
                           return `
-                            <button class="color-swatch ${btnClass}" data-color="${c}">
-                              ${c}
+                            <button class="color-swatch ${btnClass}" data-color="${escapeHtml(c)}">
+                              ${escapeHtml(c)}
                             </button>
                           `;
                         }).join('')}

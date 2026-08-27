@@ -12,3 +12,8 @@ Thumbs.db
 .idea/
 
 .vercel
+
+.agents/
+.claude/
+.commandcode/
+.gstack/

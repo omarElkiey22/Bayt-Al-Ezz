@@ -2,8 +2,9 @@ import { fetchAllSectionsAdmin } from '../sections-api.js';
 import { createProduct, updateProduct, softDeleteProduct, fetchProductDetails } from '../products-api.js';
 import { compressImage } from '../image-compressor.js';
 import { TABLES } from '../constants.js';
-import { formatPrice, sanitizeInput } from '../utils.js';
+import { sanitizeInput, escapeHtml } from '../utils.js';
 import { requireAdmin } from './auth-gate.js';
+import { renderProductFormFieldValues, renderProductRow } from './admin-templates.js';
 
 // Image Upload Helper
 async function upload(file) {
@@ -36,9 +37,11 @@ export async function initializeProductsPage(root) {
       console.error(e);
     }
 
-    const filteredProducts = products.filter(p => 
+    const filteredProducts = products.filter(p =>
       !adminSearchQuery || p.name.toLowerCase().includes(adminSearchQuery.toLowerCase().trim())
     );
+
+    const formValues = renderProductFormFieldValues(editing);
 
     root.innerHTML = `
       <!-- Page Title -->
@@ -58,18 +61,18 @@ export async function initializeProductsPage(root) {
 
             <div>
               <label class="block text-xs font-semibold text-[#1A237E] mb-1.5">اسم المنتج</label>
-              <input class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-[#1A237E] focus:border-[#0056B3] focus:ring-1 focus:ring-[#0056B3] focus:outline-none" name="name" placeholder="مثال: طقم كنب زاوية مودرن" value="${editing?.name || ''}" required>
+              <input class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-[#1A237E] focus:border-[#0056B3] focus:ring-1 focus:ring-[#0056B3] focus:outline-none" name="name" placeholder="مثال: طقم كنب زاوية مودرن" value="${formValues.name}" required>
             </div>
 
             <div>
               <label class="block text-xs font-semibold text-[#1A237E] mb-1.5">وصف المنتج</label>
-              <textarea class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-[#1A237E] focus:border-[#0056B3] focus:ring-1 focus:ring-[#0056B3] focus:outline-none h-24" name="description" placeholder="اكتب تفاصيل ومواصفات المنتج...">${editing?.description || ''}</textarea>
+              <textarea class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-[#1A237E] focus:border-[#0056B3] focus:ring-1 focus:ring-[#0056B3] focus:outline-none h-24" name="description" placeholder="اكتب تفاصيل ومواصفات المنتج...">${formValues.description}</textarea>
             </div>
 
             <div>
               <label class="block text-xs font-semibold text-[#1A237E] mb-1.5">القسم (الروم)</label>
               <select class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-[#1A237E] focus:border-[#0056B3] focus:ring-1 focus:ring-[#0056B3] focus:outline-none" name="section_id" required>
-                ${sections.map(s => `<option value="${s.id}" ${editing?.section_id === s.id ? 'selected' : ''}>${s.name}</option>`).join('')}
+                ${sections.map(s => `<option value="${s.id}" ${editing?.section_id === s.id ? 'selected' : ''}>${escapeHtml(s.name)}</option>`).join('')}
               </select>
             </div>
 
@@ -133,9 +136,9 @@ export async function initializeProductsPage(root) {
               <div class="relative w-full sm:w-64">
                 <input 
                   type="text" 
-                  id="admin-product-search" 
-                  placeholder="ابحث باسم المنتج..." 
-                  value="${adminSearchQuery}"
+                  id="admin-product-search"
+                  placeholder="ابحث باسم المنتج..."
+                  value="${escapeHtml(adminSearchQuery)}"
                   class="w-full bg-white border border-gray-300 rounded-xl pr-9 pl-3 py-1.5 text-xs text-[#1A237E] focus:border-[#0056B3] focus:ring-1 focus:ring-[#0056B3] focus:outline-none"
                 />
                 <span class="material-symbols-outlined absolute right-2.5 top-2 text-gray-400 text-base pointer-events-none">search</span>
@@ -161,39 +164,7 @@ export async function initializeProductsPage(root) {
                         <span>لا توجد منتجات تطابق البحث</span>
                       </td>
                     </tr>
-                  ` : filteredProducts.map(p => {
-                    const section = sections.find(s => s.id === p.section_id);
-                    return `
-                      <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="p-4">
-                          <div class="w-12 h-12 rounded-lg border border-[#9E9E9E]/10 overflow-hidden bg-gray-100">
-                            <img class="w-full h-full object-cover" src="${p.primary_image_url || '../../public/assets/placeholder.svg'}" alt="${p.name}">
-                          </div>
-                        </td>
-                        <td class="p-4 font-bold">
-                          <div>${p.name}</div>
-                          <div class="text-xs text-[#75777E] mt-0.5 line-clamp-1">${p.description || ''}</div>
-                        </td>
-                        <td class="p-4">
-                          <span class="bg-gray-100 text-gray-600 text-xs font-semibold px-2.5 py-0.5 rounded-full">${section?.name || 'غير محدد'}</span>
-                        </td>
-                        <td class="p-4">
-                          <div class="font-bold text-[#0056B3]">${formatPrice(p.base_price)}</div>
-                          ${p.wholesale_price ? `<div class="text-xs text-amber-700 font-bold bg-amber-50 px-2 py-0.5 rounded border border-amber-200 w-fit mt-1">جملة: ${formatPrice(p.wholesale_price)}</div>` : ''}
-                        </td>
-                        <td class="p-4">
-                          <div class="flex items-center justify-center gap-2">
-                            <button class="w-8 h-8 rounded-full flex items-center justify-center text-primary hover:bg-[#0056B3]/10 transition-colors" data-edit="${p.id}" title="تعديل">
-                              <span class="material-symbols-outlined text-[18px]">edit</span>
-                            </button>
-                            <button class="w-8 h-8 rounded-full flex items-center justify-center text-red-500 hover:bg-red-50 transition-colors" data-delete="${p.id}" title="حذف">
-                              <span class="material-symbols-outlined text-[18px]">delete</span>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    `;
-                  }).join('')}
+                  ` : filteredProducts.map(p => renderProductRow(p, sections.find(s => s.id === p.section_id)?.name)).join('')}
                 </tbody>
               </table>
             </div>
@@ -216,7 +187,7 @@ export async function initializeProductsPage(root) {
         row.className = 'flex items-center gap-2';
         row.innerHTML = `
           <input class="flex-grow rounded-xl border border-gray-300 px-4 py-2 text-sm text-[#1A237E] focus:border-[#0056B3] focus:ring-1 focus:ring-[#0056B3] focus:outline-none ${inputClass}" 
-                 type="text" placeholder="${placeholder}" value="${val}">
+                 type="text" placeholder="${placeholder}" value="${escapeHtml(val)}">
           <button type="button" class="w-8 h-8 rounded-full flex items-center justify-center text-primary hover:bg-[#0056B3]/10 transition-colors edit-btn" title="تعديل">
             <span class="material-symbols-outlined text-[18px]">edit</span>
           </button>
@@ -302,40 +273,8 @@ export async function initializeProductsPage(root) {
               </tr>
             `;
           } else {
-            tbody.innerHTML = curFiltered.map(p => {
-              const section = sections.find(s => s.id === p.section_id);
-              return `
-                <tr class="hover:bg-gray-50 transition-colors">
-                  <td class="p-4">
-                    <div class="w-12 h-12 rounded-lg border border-[#9E9E9E]/10 overflow-hidden bg-gray-100">
-                      <img class="w-full h-full object-cover" src="${p.primary_image_url || '../../public/assets/placeholder.svg'}" alt="${p.name}">
-                    </div>
-                  </td>
-                  <td class="p-4 font-bold">
-                    <div>${p.name}</div>
-                    <div class="text-xs text-[#75777E] mt-0.5 line-clamp-1">${p.description || ''}</div>
-                  </td>
-                  <td class="p-4">
-                    <span class="bg-gray-100 text-gray-600 text-xs font-semibold px-2.5 py-0.5 rounded-full">${section?.name || 'غير محدد'}</span>
-                  </td>
-                  <td class="p-4">
-                    <div class="font-bold text-[#0056B3]">${formatPrice(p.base_price)}</div>
-                    ${p.wholesale_price ? `<div class="text-xs text-amber-700 font-bold bg-amber-50 px-2 py-0.5 rounded border border-amber-200 w-fit mt-1">جملة: ${formatPrice(p.wholesale_price)}</div>` : ''}
-                  </td>
-                  <td class="p-4">
-                    <div class="flex items-center justify-center gap-2">
-                      <button class="w-8 h-8 rounded-full flex items-center justify-center text-primary hover:bg-[#0056B3]/10 transition-colors" data-edit="${p.id}" title="تعديل">
-                        <span class="material-symbols-outlined text-[18px]">edit</span>
-                      </button>
-                      <button class="w-8 h-8 rounded-full flex items-center justify-center text-red-500 hover:bg-red-50 transition-colors" data-delete="${p.id}" title="حذف">
-                        <span class="material-symbols-outlined text-[18px]">delete</span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              `;
-            }).join('');
-            
+            tbody.innerHTML = curFiltered.map(p => renderProductRow(p, sections.find(s => s.id === p.section_id)?.name)).join('');
+
             tbody.querySelectorAll('[data-edit]').forEach(b => {
               b.onclick = async () => {
                 const prod = products.find(p => p.id === b.dataset.edit);

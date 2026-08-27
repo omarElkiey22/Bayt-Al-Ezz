@@ -1,4 +1,7 @@
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+// Pinned to an exact version (not a floating @2 range) so a compromised or
+// broken upstream publish can't silently change the client every page load.
+// Bump deliberately: https://www.npmjs.com/package/@supabase/supabase-js
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4/+esm';
 
 const url = globalThis.SUPABASE_URL || localStorage.getItem('SUPABASE_URL') || 'https://nendbanobyqwkvbnrlvv.supabase.co';
 const key = globalThis.SUPABASE_ANON_KEY || localStorage.getItem('SUPABASE_ANON_KEY') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5lbmRiYW5vYnlxd2t2Ym5ybHZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM5NzA2NjksImV4cCI6MjA5OTU0NjY2OX0.b17KjR-CNyVo_hCKgmeGPqkLTWN405NVf8uY0PwTXdc';
