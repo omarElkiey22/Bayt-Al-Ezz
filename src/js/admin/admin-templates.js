@@ -66,7 +66,7 @@ export function renderCompanyFormFieldValues(editing) {
 
 export function renderCompanyRow(company) {
   const name = escapeHtml(company.name);
-  const logo = escapeHtml(company.logo_url || '../../public/assets/placeholder.svg');
+  const logo = escapeHtml(company.logo_url || '../../../public/assets/placeholder.svg');
   return `
     <tr class="hover:bg-gray-50 transition-colors">
       <td class="p-4">

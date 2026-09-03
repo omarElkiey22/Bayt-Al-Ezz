@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>الشركات في القسم | بيت العز</title>
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <!-- Google Fonts Cairo & Material Symbols -->
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/store.css">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <script id="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#0056B3',
+            navy: '#1A237E',
+            light: '#F8F9FA'
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-[#F8F9FA] text-[#1A237E] min-h-screen flex flex-col antialiased">
+
+  <!-- Header / Navigation Bar -->
+  <nav class="bg-[#1A237E] text-white flex justify-between items-center w-full px-4 md:px-16 h-16 sticky top-0 z-50 shadow-md">
+    <div class="flex items-center gap-4 shrink-0">
+      <a class="font-bold text-xl tracking-wide hover:opacity-90 transition-opacity" href="wholesale-home.html">بيت العز <span class="text-xs font-normal opacity-80">(جملة)</span></a>
+    </div>
+    <div id="search-bar-slot" class="flex-grow max-w-md mx-2 md:mx-4"></div>
+    <div class="flex items-center gap-2 md:gap-4 shrink-0">
+      <a href="cart.html" class="relative p-2 hover:bg-white/10 rounded-full transition-colors flex items-center justify-center" aria-label="عربة التسوق">
+        <span class="material-symbols-outlined">shopping_cart</span>
+        <span id="cart-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
+      </a>
+      <a href="admin/login.html" class="p-2 hover:bg-white/10 rounded-full transition-colors flex items-center justify-center" aria-label="حساب المدير">
+        <span class="material-symbols-outlined">account_circle</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Main Content Area -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 md:px-8 py-8" id="content">
+    <!-- Skeleton while loading -->
+    <div id="skeleton" class="animate-pulse">
+      <div class="h-4 w-40 bg-gray-200 rounded mb-5"></div>
+      <div class="flex items-center gap-4 mb-8">
+        <div class="w-16 h-16 bg-gray-200 rounded-xl shrink-0"></div>
+        <div class="flex-1">
+          <div class="h-7 w-1/3 bg-gray-200 rounded mb-2"></div>
+          <div class="h-4 w-1/4 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+      <div class="h-24 bg-gray-200 rounded-2xl w-full mb-10"></div>
+      <div class="h-6 w-40 bg-gray-200 rounded mb-5"></div>
+      <div class="grid grid-cols-[repeat(auto-fill,minmax(190px,220px))] gap-6">
+        <div class="h-44 bg-gray-200 rounded-2xl w-full"></div>
+        <div class="h-44 bg-gray-200 rounded-2xl w-full"></div>
+        <div class="h-44 bg-gray-200 rounded-2xl w-full"></div>
+        <div class="h-44 bg-gray-200 rounded-2xl w-full"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-[#9E9E9E]/20 py-6 px-6 md:px-16 mt-auto">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-[#75777E]">
+      <div class="font-bold text-lg text-[#1A237E]">بيت العز</div>
+      <div class="flex gap-6">
+        <a class="hover:text-[#0056B3] transition-colors" href="#">سياسة الخصوصية</a>
+        <a class="hover:text-[#0056B3] transition-colors" href="#">الشروط والأحكام</a>
+        <a class="hover:text-[#0056B3] transition-colors" href="#">اتصل بنا</a>
+      </div>
+      <div>© ٢٠٢٦ بيت العز. جميع الحقوق محفوظة</div>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { getQueryParam, escapeHtml } from '../js/utils.js';
+    import { isWholesaleMode, initPricingMode } from '../js/pricing-mode.js';
+    import { fetchActiveSections } from '../js/sections-api.js';
+    import { fetchCompaniesForSection } from '../js/companies-api.js';
+    import { buildCompanyCardHTML } from '../js/company-card-html.js';
+    import { getCartItems, calculateCartTotals } from '../js/cart.js';
+    import { initializeSearchBar } from '../js/search-bar.js';
+
+    const slug = getQueryParam('section');
+    const content = document.getElementById('content');
+
+    // A direct/bookmarked visit outside wholesale mode must not build a
+    // "wholesale companies" grid from the section's entire non-wholesale-
+    // filtered catalog -- fetchCompaniesForSection()'s underlying
+    // filterWholesaleProducts() is a no-op when wholesale mode is off.
+    // Bounce to the equivalent retail listing instead (contracts/ui-routes.md).
+    if (!isWholesaleMode()) {
+      location.replace(`category.html?section=${encodeURIComponent(slug || '')}`);
+    } else if (!slug) {
+      // Required query param missing -- there is nothing to show.
+      location.replace('wholesale-home.html');
+    } else {
+      initPricingMode();
+      initializeSearchBar(document.getElementById('search-bar-slot'));
+
+      // Load dynamic cart badge
+      const items = getCartItems();
+      const totals = calculateCartTotals(items);
+      const badge = document.getElementById('cart-badge');
+      if (totals.itemCount > 0) {
+        badge.textContent = totals.itemCount;
+        badge.classList.remove('hidden');
+      }
+
+      const companyCount = n => n === 1 ? 'شركة واحدة' : `${n} شركات`;
+
+      render();
+
+      async function render() {
+        try {
+          const [sections, { companies, hasUnassigned }] = await Promise.all([
+            fetchActiveSections(),
+            fetchCompaniesForSection(slug)
+          ]);
+          const section = sections.find(s => s.slug === slug);
+          const sectionName = section?.name || '';
+          const sectionIcon = section?.icon_name || 'laundry.svg';
+
+          document.title = `الشركات في ${sectionName || 'القسم'} | بيت العز`;
+
+          content.innerHTML = `
+            <!-- Breadcrumbs -->
+            <nav class="text-[#75777E] text-sm mb-5" aria-label="Breadcrumb">
+              <ol class="inline-flex items-center gap-2 flex-wrap">
+                <li><a class="hover:text-primary transition-colors" href="wholesale-home.html">بيت العز</a></li>
+                <li><span class="material-symbols-outlined text-xs">chevron_left</span></li>
+                <li><a class="hover:text-primary transition-colors" href="wholesale-home.html">الجملة</a></li>
+                <li><span class="material-symbols-outlined text-xs">chevron_left</span></li>
+                <li class="font-semibold text-primary">${escapeHtml(sectionName)}</li>
+              </ol>
+            </nav>
+
+            <!-- Section Header -->
+            <header class="flex items-center gap-4 mb-8">
+              <span class="w-16 h-16 shrink-0 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center overflow-hidden">
+                <img class="w-9 h-9 object-contain" alt="" src="../../public/assets/icons/${escapeHtml(sectionIcon)}" onerror="this.style.display='none'">
+              </span>
+              <div>
+                <h1 class="text-2xl md:text-3xl font-extrabold text-[#1A237E] mb-1">${escapeHtml(sectionName)}</h1>
+                <p class="text-sm text-[#75777E]">${companyCount(companies.length)} تبيع بالجملة في هذا القسم</p>
+              </div>
+            </header>
+
+            <!-- All products in this section (banner-style, visually distinct from company cards) -->
+            <a href="category.html?section=${encodeURIComponent(slug)}" class="group flex items-center gap-5 flex-wrap p-6 mb-10 bg-amber-50 border border-amber-200 border-r-4 border-r-amber-600 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300">
+              <span class="shrink-0 rounded-xl bg-white border border-amber-200 flex items-center justify-center" style="width:52px;height:52px">
+                <span class="material-symbols-outlined text-[28px] text-amber-700">inventory_2</span>
+              </span>
+              <div class="flex-1 min-w-[200px]">
+                <div class="text-lg font-bold text-[#1A237E] mb-1">كل منتجات ${escapeHtml(sectionName)}</div>
+                <div class="text-sm text-amber-800">${hasUnassigned ? 'تصفح كل المنتجات المتاحة بالجملة في هذا القسم، شاملةً المنتجات غير المسندة لشركة.' : 'تصفح كل المنتجات المتاحة بالجملة في هذا القسم، من كل الشركات الموردة.'}</div>
+              </div>
+              <span class="shrink-0 inline-flex items-center gap-2 bg-amber-600 group-hover:bg-amber-700 text-white font-bold text-sm px-6 py-2.5 rounded-xl shadow-sm transition-all active:scale-95">
+                <span>افتح القائمة</span>
+                <span class="material-symbols-outlined text-base">chevron_left</span>
+              </span>
+            </a>
+
+            <!-- Companies heading -->
+            <div class="flex items-center gap-4 mb-5">
+              <h2 class="text-2xl font-extrabold text-[#1A237E] whitespace-nowrap">الشركات في القسم</h2>
+              <span class="flex-1 h-px bg-[#9E9E9E]/20"></span>
+              <span class="text-xs text-[#75777E] whitespace-nowrap">${companyCount(companies.length)}</span>
+            </div>
+
+            <div id="companies-area"></div>
+          `;
+
+          const companiesArea = document.getElementById('companies-area');
+
+          if (companies.length === 0) {
+            // Empty state: products exist in the section but none are
+            // assigned to a company yet -- link back to wholesale-home.html
+            // so there's no dead end.
+            companiesArea.innerHTML = `
+              <div class="flex flex-col items-center justify-center text-center bg-white border border-[#9E9E9E]/20 rounded-2xl py-16 px-8">
+                <span class="material-symbols-outlined text-amber-500" style="font-size:60px">shopping_cart_off</span>
+                <h3 class="mt-4 mb-2 text-xl font-bold text-[#1A237E]">مفيش شركات في القسم ده لسه</h3>
+                <p class="mb-6 text-[#75777E] max-w-[46ch] mx-auto">الأصناف موجودة بس لسه مش مسندة لشركة موردة. افتح قائمة القسم من فوق، أو ارجع تختار قسم تاني.</p>
+                <a class="inline-flex items-center gap-2 bg-[#0056B3] hover:bg-[#004491] text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm" href="wholesale-home.html">
+                  <span class="material-symbols-outlined text-sm">home</span>
+                  العودة لتصفح الجملة
+                </a>
+              </div>
+            `;
+          } else {
+            companiesArea.innerHTML = `
+              <div class="grid grid-cols-[repeat(auto-fill,minmax(190px,220px))] gap-6">
+                ${companies.map(c => `<a href="category.html?section=${encodeURIComponent(slug)}&company=${encodeURIComponent(c.id)}">${buildCompanyCardHTML(c)}</a>`).join('')}
+              </div>
+            `;
+          }
+        } catch (error) {
+          console.error(error);
+          content.innerHTML = `
+            <div class="flex flex-col items-center justify-center text-center bg-white border border-[#9E9E9E]/20 rounded-2xl py-16 px-8">
+              <span class="material-symbols-outlined text-red-500 mb-4" style="font-size:60px">error</span>
+              <h3 class="text-xl font-bold text-[#1A237E] mb-2">حصلت مشكلة في تحميل بيانات القسم</h3>
+              <p class="text-[#75777E] mb-6">تأكد إن رابط القسم صحيح، أو ارجع لصفحة الجملة الرئيسية.</p>
+              <a class="inline-flex items-center gap-2 bg-[#0056B3] hover:bg-[#004491] text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm" href="wholesale-home.html">
+                <span class="material-symbols-outlined text-sm">home</span>
+                العودة لتصفح الجملة
+              </a>
+            </div>
+          `;
+        }
+      }
+    }
+  </script>
+</body>
+</html>
