@@ -129,9 +129,9 @@ Existing single-project layout (`plan.md` Structure Decision) — `src/pages/`, 
 
 **Purpose**: Full-feature verification and sign-off across all stories.
 
-- [ ] T028 [P] Run the complete `quickstart.md` validation end-to-end: all three user stories plus every listed edge case (company without logo → monogram fallback, invalid section/company id in URL on both company-scoped `category.html` routes, retail-mode isolation, zero house-hero flash on wholesale entry, and both new wholesale pages' out-of-mode redirect behavior)
-- [ ] T029 [P] Run `npm test`; confirm `tests/product-filters.test.js`, `tests/company-card-html.test.js`, the updated `tests/rls-admin-access.test.js`, and the updated `tests/auth-gate.test.js` all pass, and no existing suite regresses
-- [ ] T030 Constitution + eng-review compliance sign-off: confirm Principle III (house hero / `house-interactions.js` untouched), Principle VIII (companies soft-deleted via `deleted_at`, not hard-deleted, with the partial-unique slug index correctly scoped), and Principle IX (RLS + sanitize trigger on `companies` mirror `sections`/`products`; `requireAdmin()` now genuinely gates all 6 admin pages; the hidden-section leak is closed in both `fetchActiveCompanies()` and `fetchProductsByCompany()`) before merge (depends on T028, T029)
+- [X] T028 [P] Run the complete `quickstart.md` validation end-to-end: all three user stories plus every listed edge case (company without logo → monogram fallback, invalid section/company id in URL on both company-scoped `category.html` routes, retail-mode isolation, zero house-hero flash on wholesale entry, and both new wholesale pages' out-of-mode redirect behavior)
+- [X] T029 [P] Run `npm test`; confirm `tests/product-filters.test.js`, `tests/company-card-html.test.js`, the updated `tests/rls-admin-access.test.js`, and the updated `tests/auth-gate.test.js` all pass, and no existing suite regresses
+- [X] T030 Constitution + eng-review compliance sign-off: confirm Principle III (house hero / `house-interactions.js` untouched), Principle VIII (companies soft-deleted via `deleted_at`, not hard-deleted, with the partial-unique slug index correctly scoped), and Principle IX (RLS + sanitize trigger on `companies` mirror `sections`/`products`; `requireAdmin()` now genuinely gates all 6 admin pages; the hidden-section leak is closed in both `fetchActiveCompanies()` and `fetchProductsByCompany()`) before merge (depends on T028, T029)
 
 ---
 
