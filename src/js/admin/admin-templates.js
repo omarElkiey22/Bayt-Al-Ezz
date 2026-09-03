@@ -17,7 +17,7 @@ export function renderProductFormFieldValues(editing) {
 export function renderProductRow(product, sectionName) {
   const name = escapeHtml(product.name);
   const description = escapeHtml(product.description || '');
-  const image = escapeHtml(product.primary_image_url || '../../public/assets/placeholder.svg');
+  const image = escapeHtml(product.primary_image_url || '../../../public/assets/placeholder.svg');
   return `
     <tr class="hover:bg-gray-50 transition-colors">
       <td class="p-4">
