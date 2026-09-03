@@ -144,9 +144,9 @@
     const searchQuery = getQueryParam('search');
     const breadcrumbActive = document.getElementById('breadcrumb-active');
     const sectionTitle = document.getElementById('section-title');
-    // True for the page's whole lifetime -- the URL's company id never
-    // changes via the filter panel (only price/company-narrowing and
-    // section do; see the "Filter panel: state" comment below).
+    // True for the page's whole lifetime -- whether the URL started with a
+    // company id decides which mode the company facet operates in for the
+    // rest of the page's life (see the "Filter panel: state" comment below).
     const hasCompanyContext = isWholesaleMode() && !!companyId;
 
     // Load dynamic cart badge
@@ -162,26 +162,33 @@
     // allProducts: the current fetch's full result (post filterWholesaleProducts,
     //   pre applyProductFilters) -- what price/company/unassigned narrow.
     // currentSlug: the ACTIVE section for fetch purposes; starts as the URL's
-    //   `slug` but changes when the filter panel's section <select> changes
-    //   (a real re-fetch, unlike price/company/unassigned).
+    //   `slug` but changes when the filter panel's section <select> changes.
+    // activeCompanyId: the ACTIVE company for fetch purposes on a
+    //   company-scoped route (hasCompanyContext); starts as the URL's
+    //   `companyId` but changes when the company <select> changes there.
+    //   On a plain section-only route (!hasCompanyContext) this is never
+    //   used for fetching -- the already-fetched array already spans every
+    //   company in the section, so narrowing by company is a pure
+    //   in-memory filter instead (filterState.companyId below).
     // filterState: the in-memory narrowing applied on top of allProducts.
-    //   companyId here is independent of the URL's companyId/hasCompanyContext
-    //   above -- it's purely a client-side filter, so picking a different
-    //   company than the one that scoped the fetch (on a company-scoped
-    //   route) narrows within the already-fetched array rather than
-    //   fetching that other company's products (contracts/ui-routes.md's
-    //   "price-range and company/unassigned controls... no network
-    //   request" rule applies to every company change, not just the ones
-    //   that happen to already be in the loaded array).
+    //   Only meaningful on a !hasCompanyContext route -- on a
+    //   hasCompanyContext route the fetched array is always already
+    //   exactly one company's products, so there's nothing left for
+    //   filterState.companyId/unassignedOnly to narrow (switching
+    //   companies there goes through activeCompanyId + a real re-fetch
+    //   instead; see onCompanyFacetChange). minPrice/maxPrice stay
+    //   meaningful as in-memory filters on every route.
     let sectionsCache = [];
     let currentSlug = slug;
+    let activeCompanyId = companyId;
     let allProducts = [];
     let companyOptionsList = [];
     let hasUnassignedFlag = false;
+    let fetchGeneration = 0;
     const filterState = {
       minPrice: null,
       maxPrice: null,
-      companyId: hasCompanyContext ? companyId : null,
+      companyId: null,
       unassignedOnly: false
     };
 
@@ -203,11 +210,14 @@
       ).join('');
     }
 
-    // Resolves products for a given section slug under the page's fixed
-    // company context, and updates the title/breadcrumb/description to
-    // match -- shared by the initial render() and the filter panel's
-    // section-select re-fetch (onSectionFacetChange) so both stay in sync.
-    async function fetchAndLabelProducts(sections, targetSlug) {
+    // Resolves products for a given section slug + company id, and updates
+    // the title/breadcrumb/description to match -- shared by the initial
+    // render() and the filter panel's section/company re-fetch paths
+    // (refetchAndSync) so every entry point stays in sync. targetCompanyId
+    // is an explicit parameter (not a closure over the URL's companyId) so
+    // a company-scoped route can re-fetch a *different* company without
+    // this function needing to know why its caller changed.
+    async function fetchAndLabelProducts(sections, targetSlug, targetCompanyId) {
       const currentSection = targetSlug ? sections.find(s => s.slug === targetSlug) : null;
       if (currentSection) {
         breadcrumbActive.textContent = currentSection.name;
@@ -216,15 +226,15 @@
         document.title = `${currentSection.name} | بيت العز`;
       }
 
-      if (isWholesaleMode() && companyId && targetSlug) {
+      if (isWholesaleMode() && targetCompanyId && targetSlug) {
         // Company-scoped wholesale listing (section + company, reached
         // from a wholesale-section-companies.html card, or from changing
-        // the section facet while a company is active). An invalid,
-        // soft-deleted, or deactivated company throws here and falls
-        // through to the caller's catch block unchanged -- same
+        // the section/company facet while the other is active). An
+        // invalid, soft-deleted, or deactivated company throws here and
+        // falls through to the caller's catch block unchanged -- same
         // error-state markup already used for a bad section slug
         // (contracts/ui-routes.md's "Invalid company id" note).
-        const company = await fetchCompanyDetails(companyId);
+        const company = await fetchCompanyDetails(targetCompanyId);
         // currentSection can be null here (a stale/invalid slug) -- guarded
         // the same way the plain section-only path guards it above, so a
         // bad slug falls through to fetchProductsByCompany()'s own
@@ -236,20 +246,20 @@
           document.getElementById('section-desc').textContent = `منتجات شركة ${company.name} في هذا القسم.`;
           document.title = `${scopedTitle} | بيت العز`;
         }
-        return await fetchProductsByCompany(companyId, { sectionSlug: targetSlug });
+        return await fetchProductsByCompany(targetCompanyId, { sectionSlug: targetSlug });
       }
-      if (isWholesaleMode() && companyId) {
+      if (isWholesaleMode() && targetCompanyId) {
         // Company-scoped wholesale listing, no section (User Story 2, or
         // the section facet reset to "كل الأقسام"): full cross-section
         // catalog for this company. Same fetchCompanyDetails()-first
         // validation as above, so both company-scoped routes behave
         // identically for an invalid/soft-deleted/deactivated id.
-        const company = await fetchCompanyDetails(companyId);
+        const company = await fetchCompanyDetails(targetCompanyId);
         breadcrumbActive.textContent = company.name;
         sectionTitle.textContent = company.name;
         document.getElementById('section-desc').textContent = `كل منتجات شركة ${company.name} في جميع الأقسام.`;
         document.title = `${company.name} | بيت العز`;
-        return await fetchProductsByCompany(companyId);
+        return await fetchProductsByCompany(targetCompanyId);
       }
       return await fetchProductsBySection(targetSlug);
     }
@@ -261,12 +271,22 @@
       companyOptionsList.forEach(c => {
         opts.push(`<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}</option>`);
       });
-      // FR-013: only offered when the current section context actually has
-      // wholesale products with no company assigned.
-      if (hasUnassignedFlag) {
+      // FR-013: only offered on a !hasCompanyContext route -- "unassigned"
+      // is only answerable there. On a hasCompanyContext route the fetched
+      // array is always exactly one company's products (fetchProductsByCompany
+      // always filters by company_id), so it can never contain an
+      // unassigned item regardless of what the section itself has.
+      if (!hasCompanyContext && hasUnassignedFlag) {
         opts.push('<option value="__unassigned__">بدون شركة</option>');
       }
       return opts.join('');
+    }
+
+    // What the company <select> should currently show -- diverges by route
+    // type the same way the onchange handler does (wireFilterPanelEvents).
+    function currentCompanySelectValue() {
+      if (hasCompanyContext) return activeCompanyId || '';
+      return filterState.unassignedOnly ? '__unassigned__' : (filterState.companyId || '');
     }
 
     function buildSectionOptionsHTML() {
@@ -322,11 +342,11 @@
       const resetBtn = document.getElementById('filter-reset');
 
       // Pre-seed from the entry context (Acceptance Scenarios 2 & 4, US3).
-      companySelect.value = filterState.unassignedOnly ? '__unassigned__' : (filterState.companyId || '');
+      companySelect.value = currentCompanySelectValue();
       sectionSelect.value = currentSlug || '';
 
-      // Price/company/unassigned: pure in-memory re-filter, no fetch --
-      // `input` (not `change`) so it updates on every keystroke.
+      // Price: always a pure in-memory re-filter, no fetch -- `input` (not
+      // `change`) so it updates on every keystroke.
       minInput.oninput = () => {
         filterState.minPrice = minInput.value === '' ? null : Number(minInput.value);
         applyFiltersAndRender();
@@ -335,15 +355,26 @@
         filterState.maxPrice = maxInput.value === '' ? null : Number(maxInput.value);
         applyFiltersAndRender();
       };
+
+      // Company: a pure in-memory filter on a plain section-only route
+      // (the fetched array already spans every company in the section),
+      // but a real re-fetch on a company-scoped route -- the array there
+      // is already exactly one company's products, so "picking a
+      // different company" can't be answered from what's already loaded
+      // (data-model.md's "Facet re-fetch semantics" note covers company,
+      // not just section, for that reason).
       companySelect.onchange = () => {
         const v = companySelect.value;
-        filterState.unassignedOnly = v === '__unassigned__';
-        filterState.companyId = (v && v !== '__unassigned__') ? v : null;
-        applyFiltersAndRender();
+        if (hasCompanyContext) {
+          onCompanyFacetChange(v || null);
+        } else {
+          filterState.unassignedOnly = v === '__unassigned__';
+          filterState.companyId = (v && v !== '__unassigned__') ? v : null;
+          applyFiltersAndRender();
+        }
       };
 
-      // Section: a genuine re-fetch, not a pure filter (data-model.md's
-      // "Facet re-fetch semantics" note) -- the already-fetched array
+      // Section: always a genuine re-fetch -- the already-fetched array
       // cannot contain a different section's products.
       sectionSelect.onchange = () => onSectionFacetChange(sectionSelect.value || null);
 
@@ -371,46 +402,83 @@
       renderProductGrid(filtered);
     }
 
-    async function onSectionFacetChange(newSlug) {
+    // Single re-fetch path shared by a section-facet change, a
+    // company-facet change (on a hasCompanyContext route), and a
+    // filter-panel reset that needs to undo either drift -- all three just
+    // set currentSlug/activeCompanyId first, then call this. A
+    // fetchGeneration token guards against out-of-order completion: if the
+    // user fires a second facet change before the first one's fetch
+    // resolves, the stale response is discarded instead of clobbering
+    // newer state (title/breadcrumb/grid) with older data.
+    async function refetchAndSync() {
+      const myGeneration = ++fetchGeneration;
       try {
-        currentSlug = newSlug;
-        allProducts = filterWholesaleProducts(await fetchAndLabelProducts(sectionsCache, newSlug));
+        const freshProducts = await fetchAndLabelProducts(sectionsCache, currentSlug, activeCompanyId);
+        if (myGeneration !== fetchGeneration) return;
+        allProducts = filterWholesaleProducts(freshProducts);
         await loadNavigation(sectionsCache);
 
-        await fetchCompanyFacetData(newSlug);
+        await fetchCompanyFacetData(currentSlug);
+        if (myGeneration !== fetchGeneration) return;
+
         const companySelect = document.getElementById('filter-company');
         companySelect.innerHTML = buildCompanyOptionsHTML();
-        // Preserve the current company/unassigned selection only if it's
-        // still a valid option in the new section's company list.
-        const stillValidCompany = filterState.companyId && companyOptionsList.some(c => c.id === filterState.companyId);
-        const stillValidUnassigned = filterState.unassignedOnly && hasUnassignedFlag;
-        if (!stillValidCompany && !stillValidUnassigned) {
-          filterState.companyId = null;
-          filterState.unassignedOnly = false;
+        if (!hasCompanyContext) {
+          // Preserve the current company/unassigned selection only if
+          // it's still a valid option in the new section's company list
+          // (hasCompanyContext routes never set filterState.companyId/
+          // unassignedOnly in the first place -- see the state comment).
+          const stillValidCompany = filterState.companyId && companyOptionsList.some(c => c.id === filterState.companyId);
+          const stillValidUnassigned = filterState.unassignedOnly && hasUnassignedFlag;
+          if (!stillValidCompany && !stillValidUnassigned) {
+            filterState.companyId = null;
+            filterState.unassignedOnly = false;
+          }
         }
-        companySelect.value = filterState.unassignedOnly ? '__unassigned__' : (filterState.companyId || '');
+        companySelect.value = currentCompanySelectValue();
+        document.getElementById('filter-section').value = currentSlug || '';
 
         applyFiltersAndRender();
       } catch (error) {
+        if (myGeneration !== fetchGeneration) return;
         console.error(error);
-        showLoadError(() => onSectionFacetChange(newSlug));
+        showLoadError(() => refetchAndSync());
       }
+    }
+
+    function onSectionFacetChange(newSlug) {
+      currentSlug = newSlug;
+      return refetchAndSync();
+    }
+
+    function onCompanyFacetChange(newCompanyId) {
+      if (!newCompanyId && !currentSlug) {
+        // Clearing the company with no section active would leave nothing
+        // to browse (the page's own routing invariant requires at least
+        // one of section/company) -- revert the control instead of
+        // navigating to a dead end.
+        document.getElementById('filter-company').value = activeCompanyId || '';
+        return;
+      }
+      activeCompanyId = newCompanyId;
+      return refetchAndSync();
     }
 
     async function resetFilters() {
       filterState.minPrice = null;
       filterState.maxPrice = null;
       filterState.unassignedOnly = false;
-      filterState.companyId = hasCompanyContext ? companyId : null;
+      filterState.companyId = null;
 
       document.getElementById('filter-min-price').value = '';
       document.getElementById('filter-max-price').value = '';
 
-      if (currentSlug !== slug) {
-        document.getElementById('filter-section').value = slug || '';
-        await onSectionFacetChange(slug);
+      if (currentSlug !== slug || activeCompanyId !== companyId) {
+        currentSlug = slug;
+        activeCompanyId = companyId;
+        await refetchAndSync();
       } else {
-        document.getElementById('filter-company').value = filterState.unassignedOnly ? '__unassigned__' : (filterState.companyId || '');
+        document.getElementById('filter-company').value = currentCompanySelectValue();
         applyFiltersAndRender();
       }
     }
@@ -569,6 +637,7 @@
         return;
       }
       currentSlug = slug;
+      activeCompanyId = companyId;
 
       try {
         const sections = await fetchActiveSections();
@@ -582,7 +651,7 @@
           allProducts = await searchProducts(searchQuery);
           document.getElementById('section-desc').textContent = `عثرنا على ${allProducts.length} منتج يطابق بحثك.`;
         } else {
-          allProducts = await fetchAndLabelProducts(sections, currentSlug);
+          allProducts = await fetchAndLabelProducts(sections, currentSlug, activeCompanyId);
         }
 
         // Apply wholesale filter if wholesale mode is active
