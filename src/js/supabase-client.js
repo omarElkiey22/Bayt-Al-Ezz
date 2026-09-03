@@ -91,7 +91,9 @@ function matchesNotFilter(val, filter) {
   return true;
 }
 
-class MockQueryBuilder {
+// Exported (only) so tests/supabase-client.test.js can exercise the filter
+// logic directly -- MockSupabaseClient's own usage below is unaffected.
+export class MockQueryBuilder {
   constructor(table) {
     this.table = table;
     this.filters = [];

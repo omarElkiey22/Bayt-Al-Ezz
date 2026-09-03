@@ -208,11 +208,18 @@
             // error-state markup already used for a bad section slug
             // (contracts/ui-routes.md's "Invalid company id" note).
             const company = await fetchCompanyDetails(companyId);
-            const scopedTitle = `${currentSection.name} — ${company.name}`;
-            breadcrumbActive.textContent = scopedTitle;
-            sectionTitle.textContent = scopedTitle;
-            document.getElementById('section-desc').textContent = `منتجات شركة ${company.name} في هذا القسم.`;
-            document.title = `${scopedTitle} | بيت العز`;
+            // currentSection can be null here (a stale/invalid slug) --
+            // guarded the same way the plain section-only path already
+            // guards it above, so a bad slug falls through to
+            // fetchProductsByCompany()'s own "section not found" error
+            // instead of throwing a confusing TypeError first.
+            if (currentSection) {
+              const scopedTitle = `${currentSection.name} — ${company.name}`;
+              breadcrumbActive.textContent = scopedTitle;
+              sectionTitle.textContent = scopedTitle;
+              document.getElementById('section-desc').textContent = `منتجات شركة ${company.name} في هذا القسم.`;
+              document.title = `${scopedTitle} | بيت العز`;
+            }
             products = await fetchProductsByCompany(companyId, { sectionSlug: slug });
           } else if (isWholesaleMode() && companyId) {
             // Company-scoped wholesale listing, no section (User Story 2 --
