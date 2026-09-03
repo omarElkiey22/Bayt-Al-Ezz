@@ -24,13 +24,13 @@ export function buildCompanyCardHTML(company) {
       </div>
     `
     : `
-      <div class="w-16 h-16 rounded-xl bg-[#0056B3]/10 text-[#0056B3] flex items-center justify-center shrink-0 font-extrabold text-2xl" aria-hidden="true">
+      <div class="w-16 h-16 rounded-xl bg-gray-50 border border-[#9E9E9E]/10 text-amber-600 flex items-center justify-center shrink-0 font-extrabold text-2xl" aria-hidden="true">
         ${monogram}
       </div>
     `;
 
   return `
-    <div class="company-card flex flex-col items-center gap-2 p-4 bg-white border border-[#9E9E9E]/20 rounded-2xl shadow-sm hover:border-[#0056B3] hover:shadow-md transition-all text-center" data-company-id="${escapeHtml(company.id)}">
+    <div class="company-card flex flex-col items-center gap-2 p-4 bg-white border border-[#9E9E9E]/20 rounded-2xl shadow-sm hover:border-amber-500 hover:shadow-md transition-all text-center" data-company-id="${escapeHtml(company.id)}">
       ${media}
       <span class="font-bold text-sm text-[#1A237E] line-clamp-1">${name}</span>
     </div>
