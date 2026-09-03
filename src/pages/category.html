@@ -168,7 +168,10 @@
     }
 
     async function render() {
-      if (!slug && !searchQuery) {
+      // A bare ?company=<id> (no section) is a valid wholesale-mode route
+      // (User Story 2, direct company browsing) -- only redirect when none
+      // of section, search, or a wholesale company id are present.
+      if (!slug && !searchQuery && !(isWholesaleMode() && companyId)) {
         location.href = 'index.html';
         return;
       }
@@ -189,7 +192,7 @@
           products = await searchProducts(searchQuery);
           document.getElementById('section-desc').textContent = `عثرنا على ${products.length} منتج يطابق بحثك.`;
         } else {
-          const currentSection = sections.find(s => s.slug === slug);
+          const currentSection = slug ? sections.find(s => s.slug === slug) : null;
           if (currentSection) {
             breadcrumbActive.textContent = currentSection.name;
             sectionTitle.textContent = currentSection.name;
@@ -197,7 +200,7 @@
             document.title = `${currentSection.name} | بيت العز`;
           }
 
-          if (isWholesaleMode() && companyId) {
+          if (isWholesaleMode() && companyId && slug) {
             // Company-scoped wholesale listing (section + company, reached
             // from a wholesale-section-companies.html card). An invalid,
             // soft-deleted, or deactivated company throws here and falls
@@ -205,14 +208,27 @@
             // error-state markup already used for a bad section slug
             // (contracts/ui-routes.md's "Invalid company id" note).
             const company = await fetchCompanyDetails(companyId);
-            if (currentSection) {
-              const scopedTitle = `${currentSection.name} — ${company.name}`;
-              breadcrumbActive.textContent = scopedTitle;
-              sectionTitle.textContent = scopedTitle;
-              document.getElementById('section-desc').textContent = `منتجات شركة ${company.name} في هذا القسم.`;
-              document.title = `${scopedTitle} | بيت العز`;
-            }
+            const scopedTitle = `${currentSection.name} — ${company.name}`;
+            breadcrumbActive.textContent = scopedTitle;
+            sectionTitle.textContent = scopedTitle;
+            document.getElementById('section-desc').textContent = `منتجات شركة ${company.name} في هذا القسم.`;
+            document.title = `${scopedTitle} | بيت العز`;
             products = await fetchProductsByCompany(companyId, { sectionSlug: slug });
+          } else if (isWholesaleMode() && companyId) {
+            // Company-scoped wholesale listing, no section (User Story 2 --
+            // reached from wholesale-home.html's company showcase): full
+            // cross-section catalog for this company. Same
+            // fetchCompanyDetails()-first validation as the section+company
+            // route above, so both company-scoped routes behave identically
+            // for an invalid/soft-deleted/deactivated id -- it throws here
+            // and falls through to the catch block below, same error-state
+            // markup as a bad section slug.
+            const company = await fetchCompanyDetails(companyId);
+            breadcrumbActive.textContent = company.name;
+            sectionTitle.textContent = company.name;
+            document.getElementById('section-desc').textContent = `كل منتجات شركة ${company.name} في جميع الأقسام.`;
+            document.title = `${company.name} | بيت العز`;
+            products = await fetchProductsByCompany(companyId);
           } else {
             products = await fetchProductsBySection(slug);
           }

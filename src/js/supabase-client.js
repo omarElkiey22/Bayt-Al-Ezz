@@ -73,6 +73,24 @@ function setStorageData(table, data) {
   localStorage.setItem(`sb_mock_${table}`, JSON.stringify(data));
 }
 
+// Shared by MockQueryBuilder.execute()'s filter pass and .matchRow() so the
+// two don't drift -- mirrors PostgREST's `not.<operator>.<value>` shape as
+// used by the real query builder (companies-api.js's hidden-section /
+// wholesale_price filters): 'is' negates a plain is-null/is-value check,
+// 'in' expects the same "(a,b,c)" parenthesized-list string real Supabase
+// calls pass to .not(column, 'in', value).
+function matchesNotFilter(val, filter) {
+  if (filter.operator === 'is') {
+    if (filter.value === null) return val !== null && val !== undefined;
+    return val !== filter.value;
+  }
+  if (filter.operator === 'in') {
+    const list = String(filter.value || '').replace(/^\(|\)$/g, '').split(',').filter(Boolean);
+    return !list.includes(String(val));
+  }
+  return true;
+}
+
 class MockQueryBuilder {
   constructor(table) {
     this.table = table;
@@ -108,6 +126,16 @@ class MockQueryBuilder {
 
   ilike(column, pattern) {
     this.filters.push({ type: 'ilike', column, pattern });
+    return this;
+  }
+
+  gt(column, value) {
+    this.filters.push({ type: 'gt', column, value });
+    return this;
+  }
+
+  not(column, operator, value) {
+    this.filters.push({ type: 'not', column, operator, value });
     return this;
   }
 
@@ -216,6 +244,12 @@ class MockQueryBuilder {
           const cleanPattern = String(filter.pattern || '').replace(/%/g, '').toLowerCase();
           return String(val || '').toLowerCase().includes(cleanPattern);
         }
+        if (filter.type === 'gt') {
+          return val !== null && val !== undefined && val > filter.value;
+        }
+        if (filter.type === 'not') {
+          return matchesNotFilter(val, filter);
+        }
         return true;
       });
     }
@@ -275,6 +309,10 @@ class MockQueryBuilder {
       } else if (filter.type === 'ilike') {
         const cleanPattern = String(filter.pattern || '').replace(/%/g, '').toLowerCase();
         if (!String(val || '').toLowerCase().includes(cleanPattern)) return false;
+      } else if (filter.type === 'gt') {
+        if (val === null || val === undefined || !(val > filter.value)) return false;
+      } else if (filter.type === 'not') {
+        if (!matchesNotFilter(val, filter)) return false;
       }
     }
     return true;

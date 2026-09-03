@@ -64,6 +64,24 @@
       </div>
     </section>
 
+    <!-- "Browse Companies" showcase (User Story 2) -- starts hidden and is
+         only revealed once fetchActiveCompanies() resolves with at least
+         one company, so a fresh install with no companies yet doesn't show
+         an empty discovery panel. -->
+    <section class="hidden bg-white border border-[#9E9E9E]/20 rounded-3xl p-6 md:p-8 shadow-sm" id="companies-showcase">
+      <div class="flex items-end justify-between gap-4 flex-wrap pb-4 mb-6 border-b border-[#9E9E9E]/10">
+        <div>
+          <h2 class="text-2xl font-extrabold text-[#1A237E] mb-1">شركاء النجاح والشركات</h2>
+          <p class="text-sm text-[#75777E]">تعامل مباشر مع الموردين — اختار الشركة وشوف منتجاتها في كل الأقسام.</p>
+        </div>
+        <span class="inline-flex items-center gap-1.5 bg-amber-50 text-amber-800 border border-amber-200 rounded-full px-3 py-1 text-xs font-bold shrink-0">
+          <span class="material-symbols-outlined text-sm">group</span>
+          <span id="companies-count-text"></span>
+        </span>
+      </div>
+      <div class="grid grid-cols-[repeat(auto-fill,minmax(176px,1fr))] gap-4" id="companies-grid"></div>
+    </section>
+
   </main>
 
   <!-- Footer -->
@@ -93,9 +111,11 @@
       location.replace('index.html');
     } else {
       const { fetchActiveSections } = await import('../js/sections-api.js');
+      const { fetchActiveCompanies } = await import('../js/companies-api.js');
       const { getCartItems, calculateCartTotals } = await import('../js/cart.js');
       const { initializeSearchBar } = await import('../js/search-bar.js');
       const { buildWholesaleSectionGridEntryHTML } = await import('../js/wholesale-section-grid-html.js');
+      const { buildCompanyCardHTML } = await import('../js/company-card-html.js');
 
       initPricingMode();
       initializeSearchBar(document.getElementById('search-bar-slot'));
@@ -109,9 +129,13 @@
         badge.classList.remove('hidden');
       }
 
-      // Render the section-grid entry view
+      // Render the section-grid entry view + the "Browse Companies"
+      // showcase together (independent data sources, fetched in parallel).
       const sectionGrid = document.getElementById('section-grid');
-      const sections = await fetchActiveSections();
+      const [sections, companies] = await Promise.all([
+        fetchActiveSections(),
+        fetchActiveCompanies()
+      ]);
 
       if (!sections.length) {
         sectionGrid.className = 'col-span-full flex flex-col items-center justify-center py-12 bg-white border border-[#9E9E9E]/20 rounded-2xl text-center p-8';
@@ -122,6 +146,20 @@
       } else {
         sectionGrid.className = 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4';
         sectionGrid.innerHTML = sections.map(buildWholesaleSectionGridEntryHTML).join('');
+      }
+
+      // "Browse Companies" showcase -- each card links to
+      // category.html?company=<id> (no section param), so tapping a
+      // company shows its full cross-section catalog (User Story 2).
+      if (companies.length > 0) {
+        document.getElementById('companies-count-text').textContent = companies.length === 1 ? 'شركة واحدة' : `${companies.length} شركة`;
+
+        const companiesGrid = document.getElementById('companies-grid');
+        companiesGrid.innerHTML = companies
+          .map(c => `<a href="category.html?company=${encodeURIComponent(c.id)}">${buildCompanyCardHTML(c)}</a>`)
+          .join('');
+
+        document.getElementById('companies-showcase').classList.remove('hidden');
       }
     }
   </script>
