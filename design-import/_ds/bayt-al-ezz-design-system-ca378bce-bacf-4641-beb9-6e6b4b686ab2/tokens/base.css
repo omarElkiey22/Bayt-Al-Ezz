@@ -1,8 +1,0 @@
-/* Minimal base layer — mirrors the body rule in the upstream src/css/tokens.css.
-   Everything else is component-scoped. */
-:root{font-family:var(--font-core)}
-body{font-family:var(--font-core);background-color:var(--surface-page);color:var(--text-heading);-webkit-font-smoothing:antialiased}
-a{color:var(--primary-blue);text-decoration:none;transition:color var(--dur-fast) var(--ease-standard)}
-a:hover{color:var(--primary-blue-hover)}
-/* Arabic-first: pages are dir="rtl" lang="ar". Latin runs inside Arabic copy stay LTR. */
-[dir="rtl"] .ltr-run{direction:ltr;unicode-bidi:isolate}

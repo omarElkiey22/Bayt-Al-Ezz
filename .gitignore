@@ -17,3 +17,7 @@ Thumbs.db
 .claude/
 .commandcode/
 .gstack/
+
+# Scratch reference material pulled in for a design-integration pass
+# (Claude Design .dc.html exports, etc.) -- not part of the shipped app.
+design-import/
