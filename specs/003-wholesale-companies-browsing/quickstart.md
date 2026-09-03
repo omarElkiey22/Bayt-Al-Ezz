@@ -30,9 +30,18 @@ Confirm the new pure-logic suites pass:
 - `tests/company-card-html.test.js` — HTML escaping + fallback monogram when `logo_url` is absent.
 - `tests/rls-admin-access.test.js` — now also covers `['companies', 'merchant companies writes']`.
 
+## Wholesale homepage entry (redirect check — do this first, before the user stories below)
+
+1. Open `index.html?pricing=wholesale` and watch the network panel / page content closely.
+   **Expect**: the URL immediately becomes `wholesale-home.html` (via redirect), `Frame 1.svg` and
+   `Frame 2.svg` are never requested, and the house hero is never visible — not even for a frame
+   (FR-014, SC-006).
+2. Open `index.html` with no `pricing` param (or `?pricing=normal`) → **expect** no redirect; the
+   two-phase house hero loads and opens exactly as before this feature.
+
 ## User Story 1: Section-to-Company Wholesale Browsing (P1)
 
-1. Open `index.html?pricing=wholesale`.
+1. From `wholesale-home.html` (reached via step 1 above), locate the section-grid entry view.
 2. Tap a section that has wholesale companies (from Prerequisites step 3) →
    **expect** `wholesale-section-companies.html?section=<slug>` loads, showing a company grid
    (logo + name each) plus an "All products in this section" entry labeled with the section's
@@ -43,17 +52,17 @@ Confirm the new pure-logic suites pass:
    `category.html?section=<slug>` shows every active wholesale product in the section, including
    the unassigned one from Prerequisites.
 5. Repeat step 2 with the section that has **no** wholesale companies → **expect** a clear empty
-   state with a way back to all sections (no dead end).
+   state with a way back to `wholesale-home.html` (no dead end).
 
 ## User Story 2: Direct Company Browsing on Wholesale Homepage (P2)
 
-1. On `index.html?pricing=wholesale`, locate the "شركاء النجاح والشركات" showcase → **expect** it
-   lists the companies created in Prerequisites.
+1. On `wholesale-home.html`, locate the "شركاء النجاح والشركات" showcase → **expect** it lists the
+   companies created in Prerequisites.
 2. Tap a company card → **expect** `category.html?company=<id>` shows *all* of that company's
    active wholesale products across every section (not just one).
-3. Open `index.html` **without** `?pricing=wholesale` (plain retail) → **expect** the companies
-   showcase is absent and the house hero behaves exactly as before (Constitution Principle III
-   unaffected).
+3. Open `index.html` **without** `?pricing=wholesale` (plain retail) → **expect** no redirect, no
+   companies showcase anywhere, and the house hero behaves exactly as before (Constitution
+   Principle III unaffected).
 
 ## User Story 3: Multi-Criteria Product Filter Panel (P3)
 
@@ -61,8 +70,12 @@ Confirm the new pure-logic suites pass:
    **expect** a visible filter panel with price min/max, company selection, and section selection.
 2. If entered via section+company, **expect** that section and company are pre-selected in the
    panel.
-3. Change the price range / toggle a company / change the section → **expect** the grid updates
-   immediately (no visible reload, no URL navigation) and stays under ~150ms perceptibly.
+3. Change the price range or toggle a company → **expect** the grid updates immediately (no
+   visible reload, no URL navigation) and stays under ~150ms perceptibly — this is a pure
+   in-memory filter of the already-fetched products.
+3b. Change the **section** select → **expect** a real (but still in-page, no full reload) re-fetch
+   of that section's products; this is not claimed to be instant the way price/company narrowing
+   is (see `data-model.md`'s "Facet re-fetch semantics").
 4. On the "All products in this section" listing from User Story 1 step 4, **expect** the company
    filter includes an explicit "بدون شركة" option, and selecting it isolates the unassigned
    product.

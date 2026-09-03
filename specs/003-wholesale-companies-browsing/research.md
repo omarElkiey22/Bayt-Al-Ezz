@@ -99,22 +99,42 @@ feature spec with the existing codebase's established patterns.
   risking the 150ms budget, and the product sets involved are already small enough to filter
   in-memory (matches Decision 1's scale assumption).
 
-## Decision 7: Wholesale-mode routing branch in `house-interactions.js`
+## Decision 7 (REVISED 2026-09-01 — see `/speckit-clarify` session): Wholesale mode never renders the house hero — `index.html` redirects to a dedicated `wholesale-home.html` before any house code runs
 
-- **Decision**: The section zone/label click handlers (`location.href =
-  'category.html?section=...'`) gain an `isWholesaleMode()` check (imported from `pricing-mode.js`)
-  that routes to `wholesale-section-companies.html?section=...` instead when wholesale mode is
-  active.
-- **Rationale**: This is the only place section navigation originates from the homepage house
-  hero. Because `isWholesaleMode()` persists via `sessionStorage` (not just the URL query string),
-  this branch works correctly even though these click handlers navigate via `location.href` rather
-  than real `<a href>` tags (which is why `pricing-mode.js`'s link-rewriting `MutationObserver`
-  doesn't already handle this case — there's no `href` attribute for it to rewrite).
-- **Alternatives considered**: Rewriting the house hero to render real anchor tags for zones so
-  the existing link-rewriter could add `?pricing=wholesale` universally — rejected as unnecessary
-  and out of scope: `sessionStorage` already carries the mode across this navigation correctly, and
-  changing the hero's click-handling mechanism risks Constitution Principle III (house hero
-  behavior is protected/locked).
+> **Original decision (superseded)**: an earlier version of this document proposed adding an
+> `isWholesaleMode()` branch inside `house-interactions.js`'s zone/label click handlers to route to
+> the new section-companies page. A `/speckit-clarify` correction established that the merchant
+> must **never** see the house hero in wholesale mode — not even briefly, not as something clicked
+> through. A same-page click-handler branch is insufficient because it still renders/loads the
+> house hero first. This section replaces that decision.
+
+- **Decision**: `index.html` performs its `isWholesaleMode()` check (imported from
+  `pricing-mode.js`) at the very top of its module script — **before** the existing `fetch('Frame
+  1.svg')` / `fetch('Frame 2.svg')` calls and before `initializeHouse()` is called. If wholesale
+  mode is active, it immediately does `location.replace('wholesale-home.html')` and returns,
+  skipping all house-hero code. `house-interactions.js` and the Frame 1/Frame 2 SVG rendering
+  logic are **not modified at all** and are simply never invoked in this mode.
+  `wholesale-home.html` is a new, separate page: a dedicated section-grid entry view (the section
+  list rendered as a new component, not the house SVG) plus the "Browse Companies" showcase from
+  User Story 2. Its visual design is being produced separately (Claude Design) — this plan only
+  specifies its functional wiring (data sources, links, click targets), using a placeholder-level
+  markup structure that the design output will replace.
+- **Rationale**: This is the only approach that satisfies the corrected requirement ("MUST NOT
+  render, fetch, or execute the interactive house hero... including transiently", FR-014) — a
+  same-page conditional still has to run enough of `index.html`'s script to decide, but as long as
+  that decision point is strictly before the SVG fetch/`initializeHouse()` call, zero house-hero
+  network requests or DOM ever occur (SC-006). It also keeps `house-interactions.js` and the SVG
+  rendering logic completely untouched, directly satisfying the correction's explicit instruction
+  and minimizing risk to Constitution Principle III (house hero behavior is locked/protected —
+  untouched code can't regress it).
+- **Alternatives considered**:
+  - *Branch inside `house-interactions.js`'s click handlers* (original decision) — rejected per
+    the correction: the house hero would still render and be interacted with before navigating
+    away, which is exactly what's disallowed now.
+  - *Conditional render inside `index.html` without a redirect* (build two different DOM subtrees
+    in one file/URL) — considered and explicitly rejected by the user in favor of the redirect
+    approach, to keep the two experiences fully decoupled as separate files/pages (consistent with
+    the separate-page precedent already confirmed for `wholesale-section-companies.html`).
 
 ## Decision 8: `category.html` serves all three listing entry paths
 

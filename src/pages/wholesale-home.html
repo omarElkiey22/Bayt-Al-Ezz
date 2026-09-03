@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>تصفح الجملة | بيت العز</title>
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <!-- Google Fonts Cairo & Material Symbols -->
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/store.css">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <script id="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#0056B3',
+            navy: '#1A237E',
+            light: '#F8F9FA'
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-[#F8F9FA] text-[#1A237E] min-h-screen flex flex-col antialiased">
+
+  <!-- Header / Navigation Bar -->
+  <nav class="bg-[#1A237E] text-white flex justify-between items-center w-full px-4 md:px-16 h-16 sticky top-0 z-50 shadow-md">
+    <div class="flex items-center gap-4 shrink-0">
+      <a class="font-bold text-xl tracking-wide hover:opacity-90 transition-opacity" href="wholesale-home.html">بيت العز <span class="text-xs font-normal opacity-80">(جملة)</span></a>
+    </div>
+    <div id="search-bar-slot" class="flex-grow max-w-md mx-2 md:mx-4"></div>
+    <div class="flex items-center gap-2 md:gap-4 shrink-0">
+      <a href="cart.html" class="relative p-2 hover:bg-white/10 rounded-full transition-colors flex items-center justify-center" aria-label="عربة التسوق">
+        <span class="material-symbols-outlined">shopping_cart</span>
+        <span id="cart-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
+      </a>
+      <a href="admin/login.html" class="p-2 hover:bg-white/10 rounded-full transition-colors flex items-center justify-center" aria-label="حساب المدير">
+        <span class="material-symbols-outlined">account_circle</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Main Content Area -->
+  <main class="flex-grow max-w-6xl w-full mx-auto px-4 md:px-8 py-8">
+
+    <!-- Title -->
+    <div class="mb-8 text-center">
+      <h1 class="text-2xl md:text-3xl font-extrabold text-[#0056B3]">🏷️ مرحباً بك في بيت العز</h1>
+      <p class="text-[#75777E] mt-2">اختر قسماً لتصفح الشركات والمنتجات المتاحة بتسعيرة الجملة.</p>
+    </div>
+
+    <!-- Section Grid Entry View -->
+    <section class="mb-12">
+      <h2 class="font-bold text-lg text-[#1A237E] mb-4">تصفح حسب القسم</h2>
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4" id="section-grid">
+        <!-- Skeleton entries -->
+        <div class="h-28 bg-gray-200 animate-pulse rounded-2xl w-full"></div>
+        <div class="h-28 bg-gray-200 animate-pulse rounded-2xl w-full"></div>
+        <div class="h-28 bg-gray-200 animate-pulse rounded-2xl w-full"></div>
+        <div class="h-28 bg-gray-200 animate-pulse rounded-2xl w-full"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-[#9E9E9E]/20 py-6 px-6 md:px-16 mt-auto">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-[#75777E]">
+      <div class="font-bold text-lg text-[#1A237E]">بيت العز</div>
+      <div class="flex gap-6">
+        <a class="hover:text-[#0056B3] transition-colors" href="#">سياسة الخصوصية</a>
+        <a class="hover:text-[#0056B3] transition-colors" href="#">الشروط والأحكام</a>
+        <a class="hover:text-[#0056B3] transition-colors" href="#">اتصل بنا</a>
+      </div>
+      <div>© ٢٠٢٦ بيت العز. جميع الحقوق محفوظة</div>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { isWholesaleMode, initPricingMode } from '../js/pricing-mode.js';
+
+    // A direct/bookmarked visit with wholesale mode inactive would
+    // otherwise render this page's section grid with no retail/wholesale
+    // distinction enforced anywhere in that data path. This check runs
+    // before any data fetch, symmetric with index.html's own redirect
+    // (isWholesaleMode() true -> wholesale-home.html) -- the two redirects
+    // can never loop, since each only fires on the condition the other
+    // doesn't (contracts/ui-routes.md).
+    if (!isWholesaleMode()) {
+      location.replace('index.html');
+    } else {
+      const { fetchActiveSections } = await import('../js/sections-api.js');
+      const { getCartItems, calculateCartTotals } = await import('../js/cart.js');
+      const { initializeSearchBar } = await import('../js/search-bar.js');
+      const { buildWholesaleSectionGridEntryHTML } = await import('../js/wholesale-section-grid-html.js');
+
+      initPricingMode();
+      initializeSearchBar(document.getElementById('search-bar-slot'));
+
+      // Load dynamic cart badge
+      const items = getCartItems();
+      const totals = calculateCartTotals(items);
+      const badge = document.getElementById('cart-badge');
+      if (totals.itemCount > 0) {
+        badge.textContent = totals.itemCount;
+        badge.classList.remove('hidden');
+      }
+
+      // Render the section-grid entry view
+      const sectionGrid = document.getElementById('section-grid');
+      const sections = await fetchActiveSections();
+
+      if (!sections.length) {
+        sectionGrid.className = 'col-span-full flex flex-col items-center justify-center py-12 bg-white border border-[#9E9E9E]/20 rounded-2xl text-center p-8';
+        sectionGrid.innerHTML = `
+          <span class="material-symbols-outlined text-5xl text-[#75777E] mb-3">folder_open</span>
+          <p class="text-[#75777E]">لا توجد أقسام متاحة حالياً.</p>
+        `;
+      } else {
+        sectionGrid.className = 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4';
+        sectionGrid.innerHTML = sections.map(buildWholesaleSectionGridEntryHTML).join('');
+      }
+    }
+  </script>
+</body>
+</html>

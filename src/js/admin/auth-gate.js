@@ -10,6 +10,11 @@ export async function requireAdmin() {
     window.location.replace('login.html');
     throw new Error('Not authenticated');
   }
+  const {data:isAdmin} = await supabase.rpc('is_admin');
+  if (!isAdmin) {
+    window.location.replace('login.html');
+    throw new Error('Not authorized');
+  }
   return true;
 }
 

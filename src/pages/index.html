@@ -102,34 +102,46 @@
     import { initializeHouse } from '../js/house-interactions.js';
     import { getCartItems, calculateCartTotals } from '../js/cart.js';
     import { initializeSearchBar } from '../js/search-bar.js';
-    import { initPricingMode } from '../js/pricing-mode.js';
+    import { initPricingMode, isWholesaleMode } from '../js/pricing-mode.js';
 
-    // Initialize wholesale / pricing mode if query param or session active
-    initPricingMode();
+    // Wholesale mode must never render, fetch, or execute the interactive
+    // house hero -- not even transiently (FR-014). This early exit runs
+    // before the Frame 1/Frame 2 SVG fetches and initializeHouse() below,
+    // so a wholesale-mode visit redirects with zero house-hero network
+    // requests or DOM ever occurring. house-interactions.js and the SVG
+    // rendering logic are untouched (research.md Decision 7). (A top-level
+    // `return` isn't valid inside a module script, so the rest of this
+    // script is wrapped in the else branch instead.)
+    if (isWholesaleMode()) {
+      location.replace('wholesale-home.html');
+    } else {
+      // Initialize wholesale / pricing mode if query param or session active
+      initPricingMode();
 
-    // Initialize search bar
-    initializeSearchBar(document.getElementById('search-bar-slot'));
+      // Initialize search bar
+      initializeSearchBar(document.getElementById('search-bar-slot'));
 
-    // Load dynamic cart badge
-    const items = getCartItems();
-    const totals = calculateCartTotals(items);
-    const badge = document.getElementById('cart-badge');
-    if (totals.itemCount > 0) {
-      badge.textContent = totals.itemCount;
-      badge.classList.remove('hidden');
-    }
+      // Load dynamic cart badge
+      const items = getCartItems();
+      const totals = calculateCartTotals(items);
+      const badge = document.getElementById('cart-badge');
+      if (totals.itemCount > 0) {
+        badge.textContent = totals.itemCount;
+        badge.classList.remove('hidden');
+      }
 
-    // Load House Hero SVGs and initialize interactive states
-    try {
-      const frame1Text = await fetch('../../public/assets/Frame 1.svg').then(r => r.text());
-      const frame2Text = await fetch('../../public/assets/Frame 2.svg').then(r => r.text());
-      
-      document.querySelector('#hero-frame-1').innerHTML = frame1Text;
-      document.querySelector('#hero-frame-2').innerHTML = frame2Text;
-      
-      await initializeHouse(document.querySelector('#house'));
-    } catch (e) {
-      console.error("Failed to initialize house hero:", e);
+      // Load House Hero SVGs and initialize interactive states
+      try {
+        const frame1Text = await fetch('../../public/assets/Frame 1.svg').then(r => r.text());
+        const frame2Text = await fetch('../../public/assets/Frame 2.svg').then(r => r.text());
+
+        document.querySelector('#hero-frame-1').innerHTML = frame1Text;
+        document.querySelector('#hero-frame-2').innerHTML = frame2Text;
+
+        await initializeHouse(document.querySelector('#house'));
+      } catch (e) {
+        console.error("Failed to initialize house hero:", e);
+      }
     }
   </script>
 </body>

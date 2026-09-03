@@ -8,7 +8,7 @@ Represents a manufacturer, brand, or wholesale vendor (Key Entity from spec.md).
 |---|---|---|---|
 | `id` | uuid | primary key, default `gen_random_uuid()` | matches `sections`/`products` id style |
 | `name` | varchar | not null | Arabic display name; sanitized via `sanitizeInput()` on write |
-| `slug` | varchar | unique, not null | generated via existing `slugify()` (`utils.js`); used for future-proofing (not required by any FR, but kept consistent with `sections.slug`) |
+| `slug` | varchar | not null, unique among live rows (partial unique index, `where deleted_at is null` — see `contracts/database-schema.md`) | generated via existing `slugify()` (`utils.js`); used for future-proofing (not required by any FR, but kept consistent with `sections.slug`) |
 | `logo_url` | varchar | nullable | **URL only** (Supabase Storage `store-assets/companies/...` public URL) — never binary data, per design constraint |
 | `description` | text | nullable | optional company description |
 | `is_active` | boolean | not null, default `true` | admin can deactivate without deleting |
@@ -17,9 +17,13 @@ Represents a manufacturer, brand, or wholesale vendor (Key Entity from spec.md).
 
 **Validation rules**:
 - `name` required, non-empty after `sanitizeInput()` strips any HTML tags.
-- `slug` unique; auto-derived from `name` via `slugify()`, editable like `sections.slug` — but no
-  feature currently routes by company slug (all company links use `id`), so uniqueness is enforced
-  at the DB level primarily as a data-hygiene guardrail, matching the `sections` precedent.
+- `slug` unique among live (non-deleted) rows; auto-derived from `name` via `slugify()`, editable
+  like `sections.slug` — but no feature currently routes by company slug (all company links use
+  `id`), so uniqueness is enforced at the DB level primarily as a data-hygiene guardrail, matching
+  the `sections` precedent. Unlike `sections.slug` (plain `unique`), the constraint is a partial
+  unique index scoped to `deleted_at is null` — companies are truly soft-deleted (see State
+  transitions below), so a plain `unique` would let a soft-deleted company's slug permanently block
+  reusing that name (plan-eng-review finding, resolved 2026-09-02).
 - `logo_url`, if present, must be a URL (no server-side format validation beyond what
   `image-compressor.js`'s `compressImage()` already enforces client-side: JPEG/PNG/WebP, ≤2MB).
 
@@ -79,3 +83,20 @@ These are documented fully in `contracts/companies-api.md`; noted here for data-
 - **Product listing row** (used by both `fetchProductsBySection` and the new
   `fetchProductsByCompany`): `{ ...product, variants, has_different_prices, starting_price }` —
   unchanged shape, just also filterable/groupable by the new `company_id` field.
+
+**Filter panel shape (plan-eng-review, resolved):** `applyProductFilters(products, {
+minPrice, maxPrice, companyId, unassignedOnly, sectionId })` — `companyId` and
+`unassignedOnly` are separate parameters rather than overloading one value, since
+`companyId: null` would otherwise ambiguously mean both "no company filter active" and
+"filter to unassigned products" (FR-013). `unassignedOnly: true` takes precedence over
+`companyId` when both are set (the UI should treat them as mutually exclusive radio-style
+options, not simultaneously settable, but the pure function itself doesn't need to enforce
+that — it just needs an unambiguous contract).
+
+**Facet re-fetch semantics (plan-eng-review, resolved):** Decision 6 / SC-003's "150ms, no
+reload" claim only holds for `minPrice`/`maxPrice`/`companyId`/`unassignedOnly` — filtering
+an array already scoped to one section or one company. Changing the **section** or
+**company** facet is NOT a pure in-memory filter (the answer isn't in the already-fetched
+array): it triggers a real `fetchProductsBySection()`/`fetchProductsByCompany()` call and
+re-renders, same as the two entry routes already do. The filter panel UI must not imply
+these two facets are instant the way price/company-narrowing are.

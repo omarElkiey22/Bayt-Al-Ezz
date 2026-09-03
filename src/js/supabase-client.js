@@ -349,6 +349,17 @@ class MockSupabaseClient {
         return { data: { subscription: { unsubscribe() {} } } };
       }
     };
+    // Mock mode has no real admins table -- any signed-in local session is
+    // already treated as full-access (see signInWithPassword's
+    // isLocalDevFallback above), so is_admin() mirrors that here rather
+    // than leaving requireAdmin()'s RPC call with nothing to call.
+    this.rpc = async (fn) => {
+      if (fn === 'is_admin') {
+        const session = localStorage.getItem('sb-mock-session');
+        return { data: !!session, error: null };
+      }
+      return { data: null, error: null };
+    };
     this.storage = {
       from(bucketName) {
         return new MockStorageBucket(bucketName);

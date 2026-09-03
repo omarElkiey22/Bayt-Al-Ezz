@@ -8,7 +8,8 @@ export const TABLES = {
   sections: 'sections',
   products: 'products',
   variants: 'product_variants',
-  invoices: 'invoices'
+  invoices: 'invoices',
+  companies: 'companies'
 };
 
 export const PALETTE = {

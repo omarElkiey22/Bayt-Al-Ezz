@@ -13,6 +13,9 @@
 ### Session 2026-09-01
 
 - Q: How are products without an assigned company handled in wholesale section browsing? → A: Products can exist without an assigned company and are never hidden; alongside the company grid, each section features an "All products in this section" entry (labeled with the section's name) showing every active product in that section (including unassigned ones), and the filter panel includes an explicit "unassigned" company option when browsing this list.
+- Q: Is the section company grid (User Story 1) a separate page from the product listing page, or a variant of it? → A: Confirmed as a dedicated, separate page — not a mode/variant of the product listing page.
+- Q: Does the merchant see the interactive two-phase house hero (Frame 1/Frame 2 SVGs) in wholesale mode? → A: No — the house hero is exclusive to consumer/retail mode. In wholesale mode the homepage is an entirely different, newly designed section-grid entry view (visual design produced separately); it never renders, fetches, or briefly flashes the house hero.
+- Q: How does the app guarantee zero house-hero rendering when entering wholesale mode? → A: The retail homepage detects wholesale mode at the very start of its script, before any house SVG fetch/initialization, and immediately redirects to a dedicated wholesale homepage page. The house-interactions.js module and the house SVG rendering logic are never invoked and remain completely untouched in wholesale mode.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -72,6 +75,7 @@ As a wholesale buyer viewing a product listing, I want to refine displayed produ
 - **Product with unassigned company**: Products without an assigned company are never hidden; they appear in the section's "All products in this section" listing and can be specifically filtered using the explicit "unassigned" option in the company filter facet.
 - **Direct URL tampering / invalid IDs**: If a user navigates to a section or company URL parameter with an invalid or soft-deleted ID, the page handles it gracefully with a descriptive notification and a button to return to the catalog.
 - **Consumer mode isolation**: Regular consumer mode (`pricing=normal` or default retail) remains 100% untouched: no company intermediary grid after section click, and standard house hero navigation functions exactly as defined in Constitution Principle III.
+- **Wholesale/retail homepage isolation**: In wholesale mode, the retail homepage immediately redirects to a dedicated wholesale homepage (the section-grid entry view) before any house-hero code executes — the interactive house hero is never rendered, fetched, or shown even briefly. In retail/consumer mode, the homepage never redirects and the house hero renders exactly as it does today.
 
 ## Requirements *(mandatory)*
 
@@ -90,6 +94,7 @@ As a wholesale buyer viewing a product listing, I want to refine displayed produ
 - **FR-011**: Product ratings MUST NOT be included anywhere in this phase.
 - **FR-012**: System MUST support soft deletion for companies so that removing a company does not corrupt historical associations or break direct bookmarks.
 - **FR-013**: The filter panel's company facet MUST include an explicit "unassigned" / "بدون شركة" option when viewing a section's "All products" listing to allow merchants to isolate products without an assigned company.
+- **FR-014**: In wholesale mode, the system MUST NOT display, load, or execute the interactive house hero animation at any point, including transiently. Instead, entering wholesale mode MUST immediately present a separate, dedicated wholesale homepage — a newly designed section-grid entry view (visual design delivered separately) listing the store's sections as directly tappable entries into wholesale section browsing, alongside the direct company browsing area from FR-006/FR-007.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -106,6 +111,7 @@ As a wholesale buyer viewing a product listing, I want to refine displayed produ
 - **SC-003**: Applying or clearing any filter in the product filter panel updates the listing within 150 milliseconds without a full page reload.
 - **SC-004**: 0% regression in standard consumer retail browsing (interactive house hero, section navigation, and cart behavior remain intact).
 - **SC-005**: Wholesale buyers can complete product discovery using any combination of section, company, and price range filters with zero dead-end screens and 100% visibility of unassigned products.
+- **SC-006**: In wholesale mode, the interactive house hero is never displayed or loaded — not even for a single frame — before the dedicated wholesale homepage appears; 0% of wholesale sessions show any house-hero content.
 
 ## Assumptions
 
@@ -113,3 +119,4 @@ As a wholesale buyer viewing a product listing, I want to refine displayed produ
 - Wholesale prices are defined on products (`wholesale_price`), and wholesale views filter for products with valid wholesale pricing.
 - Admin management for creating, editing, and associating companies with products will leverage standard soft-delete and RLS access control patterns established in Constitution Principles VIII & IX.
 - Retail consumer users browsing without wholesale mode continue to see direct product listings under each section as currently designed.
+- The "wholesale homepage" referenced throughout this spec is a dedicated, separate page — distinct from the retail homepage's house-hero experience — reached via an immediate client-side redirect the moment wholesale mode is detected, before any house-hero code runs. Its visual design is being produced separately (Claude Design) and is out of scope for this spec, which defines only its functional requirements (section list, direct company browsing area, navigation into section/company product listings).

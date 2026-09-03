@@ -49,6 +49,7 @@ const SENSITIVE_POLICIES = [
   ['invoices', 'merchant invoices readable'],
   ['customers', 'Admins can manage customers'],
   ['storage.objects', 'merchant asset write'],
+  ['companies', 'merchant companies writes'],
 ];
 
 describe('RLS admin gating (regression guard for /cso Finding #1)', () => {

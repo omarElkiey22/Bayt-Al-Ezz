@@ -1,4 +1,5 @@
 import { fetchAllSectionsAdmin } from '../sections-api.js';
+import { fetchAllCompaniesAdmin } from '../companies-api.js';
 import { createProduct, updateProduct, softDeleteProduct, fetchProductDetails } from '../products-api.js';
 import { compressImage } from '../image-compressor.js';
 import { TABLES } from '../constants.js';
@@ -20,6 +21,7 @@ async function upload(file) {
 
 export async function initializeProductsPage(root) {
   const sections = await fetchAllSectionsAdmin();
+  const companies = await fetchAllCompaniesAdmin();
   let editing = null;
   let variants = [{ label: 'افتراضي', price_override: '', is_in_stock: true }];
   let adminSearchQuery = '';
@@ -73,6 +75,14 @@ export async function initializeProductsPage(root) {
               <label class="block text-xs font-semibold text-[#1A237E] mb-1.5">القسم (الروم)</label>
               <select class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-[#1A237E] focus:border-[#0056B3] focus:ring-1 focus:ring-[#0056B3] focus:outline-none" name="section_id" required>
                 ${sections.map(s => `<option value="${s.id}" ${editing?.section_id === s.id ? 'selected' : ''}>${escapeHtml(s.name)}</option>`).join('')}
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-[#1A237E] mb-1.5">الشركة <span class="text-gray-400 font-normal">(اختياري)</span></label>
+              <select class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-[#1A237E] focus:border-[#0056B3] focus:ring-1 focus:ring-[#0056B3] focus:outline-none" name="company_id">
+                <option value="">بدون شركة</option>
+                ${companies.map(c => `<option value="${c.id}" ${editing?.company_id === c.id ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('')}
               </select>
             </div>
 
@@ -380,6 +390,7 @@ export async function initializeProductsPage(root) {
           name: data.name,
           description: data.description,
           section_id: data.section_id,
+          company_id: data.company_id || null,
           base_price: Number(data.base_price),
           wholesale_price: data.wholesale_price !== undefined && data.wholesale_price !== '' && data.wholesale_price !== null ? Number(data.wholesale_price) : null,
           primary_image_url: imageUrl,
