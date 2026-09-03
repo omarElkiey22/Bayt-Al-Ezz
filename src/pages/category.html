@@ -80,6 +80,9 @@
         <!-- Mobile tabs loaded dynamically -->
       </div>
 
+      <!-- Wholesale-mode-only filter panel (price/company/section), User Story 3 -->
+      <div id="filter-panel-slot"></div>
+
       <!-- Products Grid / Content Slot -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="content">
         <!-- Skeleton Product Cards -->
@@ -123,7 +126,8 @@
     import { getQueryParam, formatPrice, escapeHtml } from '../js/utils.js';
     import { fetchProductsBySection, searchProducts } from '../js/products-api.js';
     import { fetchActiveSections } from '../js/sections-api.js';
-    import { fetchCompanyDetails, fetchProductsByCompany } from '../js/companies-api.js';
+    import { fetchCompanyDetails, fetchProductsByCompany, fetchCompaniesForSection, fetchActiveCompanies } from '../js/companies-api.js';
+    import { applyProductFilters } from '../js/product-filters.js';
     import { addToCart, getCartItems, calculateCartTotals } from '../js/cart.js';
     import { initializeSearchBar } from '../js/search-bar.js';
     import { initPricingMode, isWholesaleMode, filterWholesaleProducts } from '../js/pricing-mode.js';
@@ -134,11 +138,16 @@
     initializeSearchBar(document.getElementById('search-bar-slot'));
 
     const content = document.querySelector('#content');
+    const filterPanelSlot = document.getElementById('filter-panel-slot');
     const slug = getQueryParam('section');
     const companyId = getQueryParam('company');
     const searchQuery = getQueryParam('search');
     const breadcrumbActive = document.getElementById('breadcrumb-active');
     const sectionTitle = document.getElementById('section-title');
+    // True for the page's whole lifetime -- the URL's company id never
+    // changes via the filter panel (only price/company-narrowing and
+    // section do; see the "Filter panel: state" comment below).
+    const hasCompanyContext = isWholesaleMode() && !!companyId;
 
     // Load dynamic cart badge
     const items = getCartItems();
@@ -149,6 +158,33 @@
       badge.classList.remove('hidden');
     }
 
+    // ── Filter panel: state (User Story 3, wholesale mode only) ─────────
+    // allProducts: the current fetch's full result (post filterWholesaleProducts,
+    //   pre applyProductFilters) -- what price/company/unassigned narrow.
+    // currentSlug: the ACTIVE section for fetch purposes; starts as the URL's
+    //   `slug` but changes when the filter panel's section <select> changes
+    //   (a real re-fetch, unlike price/company/unassigned).
+    // filterState: the in-memory narrowing applied on top of allProducts.
+    //   companyId here is independent of the URL's companyId/hasCompanyContext
+    //   above -- it's purely a client-side filter, so picking a different
+    //   company than the one that scoped the fetch (on a company-scoped
+    //   route) narrows within the already-fetched array rather than
+    //   fetching that other company's products (contracts/ui-routes.md's
+    //   "price-range and company/unassigned controls... no network
+    //   request" rule applies to every company change, not just the ones
+    //   that happen to already be in the loaded array).
+    let sectionsCache = [];
+    let currentSlug = slug;
+    let allProducts = [];
+    let companyOptionsList = [];
+    let hasUnassignedFlag = false;
+    const filterState = {
+      minPrice: null,
+      maxPrice: null,
+      companyId: hasCompanyContext ? companyId : null,
+      unassignedOnly: false
+    };
+
     async function loadNavigation(sections) {
       const sidebarNav = document.getElementById('sidebar-nav');
       const mobileNav = document.getElementById('mobile-nav');
@@ -158,13 +194,370 @@
 
       // Render Sidebar
       sidebarNav.innerHTML = sections.map(s =>
-        buildSidebarNavLinkHTML(s, { isActive: s.slug === slug, mockParam })
+        buildSidebarNavLinkHTML(s, { isActive: s.slug === currentSlug, mockParam })
       ).join('');
 
       // Render Mobile Bar
       mobileNav.innerHTML = sections.map(s =>
-        buildMobileNavLinkHTML(s, { isActive: s.slug === slug, mockParam })
+        buildMobileNavLinkHTML(s, { isActive: s.slug === currentSlug, mockParam })
       ).join('');
+    }
+
+    // Resolves products for a given section slug under the page's fixed
+    // company context, and updates the title/breadcrumb/description to
+    // match -- shared by the initial render() and the filter panel's
+    // section-select re-fetch (onSectionFacetChange) so both stay in sync.
+    async function fetchAndLabelProducts(sections, targetSlug) {
+      const currentSection = targetSlug ? sections.find(s => s.slug === targetSlug) : null;
+      if (currentSection) {
+        breadcrumbActive.textContent = currentSection.name;
+        sectionTitle.textContent = currentSection.name;
+        document.getElementById('section-desc').textContent = currentSection.description || 'المجموعات المختارة بعناية لأثاثك المنزلي.';
+        document.title = `${currentSection.name} | بيت العز`;
+      }
+
+      if (isWholesaleMode() && companyId && targetSlug) {
+        // Company-scoped wholesale listing (section + company, reached
+        // from a wholesale-section-companies.html card, or from changing
+        // the section facet while a company is active). An invalid,
+        // soft-deleted, or deactivated company throws here and falls
+        // through to the caller's catch block unchanged -- same
+        // error-state markup already used for a bad section slug
+        // (contracts/ui-routes.md's "Invalid company id" note).
+        const company = await fetchCompanyDetails(companyId);
+        // currentSection can be null here (a stale/invalid slug) -- guarded
+        // the same way the plain section-only path guards it above, so a
+        // bad slug falls through to fetchProductsByCompany()'s own
+        // "section not found" error instead of a confusing TypeError.
+        if (currentSection) {
+          const scopedTitle = `${currentSection.name} — ${company.name}`;
+          breadcrumbActive.textContent = scopedTitle;
+          sectionTitle.textContent = scopedTitle;
+          document.getElementById('section-desc').textContent = `منتجات شركة ${company.name} في هذا القسم.`;
+          document.title = `${scopedTitle} | بيت العز`;
+        }
+        return await fetchProductsByCompany(companyId, { sectionSlug: targetSlug });
+      }
+      if (isWholesaleMode() && companyId) {
+        // Company-scoped wholesale listing, no section (User Story 2, or
+        // the section facet reset to "كل الأقسام"): full cross-section
+        // catalog for this company. Same fetchCompanyDetails()-first
+        // validation as above, so both company-scoped routes behave
+        // identically for an invalid/soft-deleted/deactivated id.
+        const company = await fetchCompanyDetails(companyId);
+        breadcrumbActive.textContent = company.name;
+        sectionTitle.textContent = company.name;
+        document.getElementById('section-desc').textContent = `كل منتجات شركة ${company.name} في جميع الأقسام.`;
+        document.title = `${company.name} | بيت العز`;
+        return await fetchProductsByCompany(companyId);
+      }
+      return await fetchProductsBySection(targetSlug);
+    }
+
+    // ── Filter panel: rendering ──────────────────────────────────────────
+
+    function buildCompanyOptionsHTML() {
+      const opts = ['<option value="">كل الشركات</option>'];
+      companyOptionsList.forEach(c => {
+        opts.push(`<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}</option>`);
+      });
+      // FR-013: only offered when the current section context actually has
+      // wholesale products with no company assigned.
+      if (hasUnassignedFlag) {
+        opts.push('<option value="__unassigned__">بدون شركة</option>');
+      }
+      return opts.join('');
+    }
+
+    function buildSectionOptionsHTML() {
+      const opts = [];
+      // "كل الأقسام" only makes sense when a company is active (it maps to
+      // the company's full cross-section catalog) -- a plain section-only
+      // listing has no valid "no section, no company" state to fall back to.
+      if (hasCompanyContext) {
+        opts.push('<option value="">كل الأقسام</option>');
+      }
+      sectionsCache.forEach(s => {
+        opts.push(`<option value="${escapeHtml(s.slug)}">${escapeHtml(s.name)}</option>`);
+      });
+      return opts.join('');
+    }
+
+    function buildFilterPanelHTML() {
+      return `
+        <div class="bg-white border border-[#9E9E9E]/20 rounded-2xl p-4 md:p-5 shadow-sm mb-6 flex flex-wrap items-end gap-4">
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-semibold text-[#1A237E]" for="filter-min-price">أقل سعر</label>
+            <input type="number" min="0" id="filter-min-price" class="w-24 rounded-xl border border-gray-300 px-3 py-2 text-sm text-[#1A237E] focus:border-amber-500 focus:ring-1 focus:ring-amber-500 focus:outline-none" placeholder="0">
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-semibold text-[#1A237E]" for="filter-max-price">أعلى سعر</label>
+            <input type="number" min="0" id="filter-max-price" class="w-24 rounded-xl border border-gray-300 px-3 py-2 text-sm text-[#1A237E] focus:border-amber-500 focus:ring-1 focus:ring-amber-500 focus:outline-none" placeholder="أي سعر">
+          </div>
+          <div class="flex flex-col gap-1 min-w-[150px]">
+            <label class="text-xs font-semibold text-[#1A237E]" for="filter-company">الشركة</label>
+            <select id="filter-company" class="rounded-xl border border-gray-300 px-3 py-2 text-sm text-[#1A237E] focus:border-amber-500 focus:ring-1 focus:ring-amber-500 focus:outline-none">
+              ${buildCompanyOptionsHTML()}
+            </select>
+          </div>
+          <div class="flex flex-col gap-1 min-w-[150px]">
+            <label class="text-xs font-semibold text-[#1A237E]" for="filter-section">القسم</label>
+            <select id="filter-section" class="rounded-xl border border-gray-300 px-3 py-2 text-sm text-[#1A237E] focus:border-amber-500 focus:ring-1 focus:ring-amber-500 focus:outline-none">
+              ${buildSectionOptionsHTML()}
+            </select>
+          </div>
+          <button type="button" id="filter-reset" class="inline-flex items-center gap-1.5 text-xs font-bold text-[#75777E] hover:text-[#1A237E] hover:bg-gray-100 transition-colors py-2.5 px-3 rounded-xl">
+            <span class="material-symbols-outlined text-sm">restart_alt</span>
+            إعادة تعيين الفلاتر
+          </button>
+        </div>
+      `;
+    }
+
+    function wireFilterPanelEvents() {
+      const minInput = document.getElementById('filter-min-price');
+      const maxInput = document.getElementById('filter-max-price');
+      const companySelect = document.getElementById('filter-company');
+      const sectionSelect = document.getElementById('filter-section');
+      const resetBtn = document.getElementById('filter-reset');
+
+      // Pre-seed from the entry context (Acceptance Scenarios 2 & 4, US3).
+      companySelect.value = filterState.unassignedOnly ? '__unassigned__' : (filterState.companyId || '');
+      sectionSelect.value = currentSlug || '';
+
+      // Price/company/unassigned: pure in-memory re-filter, no fetch --
+      // `input` (not `change`) so it updates on every keystroke.
+      minInput.oninput = () => {
+        filterState.minPrice = minInput.value === '' ? null : Number(minInput.value);
+        applyFiltersAndRender();
+      };
+      maxInput.oninput = () => {
+        filterState.maxPrice = maxInput.value === '' ? null : Number(maxInput.value);
+        applyFiltersAndRender();
+      };
+      companySelect.onchange = () => {
+        const v = companySelect.value;
+        filterState.unassignedOnly = v === '__unassigned__';
+        filterState.companyId = (v && v !== '__unassigned__') ? v : null;
+        applyFiltersAndRender();
+      };
+
+      // Section: a genuine re-fetch, not a pure filter (data-model.md's
+      // "Facet re-fetch semantics" note) -- the already-fetched array
+      // cannot contain a different section's products.
+      sectionSelect.onchange = () => onSectionFacetChange(sectionSelect.value || null);
+
+      resetBtn.onclick = resetFilters;
+    }
+
+    async function fetchCompanyFacetData(forSlug) {
+      if (forSlug) {
+        const ctx = await fetchCompaniesForSection(forSlug);
+        companyOptionsList = ctx.companies;
+        hasUnassignedFlag = ctx.hasUnassigned;
+      } else {
+        companyOptionsList = await fetchActiveCompanies();
+        hasUnassignedFlag = false;
+      }
+    }
+
+    function applyFiltersAndRender() {
+      const filtered = applyProductFilters(allProducts, {
+        minPrice: filterState.minPrice,
+        maxPrice: filterState.maxPrice,
+        companyId: filterState.companyId,
+        unassignedOnly: filterState.unassignedOnly
+      });
+      renderProductGrid(filtered);
+    }
+
+    async function onSectionFacetChange(newSlug) {
+      try {
+        currentSlug = newSlug;
+        allProducts = filterWholesaleProducts(await fetchAndLabelProducts(sectionsCache, newSlug));
+        await loadNavigation(sectionsCache);
+
+        await fetchCompanyFacetData(newSlug);
+        const companySelect = document.getElementById('filter-company');
+        companySelect.innerHTML = buildCompanyOptionsHTML();
+        // Preserve the current company/unassigned selection only if it's
+        // still a valid option in the new section's company list.
+        const stillValidCompany = filterState.companyId && companyOptionsList.some(c => c.id === filterState.companyId);
+        const stillValidUnassigned = filterState.unassignedOnly && hasUnassignedFlag;
+        if (!stillValidCompany && !stillValidUnassigned) {
+          filterState.companyId = null;
+          filterState.unassignedOnly = false;
+        }
+        companySelect.value = filterState.unassignedOnly ? '__unassigned__' : (filterState.companyId || '');
+
+        applyFiltersAndRender();
+      } catch (error) {
+        console.error(error);
+        showLoadError(() => onSectionFacetChange(newSlug));
+      }
+    }
+
+    async function resetFilters() {
+      filterState.minPrice = null;
+      filterState.maxPrice = null;
+      filterState.unassignedOnly = false;
+      filterState.companyId = hasCompanyContext ? companyId : null;
+
+      document.getElementById('filter-min-price').value = '';
+      document.getElementById('filter-max-price').value = '';
+
+      if (currentSlug !== slug) {
+        document.getElementById('filter-section').value = slug || '';
+        await onSectionFacetChange(slug);
+      } else {
+        document.getElementById('filter-company').value = filterState.unassignedOnly ? '__unassigned__' : (filterState.companyId || '');
+        applyFiltersAndRender();
+      }
+    }
+
+    // ── Product grid rendering (shared by every mode/path) ───────────────
+
+    function renderProductGrid(productsToShow) {
+      const isMock = new URLSearchParams(location.search).get('mock');
+      const indexMockParam = isMock ? `?mock=${escapeHtml(isMock)}` : '';
+      const productMockParam = isMock ? `&mock=${escapeHtml(isMock)}` : '';
+
+      if (!allProducts.length) {
+        // Nothing fetched at all -- unrelated to the filter panel.
+        content.className = 'col-span-full flex flex-col items-center justify-center py-16 bg-white border border-[#9E9E9E]/20 rounded-2xl text-center p-8';
+        content.innerHTML = searchQuery ? buildNoResultsHTML({ searchQuery, indexMockParam }) : `
+          <span class="material-symbols-outlined text-6xl text-[#75777E] mb-4">folder_open</span>
+          <h3 class="text-xl font-bold text-[#1A237E] mb-2">لا توجد منتجات متاحة</h3>
+          <p class="text-[#75777E] mb-6">${isWholesaleMode() ? 'لا توجد منتجات مسعرة بالجملة في هذا القسم حالياً.' : 'لم يتم إضافة منتجات في هذا القسم بعد.'}</p>
+          <a class="inline-flex items-center gap-2 bg-[#0056B3] hover:bg-[#004491] text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm" href="index.html${indexMockParam}">
+            <span class="material-symbols-outlined text-sm">home</span>
+            العودة للبيت
+          </a>
+        `;
+        return;
+      }
+
+      if (!productsToShow.length) {
+        // Real products exist; the active price/company/unassigned filter
+        // combination just doesn't match any of them (Acceptance Scenario
+        // 4, User Story 3) -- distinct from the empty state above, with
+        // its own reset action instead of "back to home".
+        content.className = 'col-span-full flex flex-col items-center justify-center py-16 bg-white border border-[#9E9E9E]/20 rounded-2xl text-center p-8';
+        content.innerHTML = `
+          <span class="material-symbols-outlined text-6xl text-[#75777E] mb-4">search_off</span>
+          <h3 class="text-xl font-bold text-[#1A237E] mb-2">لا توجد منتجات مطابقة</h3>
+          <p class="text-[#75777E] mb-6">جرّب توسيع نطاق الفلاتر أو أعد تعيينها.</p>
+          <button type="button" class="inline-flex items-center gap-2 bg-[#0056B3] hover:bg-[#004491] text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm" id="zero-match-reset">
+            <span class="material-symbols-outlined text-sm">restart_alt</span>
+            إعادة تعيين الفلاتر
+          </button>
+        `;
+        document.getElementById('zero-match-reset').onclick = resetFilters;
+        return;
+      }
+
+      content.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6';
+      content.innerHTML = productsToShow.map(p => {
+        const inStockVariants = p.variants?.filter(v => v.is_in_stock) || [];
+        const hasInStock = inStockVariants.length > 0;
+        const displayPrice = isWholesaleMode() ? p.wholesale_price : (p.starting_price || p.base_price);
+        const showStartingLabel = !isWholesaleMode() && p.has_different_prices;
+
+        return `
+          <article class="relative bg-white border border-[#9E9E9E]/20 rounded-2xl overflow-hidden group hover:border-[#0056B3] hover:shadow-md transition-all duration-300 flex flex-col">
+            <a class="absolute inset-0 z-10" href="product.html?id=${p.id}${productMockParam}" aria-label="${escapeHtml(p.name)}"></a>
+            <div class="relative aspect-square w-full bg-gray-50 overflow-hidden">
+              <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="${escapeHtml(p.primary_image_url || '../../public/assets/placeholder.svg')}" alt="${escapeHtml(p.name)}">
+            </div>
+            <div class="p-5 flex flex-col flex-grow">
+              <h3 class="text-lg font-bold text-[#1A237E] line-clamp-1 mb-2 group-hover:text-primary transition-colors">${escapeHtml(p.name)}</h3>
+              <p class="text-sm text-[#75777E] line-clamp-2 mb-4 flex-grow">${escapeHtml(p.description || '')}</p>
+              <div class="flex items-center justify-between mt-auto pt-3 border-t border-[#9E9E9E]/10">
+                <span class="text-lg font-extrabold ${isWholesaleMode() ? 'text-amber-700' : 'text-[#0056B3]'} relative z-20">
+                  ${showStartingLabel ? '<span class="text-xs font-semibold text-[#75777E] ml-1">بداية من</span>' : ''}${formatPrice(displayPrice)}
+                </span>
+                ${hasInStock ? `
+                  <button class="inline-flex items-center gap-1 bg-[#1A237E] group-hover:bg-[#0056B3] text-white text-sm font-bold py-2 px-4 rounded-xl transition-all relative z-20" data-add-to-cart="${p.id}">
+                    <span>أضف للسلة</span>
+                    <span class="material-symbols-outlined text-sm">shopping_cart</span>
+                  </button>
+                ` : `
+                  <div class="inline-flex items-center gap-1 bg-gray-300 text-gray-500 text-sm font-bold py-2 px-4 rounded-xl relative z-20 cursor-not-allowed">
+                    <span>غير متوفر</span>
+                    <span class="material-symbols-outlined text-sm">info</span>
+                  </div>
+                `}
+              </div>
+            </div>
+          </article>
+        `;
+      }).join('');
+
+      content.querySelectorAll('[data-add-to-cart]').forEach(btn => {
+        btn.onclick = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+
+          const productId = btn.dataset.addToCart;
+          const product = productsToShow.find(p => p.id === productId);
+          if (!product) return;
+
+          // If product has sizes or colors, redirect to detail page so customer can choose
+          const hasSizes = product.sizes && product.sizes.length > 0;
+          const hasColors = product.colors && product.colors.length > 0;
+          if (hasSizes || hasColors) {
+            const isMock = new URLSearchParams(location.search).get('mock');
+            const mockParam = isMock ? `&mock=${isMock}` : '';
+            location.href = `product.html?id=${productId}${mockParam}`;
+            return;
+          }
+
+          const variant = product.variants?.find(v => v.is_in_stock);
+          if (!variant) return;
+
+          const price = isWholesaleMode() ? (product.wholesale_price || product.base_price) : (variant.price_override ?? product.base_price);
+          const image = variant.image_url || product.primary_image_url;
+
+          const originalContent = btn.innerHTML;
+          btn.innerHTML = `<span class="material-symbols-outlined text-sm">done</span><span>تم ✓</span>`;
+          btn.classList.remove('bg-[#1A237E]', 'group-hover:bg-[#0056B3]');
+          btn.classList.add('bg-green-600');
+          btn.disabled = true;
+
+          addToCart(product.id, variant.id, variant.label, price, image, product.name);
+
+          const items = getCartItems();
+          const totals = calculateCartTotals(items);
+          const badge = document.getElementById('cart-badge');
+          if (totals.itemCount > 0) {
+            badge.textContent = totals.itemCount;
+            badge.classList.remove('hidden');
+          } else {
+            badge.classList.add('hidden');
+          }
+
+          setTimeout(() => {
+            btn.innerHTML = originalContent;
+            btn.classList.remove('bg-green-600');
+            btn.classList.add('bg-[#1A237E]', 'group-hover:bg-[#0056B3]');
+            btn.disabled = false;
+          }, 1500);
+        };
+      });
+    }
+
+    function showLoadError(retryFn) {
+      content.className = 'col-span-full flex flex-col items-center justify-center py-16 bg-white border border-[#9E9E9E]/20 rounded-2xl text-center p-8';
+      content.innerHTML = `
+        <span class="material-symbols-outlined text-6xl text-red-500 mb-4">error</span>
+        <h3 class="text-xl font-bold text-[#1A237E] mb-2">حصلت مشكلة في تحميل المنتجات</h3>
+        <p class="text-[#75777E] mb-6">يرجى التحقق من اتصالك بالإنترنت وإعادة المحاولة.</p>
+        <button class="inline-flex items-center gap-2 bg-[#0056B3] hover:bg-[#004491] text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm" id="retry">
+          <span class="material-symbols-outlined text-sm">refresh</span>
+          حاول تاني
+        </button>
+      `;
+      document.querySelector('#retry').onclick = retryFn || render;
     }
 
     async function render() {
@@ -175,191 +568,39 @@
         location.href = 'index.html';
         return;
       }
+      currentSlug = slug;
 
       try {
         const sections = await fetchActiveSections();
+        sectionsCache = sections;
         await loadNavigation(sections);
-
-        let products = [];
-        const isMock = new URLSearchParams(location.search).get('mock');
-        const indexMockParam = isMock ? `?mock=${escapeHtml(isMock)}` : '';
-        const productMockParam = isMock ? `&mock=${escapeHtml(isMock)}` : '';
 
         if (searchQuery) {
           breadcrumbActive.textContent = `البحث: ${searchQuery}`;
           sectionTitle.textContent = `نتائج البحث عن "${searchQuery}"`;
           document.title = `البحث عن ${searchQuery} | بيت العز`;
-          products = await searchProducts(searchQuery);
-          document.getElementById('section-desc').textContent = `عثرنا على ${products.length} منتج يطابق بحثك.`;
+          allProducts = await searchProducts(searchQuery);
+          document.getElementById('section-desc').textContent = `عثرنا على ${allProducts.length} منتج يطابق بحثك.`;
         } else {
-          const currentSection = slug ? sections.find(s => s.slug === slug) : null;
-          if (currentSection) {
-            breadcrumbActive.textContent = currentSection.name;
-            sectionTitle.textContent = currentSection.name;
-            document.getElementById('section-desc').textContent = currentSection.description || 'المجموعات المختارة بعناية لأثاثك المنزلي.';
-            document.title = `${currentSection.name} | بيت العز`;
-          }
-
-          if (isWholesaleMode() && companyId && slug) {
-            // Company-scoped wholesale listing (section + company, reached
-            // from a wholesale-section-companies.html card). An invalid,
-            // soft-deleted, or deactivated company throws here and falls
-            // through to the catch block below unchanged -- same
-            // error-state markup already used for a bad section slug
-            // (contracts/ui-routes.md's "Invalid company id" note).
-            const company = await fetchCompanyDetails(companyId);
-            // currentSection can be null here (a stale/invalid slug) --
-            // guarded the same way the plain section-only path already
-            // guards it above, so a bad slug falls through to
-            // fetchProductsByCompany()'s own "section not found" error
-            // instead of throwing a confusing TypeError first.
-            if (currentSection) {
-              const scopedTitle = `${currentSection.name} — ${company.name}`;
-              breadcrumbActive.textContent = scopedTitle;
-              sectionTitle.textContent = scopedTitle;
-              document.getElementById('section-desc').textContent = `منتجات شركة ${company.name} في هذا القسم.`;
-              document.title = `${scopedTitle} | بيت العز`;
-            }
-            products = await fetchProductsByCompany(companyId, { sectionSlug: slug });
-          } else if (isWholesaleMode() && companyId) {
-            // Company-scoped wholesale listing, no section (User Story 2 --
-            // reached from wholesale-home.html's company showcase): full
-            // cross-section catalog for this company. Same
-            // fetchCompanyDetails()-first validation as the section+company
-            // route above, so both company-scoped routes behave identically
-            // for an invalid/soft-deleted/deactivated id -- it throws here
-            // and falls through to the catch block below, same error-state
-            // markup as a bad section slug.
-            const company = await fetchCompanyDetails(companyId);
-            breadcrumbActive.textContent = company.name;
-            sectionTitle.textContent = company.name;
-            document.getElementById('section-desc').textContent = `كل منتجات شركة ${company.name} في جميع الأقسام.`;
-            document.title = `${company.name} | بيت العز`;
-            products = await fetchProductsByCompany(companyId);
-          } else {
-            products = await fetchProductsBySection(slug);
-          }
+          allProducts = await fetchAndLabelProducts(sections, currentSlug);
         }
 
         // Apply wholesale filter if wholesale mode is active
-        products = filterWholesaleProducts(products);
+        allProducts = filterWholesaleProducts(allProducts);
 
-        if (!products.length) {
-          content.className = 'col-span-full flex flex-col items-center justify-center py-16 bg-white border border-[#9E9E9E]/20 rounded-2xl text-center p-8';
-          content.innerHTML = searchQuery ? buildNoResultsHTML({ searchQuery, indexMockParam }) : `
-            <span class="material-symbols-outlined text-6xl text-[#75777E] mb-4">folder_open</span>
-            <h3 class="text-xl font-bold text-[#1A237E] mb-2">لا توجد منتجات متاحة</h3>
-            <p class="text-[#75777E] mb-6">${isWholesaleMode() ? 'لا توجد منتجات مسعرة بالجملة في هذا القسم حالياً.' : 'لم يتم إضافة منتجات في هذا القسم بعد.'}</p>
-            <a class="inline-flex items-center gap-2 bg-[#0056B3] hover:bg-[#004491] text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm" href="index.html${indexMockParam}">
-              <span class="material-symbols-outlined text-sm">home</span>
-              العودة للبيت
-            </a>
-          `;
-          return;
+        // Filter panel: wholesale mode only, and not on the (out-of-scope)
+        // search results path (contracts/ui-routes.md).
+        if (isWholesaleMode() && !searchQuery) {
+          await fetchCompanyFacetData(currentSlug);
+          filterPanelSlot.innerHTML = buildFilterPanelHTML();
+          wireFilterPanelEvents();
+          applyFiltersAndRender();
+        } else {
+          renderProductGrid(allProducts);
         }
-
-        content.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6';
-        content.innerHTML = products.map(p => {
-          const inStockVariants = p.variants?.filter(v => v.is_in_stock) || [];
-          const hasInStock = inStockVariants.length > 0;
-          const displayPrice = isWholesaleMode() ? p.wholesale_price : (p.starting_price || p.base_price);
-          const showStartingLabel = !isWholesaleMode() && p.has_different_prices;
-
-          return `
-            <article class="relative bg-white border border-[#9E9E9E]/20 rounded-2xl overflow-hidden group hover:border-[#0056B3] hover:shadow-md transition-all duration-300 flex flex-col">
-              <a class="absolute inset-0 z-10" href="product.html?id=${p.id}${productMockParam}" aria-label="${escapeHtml(p.name)}"></a>
-              <div class="relative aspect-square w-full bg-gray-50 overflow-hidden">
-                <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="${escapeHtml(p.primary_image_url || '../../public/assets/placeholder.svg')}" alt="${escapeHtml(p.name)}">
-              </div>
-              <div class="p-5 flex flex-col flex-grow">
-                <h3 class="text-lg font-bold text-[#1A237E] line-clamp-1 mb-2 group-hover:text-primary transition-colors">${escapeHtml(p.name)}</h3>
-                <p class="text-sm text-[#75777E] line-clamp-2 mb-4 flex-grow">${escapeHtml(p.description || '')}</p>
-                <div class="flex items-center justify-between mt-auto pt-3 border-t border-[#9E9E9E]/10">
-                  <span class="text-lg font-extrabold ${isWholesaleMode() ? 'text-amber-700' : 'text-[#0056B3]'} relative z-20">
-                    ${showStartingLabel ? '<span class="text-xs font-semibold text-[#75777E] ml-1">بداية من</span>' : ''}${formatPrice(displayPrice)}
-                  </span>
-                  ${hasInStock ? `
-                    <button class="inline-flex items-center gap-1 bg-[#1A237E] group-hover:bg-[#0056B3] text-white text-sm font-bold py-2 px-4 rounded-xl transition-all relative z-20" data-add-to-cart="${p.id}">
-                      <span>أضف للسلة</span>
-                      <span class="material-symbols-outlined text-sm">shopping_cart</span>
-                    </button>
-                  ` : `
-                    <div class="inline-flex items-center gap-1 bg-gray-300 text-gray-500 text-sm font-bold py-2 px-4 rounded-xl relative z-20 cursor-not-allowed">
-                      <span>غير متوفر</span>
-                      <span class="material-symbols-outlined text-sm">info</span>
-                    </div>
-                  `}
-                </div>
-              </div>
-            </article>
-          `;
-        }).join('');
-
-        content.querySelectorAll('[data-add-to-cart]').forEach(btn => {
-          btn.onclick = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            const productId = btn.dataset.addToCart;
-            const product = products.find(p => p.id === productId);
-            if (!product) return;
-
-            // If product has sizes or colors, redirect to detail page so customer can choose
-            const hasSizes = product.sizes && product.sizes.length > 0;
-            const hasColors = product.colors && product.colors.length > 0;
-            if (hasSizes || hasColors) {
-              const isMock = new URLSearchParams(location.search).get('mock');
-              const mockParam = isMock ? `&mock=${isMock}` : '';
-              location.href = `product.html?id=${productId}${mockParam}`;
-              return;
-            }
-            
-            const variant = product.variants?.find(v => v.is_in_stock);
-            if (!variant) return;
-            
-            const price = isWholesaleMode() ? (product.wholesale_price || product.base_price) : (variant.price_override ?? product.base_price);
-            const image = variant.image_url || product.primary_image_url;
-            
-            const originalContent = btn.innerHTML;
-            btn.innerHTML = `<span class="material-symbols-outlined text-sm">done</span><span>تم ✓</span>`;
-            btn.classList.remove('bg-[#1A237E]', 'group-hover:bg-[#0056B3]');
-            btn.classList.add('bg-green-600');
-            btn.disabled = true;
-            
-            addToCart(product.id, variant.id, variant.label, price, image, product.name);
-            
-            const items = getCartItems();
-            const totals = calculateCartTotals(items);
-            const badge = document.getElementById('cart-badge');
-            if (totals.itemCount > 0) {
-              badge.textContent = totals.itemCount;
-              badge.classList.remove('hidden');
-            } else {
-              badge.classList.add('hidden');
-            }
-            
-            setTimeout(() => {
-              btn.innerHTML = originalContent;
-              btn.classList.remove('bg-green-600');
-              btn.classList.add('bg-[#1A237E]', 'group-hover:bg-[#0056B3]');
-              btn.disabled = false;
-            }, 1500);
-          };
-        });
-
       } catch (error) {
         console.error(error);
-        content.className = 'col-span-full flex flex-col items-center justify-center py-16 bg-white border border-[#9E9E9E]/20 rounded-2xl text-center p-8';
-        content.innerHTML = `
-          <span class="material-symbols-outlined text-6xl text-red-500 mb-4">error</span>
-          <h3 class="text-xl font-bold text-[#1A237E] mb-2">حصلت مشكلة في تحميل المنتجات</h3>
-          <p class="text-[#75777E] mb-6">يرجى التحقق من اتصالك بالإنترنت وإعادة المحاولة.</p>
-          <button class="inline-flex items-center gap-2 bg-[#0056B3] hover:bg-[#004491] text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm" id="retry">
-            <span class="material-symbols-outlined text-sm">refresh</span>
-            حاول تاني
-          </button>
-        `;
-        document.querySelector('#retry').onclick = render;
+        showLoadError();
       }
     }
 
