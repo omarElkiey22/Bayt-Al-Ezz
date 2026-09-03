@@ -1,0 +1,28 @@
+/* Typography — Cairo everywhere, Arabic-first. Scale = the Tailwind steps the
+   storefront actually uses; nothing invented. */
+:root{
+  --font-core:'Cairo',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-icon:'Material Symbols Outlined';
+
+  --fw-light:300; /* @kind font */
+  --fw-regular:400; /* @kind font */
+  --fw-medium:500; /* @kind font */
+  --fw-semibold:600; /* @kind font */   /* labels, mobile nav pills */
+  --fw-bold:700; /* @kind font */       /* buttons, product titles, card headings */
+  --fw-extrabold:800; /* @kind font */  /* page titles, prices, room labels — the brand's loudest weight */
+  --fw-black:900; /* @kind font */      /* admin stat numbers only */
+
+  --text-2xs:10px;   --lh-2xs:1; /* @kind font */      /* cart badge count */
+  --text-xs:12px;    --lh-xs:16px;    /* meta, breadcrumb chips, helper text */
+  --text-sm:14px;    --lh-sm:20px;    /* body default, buttons, inputs */
+  --text-base:16px;  --lh-base:24px;
+  --text-lg:18px;    --lh-lg:28px;    /* card headings, product name */
+  --text-xl:20px;    --lh-xl:28px;    /* brand wordmark in header */
+  --text-2xl:24px;   --lh-2xl:32px;
+  --text-3xl:30px;   --lh-3xl:36px;   /* page H1 */
+  --text-5xl:48px;   --lh-5xl:1; /* @kind font */      /* hero H1 (md+) */
+
+  --tracking-wide:.025em; /* @kind font */   /* wordmark */
+  --leading-snug:1.375; /* @kind font */
+  --leading-relaxed:1.625; /* @kind font */  /* Arabic product descriptions */
+}

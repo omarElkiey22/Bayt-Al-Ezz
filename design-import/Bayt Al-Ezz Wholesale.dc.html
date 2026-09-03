@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/bayt-al-ezz-design-system-ca378bce-bacf-4641-beb9-6e6b4b686ab2/tokens/fonts.css">
+  <link rel="stylesheet" href="_ds/bayt-al-ezz-design-system-ca378bce-bacf-4641-beb9-6e6b4b686ab2/tokens/colors.css">
+  <link rel="stylesheet" href="_ds/bayt-al-ezz-design-system-ca378bce-bacf-4641-beb9-6e6b4b686ab2/tokens/typography.css">
+  <link rel="stylesheet" href="_ds/bayt-al-ezz-design-system-ca378bce-bacf-4641-beb9-6e6b4b686ab2/tokens/spacing.css">
+  <link rel="stylesheet" href="_ds/bayt-al-ezz-design-system-ca378bce-bacf-4641-beb9-6e6b4b686ab2/tokens/radii.css">
+  <link rel="stylesheet" href="_ds/bayt-al-ezz-design-system-ca378bce-bacf-4641-beb9-6e6b4b686ab2/tokens/shadows.css">
+  <link rel="stylesheet" href="_ds/bayt-al-ezz-design-system-ca378bce-bacf-4641-beb9-6e6b4b686ab2/tokens/motion.css">
+  <link rel="stylesheet" href="_ds/bayt-al-ezz-design-system-ca378bce-bacf-4641-beb9-6e6b4b686ab2/tokens/layout.css">
+  <link rel="stylesheet" href="_ds/bayt-al-ezz-design-system-ca378bce-bacf-4641-beb9-6e6b4b686ab2/tokens/base.css">
+  <link rel="stylesheet" href="_ds/bayt-al-ezz-design-system-ca378bce-bacf-4641-beb9-6e6b4b686ab2/styles.css">
+  <script src="_ds/bayt-al-ezz-design-system-ca378bce-bacf-4641-beb9-6e6b4b686ab2/_ds_bundle.js"></script>
+  <style>
+    body{margin:0}
+    @keyframes toastIn{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
+  </style>
+</helmet>
+
+<svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true">
+  <symbol id="ico-paper" viewBox="0 0 48 48">
+    <g fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+      <ellipse cx="17" cy="13" rx="11" ry="4.5"></ellipse>
+      <path d="M6 13v21c0 2.5 4.9 4.5 11 4.5s11-2 11-4.5V13"></path>
+      <ellipse cx="17" cy="13" rx="3.4" ry="1.4"></ellipse>
+      <rect x="31" y="18" width="11" height="21" rx="1.5"></rect>
+      <path d="M31 27h11"></path>
+    </g>
+  </symbol>
+  <symbol id="ico-pack" viewBox="0 0 48 48">
+    <g fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M24 5 42 14v20L24 43 6 34V14z"></path>
+      <path d="M6 14l18 9 18-9"></path>
+      <path d="M24 23v20"></path>
+      <path d="M15 9.5l18 9"></path>
+    </g>
+  </symbol>
+  <symbol id="ico-clean" viewBox="0 0 48 48">
+    <g fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M11 20h18a5 5 0 0 1 5 5v13a5 5 0 0 1-5 5H11a5 5 0 0 1-5-5V25a5 5 0 0 1 5-5z"></path>
+      <path d="M16 20v-6h8v6"></path>
+      <path d="M14.5 14v-4h11v4"></path>
+      <path d="M11 28h14"></path>
+      <path d="M11 34h9"></path>
+      <path d="M38 14c2-2 2-5 0-7"></path>
+      <path d="M43 16c3-3 3-8 0-11"></path>
+    </g>
+  </symbol>
+  <symbol id="ico-care" viewBox="0 0 48 48">
+    <g fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M10 22h11a4 4 0 0 1 4 4v13a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4V26a4 4 0 0 1 4-4z"></path>
+      <path d="M13 22v-4h5v4"></path>
+      <path d="M15.5 18v-6h6"></path>
+      <path d="M6 30h19"></path>
+      <rect x="30" y="29" width="14" height="12" rx="4"></rect>
+      <path d="M33 34.5c2.5-1.8 5.5-1.8 8 0"></path>
+    </g>
+  </symbol>
+  <symbol id="ico-sundry" viewBox="0 0 48 48">
+    <g fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="6" y="15" width="36" height="23" rx="3"></rect>
+      <path d="M18 15v23"></path>
+      <path d="M30 15v23"></path>
+      <circle cx="12" cy="26.5" r="3.2"></circle>
+      <rect x="20.5" y="23" width="7" height="7" rx="1"></rect>
+      <path d="M36 22.5l4.5 8h-9z"></path>
+    </g>
+  </symbol>
+</svg>
+
+<div dir="rtl" lang="ar" style="min-height:100vh;display:flex;flex-direction:column;background:var(--surface-page);font-family:var(--font-core)">
+
+  <x-import component-from-global-scope="BaytAlEzzDesignSystem_ca378b.StoreHeader" on-home="{{ goHome }}" hint-size="100%,64px">
+    <x-import component-from-global-scope="BaytAlEzzDesignSystem_ca378b.SearchBar" value="{{ q }}" on-change="{{ setQ }}" placeholder="ابحث في مخزون الجملة..." hint-size="100%,36px"></x-import>
+  </x-import>
+
+  <div style="background:var(--wholesale-50);border-bottom:1px solid var(--wholesale-200);padding:10px 16px">
+    <div style="max-width:var(--container-7xl);margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:var(--text-sm);color:var(--wholesale-800)">
+      <span style="display:inline-flex;align-items:center;gap:6px;font-weight:var(--fw-bold)">
+        <span class="material-symbols-outlined" style="font-size:18px">sell</span>
+        وضع الجملة
+      </span>
+      <span style="width:1px;height:14px;background:var(--wholesale-200)"></span>
+      <span style="font-weight:var(--fw-regular)">كل الأسعار المعروضة أسعار جملة، والحد الأدنى ٦ قطع للصنف.</span>
+      <a href="#" style="margin-inline-start:auto;color:var(--wholesale-700);font-weight:var(--fw-semibold);text-decoration:none" style-hover="color:var(--wholesale-800)">تحويل لأسعار القطاعي</a>
+    </div>
+  </div>
+
+  <main style="flex:1;width:100%;max-width:var(--container-7xl);margin:0 auto;padding:32px 24px 48px;box-sizing:border-box">
+
+    <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+      <div>
+        <header style="margin-bottom:32px">
+          <h1 style="margin:0 0 8px;font-size:clamp(24px,3.2vw,30px);line-height:1.25;font-weight:var(--fw-extrabold);color:var(--text-heading)">أهلاً بتجار بيت العز 🏷️</h1>
+          <p style="margin:0;max-width:62ch;font-size:var(--text-base);line-height:var(--leading-relaxed);color:var(--text-body);text-wrap:pretty">ادخل على القسم اللي محتاجه، أو على الشركة اللي بتتعامل معاها — وهتوصل للمخزون على طول.</p>
+        </header>
+
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
+          <h2 style="margin:0;font-size:var(--text-2xl);font-weight:var(--fw-extrabold);color:var(--text-heading);white-space:nowrap">الأقسام</h2>
+          <span style="flex:1;height:1px;background:var(--border-hairline)"></span>
+          <span style="font-size:var(--text-xs);color:var(--text-body);white-space:nowrap"><span style="font-weight:var(--fw-bold);color:var(--wholesale-700)">٥٣٧ صنف</span> متوفر للجملة</span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(224px,1fr));gap:24px;margin-bottom:48px">
+
+          <a href="#" onClick="{{ openPaper }}" style="display:flex;flex-direction:column;gap:12px;background:var(--surface-card);border:1px solid var(--border-hairline);border-inline-start:4px solid transparent;border-radius:var(--radius-lg);padding:20px;box-shadow:var(--shadow-sm);text-decoration:none;transition:border-color var(--dur-base) var(--ease-standard),box-shadow var(--dur-base) var(--ease-standard),transform var(--dur-base) var(--ease-standard)" style-hover="border-color:var(--wholesale-500);border-inline-start-color:var(--wholesale-600);box-shadow:var(--shadow-md);transform:translateY(-2px)" style-active="transform:scale(0.98)">
+            <span style="width:52px;height:52px;border-radius:var(--radius-md);background:var(--wholesale-50);border:1px solid var(--wholesale-200);display:flex;align-items:center;justify-content:center;color:var(--wholesale-700)">
+              <svg viewBox="0 0 48 48" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#ico-paper"></use></svg>
+            </span>
+            <span style="font-size:var(--text-lg);line-height:1.35;font-weight:var(--fw-extrabold);color:var(--text-heading)">قسم الورقيات</span>
+            <span style="font-size:var(--text-xs);line-height:18px;color:var(--text-body)">مناديل · مطبخ · تواليت · فوط</span>
+            <sc-if value="{{ showSectionStats }}" hint-placeholder-val="{{ true }}">
+              <span style="margin-top:auto;padding-top:12px;border-top:1px solid var(--border-hairline-soft);display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:var(--text-xs);color:var(--text-body)">
+                <span><span style="font-weight:var(--fw-bold);color:var(--wholesale-700)">٥</span> شركات · <span style="font-weight:var(--fw-bold);color:var(--wholesale-700)">١٤٢</span> صنف</span>
+                <span class="material-symbols-outlined" style="font-size:18px;color:var(--wholesale-600)">chevron_left</span>
+              </span>
+            </sc-if>
+          </a>
+
+          <a href="#" onClick="{{ openPack }}" style="display:flex;flex-direction:column;gap:12px;background:var(--surface-card);border:1px solid var(--border-hairline);border-inline-start:4px solid transparent;border-radius:var(--radius-lg);padding:20px;box-shadow:var(--shadow-sm);text-decoration:none;transition:border-color var(--dur-base) var(--ease-standard),box-shadow var(--dur-base) var(--ease-standard),transform var(--dur-base) var(--ease-standard)" style-hover="border-color:var(--wholesale-500);border-inline-start-color:var(--wholesale-600);box-shadow:var(--shadow-md);transform:translateY(-2px)" style-active="transform:scale(0.98)">
+            <span style="width:52px;height:52px;border-radius:var(--radius-md);background:var(--wholesale-50);border:1px solid var(--wholesale-200);display:flex;align-items:center;justify-content:center;color:var(--wholesale-700)">
+              <svg viewBox="0 0 48 48" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#ico-pack"></use></svg>
+            </span>
+            <span style="font-size:var(--text-lg);line-height:1.35;font-weight:var(--fw-extrabold);color:var(--text-heading)">مواد التعبئة والتغليف</span>
+            <span style="font-size:var(--text-xs);line-height:18px;color:var(--text-body)">أكياس زبالة · استرتش · أكياس فويل</span>
+            <sc-if value="{{ showSectionStats }}" hint-placeholder-val="{{ true }}">
+              <span style="margin-top:auto;padding-top:12px;border-top:1px solid var(--border-hairline-soft);display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:var(--text-xs);color:var(--text-body)">
+                <span><span style="font-weight:var(--fw-bold);color:var(--wholesale-700)">٤</span> شركات · <span style="font-weight:var(--fw-bold);color:var(--wholesale-700)">٩٦</span> صنف</span>
+                <span class="material-symbols-outlined" style="font-size:18px;color:var(--wholesale-600)">chevron_left</span>
+              </span>
+            </sc-if>
+          </a>
+
+          <a href="#" onClick="{{ openClean }}" style="display:flex;flex-direction:column;gap:12px;background:var(--surface-card);border:1px solid var(--border-hairline);border-inline-start:4px solid transparent;border-radius:var(--radius-lg);padding:20px;box-shadow:var(--shadow-sm);text-decoration:none;transition:border-color var(--dur-base) var(--ease-standard),box-shadow var(--dur-base) var(--ease-standard),transform var(--dur-base) var(--ease-standard)" style-hover="border-color:var(--wholesale-500);border-inline-start-color:var(--wholesale-600);box-shadow:var(--shadow-md);transform:translateY(-2px)" style-active="transform:scale(0.98)">
+            <span style="width:52px;height:52px;border-radius:var(--radius-md);background:var(--wholesale-50);border:1px solid var(--wholesale-200);display:flex;align-items:center;justify-content:center;color:var(--wholesale-700)">
+              <svg viewBox="0 0 48 48" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#ico-clean"></use></svg>
+            </span>
+            <span style="font-size:var(--text-lg);line-height:1.35;font-weight:var(--fw-extrabold);color:var(--text-heading)">المنظفات والمعطرات</span>
+            <span style="font-size:var(--text-xs);line-height:18px;color:var(--text-body)">مساحيق · صابون سائل · معطرات</span>
+            <sc-if value="{{ showSectionStats }}" hint-placeholder-val="{{ true }}">
+              <span style="margin-top:auto;padding-top:12px;border-top:1px solid var(--border-hairline-soft);display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:var(--text-xs);color:var(--text-body)">
+                <span><span style="font-weight:var(--fw-bold);color:var(--wholesale-700)">٤</span> شركات · <span style="font-weight:var(--fw-bold);color:var(--wholesale-700)">١٨٧</span> صنف</span>
+                <span class="material-symbols-outlined" style="font-size:18px;color:var(--wholesale-600)">chevron_left</span>
+              </span>
+            </sc-if>
+          </a>
+
+          <a href="#" onClick="{{ openCare }}" style="display:flex;flex-direction:column;gap:12px;background:var(--surface-card);border:1px solid var(--border-hairline);border-inline-start:4px solid transparent;border-radius:var(--radius-lg);padding:20px;box-shadow:var(--shadow-sm);text-decoration:none;transition:border-color var(--dur-base) var(--ease-standard),box-shadow var(--dur-base) var(--ease-standard),transform var(--dur-base) var(--ease-standard)" style-hover="border-color:var(--wholesale-500);border-inline-start-color:var(--wholesale-600);box-shadow:var(--shadow-md);transform:translateY(-2px)" style-active="transform:scale(0.98)">
+            <span style="width:52px;height:52px;border-radius:var(--radius-md);background:var(--wholesale-50);border:1px solid var(--wholesale-200);display:flex;align-items:center;justify-content:center;color:var(--wholesale-700)">
+              <svg viewBox="0 0 48 48" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#ico-care"></use></svg>
+            </span>
+            <span style="font-size:var(--text-lg);line-height:1.35;font-weight:var(--fw-extrabold);color:var(--text-heading)">منتجات العناية الشخصية</span>
+            <span style="font-size:var(--text-xs);line-height:18px;color:var(--text-body)">شامبو · صابون · مستحضرات استحمام</span>
+            <sc-if value="{{ showSectionStats }}" hint-placeholder-val="{{ true }}">
+              <span style="margin-top:auto;padding-top:12px;border-top:1px solid var(--border-hairline-soft);display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:var(--text-xs);color:var(--text-body)">
+                <span><span style="font-weight:var(--fw-bold);color:var(--wholesale-700)">٣</span> شركات · <span style="font-weight:var(--fw-bold);color:var(--wholesale-700)">٧٤</span> صنف</span>
+                <span class="material-symbols-outlined" style="font-size:18px;color:var(--wholesale-600)">chevron_left</span>
+              </span>
+            </sc-if>
+          </a>
+
+          <a href="#" onClick="{{ openSundry }}" style="display:flex;flex-direction:column;gap:12px;background:var(--surface-card);border:1px solid var(--border-hairline);border-inline-start:4px solid transparent;border-radius:var(--radius-lg);padding:20px;box-shadow:var(--shadow-sm);text-decoration:none;transition:border-color var(--dur-base) var(--ease-standard),box-shadow var(--dur-base) var(--ease-standard),transform var(--dur-base) var(--ease-standard)" style-hover="border-color:var(--wholesale-500);border-inline-start-color:var(--wholesale-600);box-shadow:var(--shadow-md);transform:translateY(-2px)" style-active="transform:scale(0.98)">
+            <span style="width:52px;height:52px;border-radius:var(--radius-md);background:var(--wholesale-50);border:1px solid var(--wholesale-200);display:flex;align-items:center;justify-content:center;color:var(--wholesale-700)">
+              <svg viewBox="0 0 48 48" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#ico-sundry"></use></svg>
+            </span>
+            <span style="font-size:var(--text-lg);line-height:1.35;font-weight:var(--fw-extrabold);color:var(--text-heading)">الرفايع والخردوات</span>
+            <span style="font-size:var(--text-xs);line-height:18px;color:var(--text-body)">رفايع المطبخ · خردوات البيت</span>
+            <sc-if value="{{ showSectionStats }}" hint-placeholder-val="{{ true }}">
+              <span style="margin-top:auto;padding-top:12px;border-top:1px solid var(--border-hairline-soft);display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:var(--text-xs);color:var(--text-body)">
+                <span>مفيش شركات · <span style="font-weight:var(--fw-bold);color:var(--wholesale-700)">٣٨</span> صنف</span>
+                <span class="material-symbols-outlined" style="font-size:18px;color:var(--wholesale-600)">chevron_left</span>
+              </span>
+            </sc-if>
+          </a>
+
+        </div>
+
+        <section id="companies" style="background:var(--surface-card);border:1px solid var(--border-hairline);border-radius:var(--radius-xl);padding:32px;box-shadow:var(--shadow-sm)">
+          <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;padding-bottom:16px;margin-bottom:24px;border-bottom:1px solid var(--border-hairline-soft)">
+            <div>
+              <h2 style="margin:0 0 4px;font-size:var(--text-2xl);font-weight:var(--fw-extrabold);color:var(--text-heading)">الشركات</h2>
+              <p style="margin:0;font-size:var(--text-sm);color:var(--text-body);text-wrap:pretty">تعامل مباشر مع الموردين — اختار الشركة وشوف منتجاتها في كل الأقسام.</p>
+            </div>
+            <div style="margin-inline-start:auto">
+              <x-import component-from-global-scope="BaytAlEzzDesignSystem_ca378b.Badge" tone="wholesale" icon="group" hint-size="auto,24px">١١ شركة</x-import>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(176px,1fr));gap:16px">
+            <sc-for list="{{ allCompanies }}" as="c" hint-placeholder-count="11">
+              <a href="#" onClick="{{ c.open }}" style="display:flex;flex-direction:column;gap:10px;padding:12px;background:var(--surface-card);border:1px solid var(--border-hairline);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);text-decoration:none;transition:border-color var(--dur-base) var(--ease-standard),box-shadow var(--dur-base) var(--ease-standard)" style-hover="border-color:var(--wholesale-500);box-shadow:var(--shadow-md)" style-active="transform:scale(0.98)">
+                <span style="aspect-ratio:3/2;border-radius:var(--radius-sm);background:var(--surface-sunken);border:1px solid var(--border-hairline-soft);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:var(--fw-extrabold);color:var(--wholesale-600)">{{ c.letter }}</span>
+                <span style="min-height:36px;font-size:var(--text-sm);line-height:18px;font-weight:var(--fw-bold);color:var(--text-heading)">{{ c.name }}</span>
+                <span style="font-size:var(--text-xs);color:var(--text-body)">{{ c.meta }}</span>
+              </a>
+            </sc-for>
+            <a href="#" onClick="{{ openAllCompanies }}" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:12px;background:var(--wholesale-50);border:1px solid var(--wholesale-200);border-radius:var(--radius-lg);text-decoration:none;transition:background var(--dur-fast) var(--ease-standard)" style-hover="background:#FDF3D6" style-active="transform:scale(0.98)">
+              <span class="material-symbols-outlined" style="font-size:28px;color:var(--wholesale-600)">group</span>
+              <span style="font-size:var(--text-sm);font-weight:var(--fw-bold);color:var(--wholesale-800);text-align:center">كل الشركات</span>
+            </a>
+          </div>
+        </section>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isSection }}" hint-placeholder-val="{{ false }}">
+      <div>
+        <div style="margin-bottom:20px">
+          <x-import component-from-global-scope="BaytAlEzzDesignSystem_ca378b.Breadcrumbs" items="{{ crumbs }}" on-navigate="{{ onCrumb }}" hint-size="100%,20px"></x-import>
+        </div>
+
+        <header style="display:flex;align-items:center;gap:16px;margin-bottom:32px">
+          <span style="width:64px;height:64px;flex-shrink:0;border-radius:var(--radius-md);background:var(--wholesale-50);border:1px solid var(--wholesale-200);display:flex;align-items:center;justify-content:center;color:var(--wholesale-700)">
+            <svg viewBox="0 0 48 48" width="38" height="38" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="{{ secIcon }}"></use></svg>
+          </span>
+          <div>
+            <h1 style="margin:0 0 4px;font-size:clamp(24px,3.2vw,30px);line-height:1.2;font-weight:var(--fw-extrabold);color:var(--text-heading)">{{ secName }}</h1>
+            <p style="margin:0;font-size:var(--text-sm);color:var(--text-body)">{{ secMeta }}</p>
+          </div>
+        </header>
+
+        <div onClick="{{ openAll }}" tabindex="0" style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;padding:24px;margin-bottom:40px;background:var(--wholesale-50);border:1px solid var(--wholesale-200);border-inline-start:4px solid var(--wholesale-600);border-radius:var(--radius-lg);cursor:pointer;transition:box-shadow var(--dur-base) var(--ease-standard)" style-hover="box-shadow:var(--shadow-md)">
+          <span style="width:52px;height:52px;flex-shrink:0;border-radius:var(--radius-md);background:var(--surface-card);border:1px solid var(--wholesale-200);display:flex;align-items:center;justify-content:center">
+            <span class="material-symbols-outlined" style="font-size:28px;color:var(--wholesale-700)">inventory_2</span>
+          </span>
+          <div style="flex:1;min-width:200px">
+            <div style="font-size:var(--text-lg);font-weight:var(--fw-bold);color:var(--text-heading);margin-bottom:4px">{{ allTitle }}</div>
+            <div style="font-size:var(--text-sm);line-height:var(--lh-sm);color:var(--wholesale-800);text-wrap:pretty">{{ allDesc }}</div>
+          </div>
+          <span style="flex-shrink:0;white-space:nowrap">
+            <x-import component-from-global-scope="BaytAlEzzDesignSystem_ca378b.Button" variant="wholesale" icon-after="chevron_left" on-click="{{ openAll }}" hint-size="auto,40px">افتح القائمة</x-import>
+          </span>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
+          <h2 style="margin:0;font-size:var(--text-2xl);font-weight:var(--fw-extrabold);color:var(--text-heading);white-space:nowrap">الشركات في القسم</h2>
+          <span style="flex:1;height:1px;background:var(--border-hairline)"></span>
+          <span style="font-size:var(--text-xs);color:var(--text-body);white-space:nowrap">{{ secCompaniesMeta }}</span>
+        </div>
+
+        <sc-if value="{{ hasCompanies }}" hint-placeholder-val="{{ true }}">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,220px));gap:24px;justify-content:start">
+            <sc-for list="{{ secCompanies }}" as="c" hint-placeholder-count="4">
+              <a href="#" onClick="{{ c.open }}" style="display:flex;flex-direction:column;gap:12px;padding:16px;background:var(--surface-card);border:1px solid var(--border-hairline);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);text-decoration:none;transition:border-color var(--dur-base) var(--ease-standard),box-shadow var(--dur-base) var(--ease-standard),transform var(--dur-base) var(--ease-standard)" style-hover="border-color:var(--wholesale-500);box-shadow:var(--shadow-md);transform:translateY(-2px)" style-active="transform:scale(0.98)">
+                <span style="aspect-ratio:3/2;border-radius:var(--radius-sm);background:var(--surface-sunken);border:1px solid var(--border-hairline-soft);display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:var(--fw-extrabold);color:var(--wholesale-600)">{{ c.letter }}</span>
+                <span style="min-height:38px;font-size:var(--text-base);line-height:20px;font-weight:var(--fw-bold);color:var(--text-heading)">{{ c.name }}</span>
+                <span style="padding-top:10px;border-top:1px solid var(--border-hairline-soft);display:flex;align-items:center;justify-content:space-between;font-size:var(--text-xs);color:var(--text-body)">
+                  <span>{{ c.stock }}</span>
+                  <span class="material-symbols-outlined" style="font-size:18px;color:var(--wholesale-600)">chevron_left</span>
+                </span>
+              </a>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+          <x-import component-from-global-scope="BaytAlEzzDesignSystem_ca378b.EmptyState" icon="shopping_cart_off" tone="wholesale" title="مفيش شركات في القسم ده لسه" description="الأصناف موجودة بس لسه مش مسندة لشركة موردة. افتح قائمة القسم من فوق، أو ارجع تختار قسم تاني." hint-size="100%,260px"></x-import>
+        </sc-if>
+      </div>
+    </sc-if>
+
+  </main>
+
+  <x-import component-from-global-scope="BaytAlEzzDesignSystem_ca378b.StoreFooter" max-width="var(--container-7xl)" hint-size="100%,74px"></x-import>
+
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;bottom:24px;left:50%;right:auto;transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:10px;padding:12px 20px;background:var(--secondary-navy);color:#fff;border-radius:var(--radius-pill);box-shadow:var(--shadow-2xl);font-size:var(--text-sm);font-weight:var(--fw-semibold);animation:toastIn 200ms var(--ease-entrance)">
+      <span class="material-symbols-outlined" style="font-size:20px">inventory_2</span>
+      {{ toast }}
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showSectionStats&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;الأقسام&quot;},&quot;companyMeta&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;عدد الأصناف&quot;,&quot;عدد الأقسام&quot;],&quot;default&quot;:&quot;عدد الأصناف&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;الشركات&quot;},&quot;forceEmptySection&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;الحالات&quot;}}">
+class Component extends DCLogic {
+  state = {screen:'home', sectionId:'clean', q:'', toast:''};
+
+  COMPANIES = {
+    fox:{name:'فوكس لمواد التنظيف', letter:'ف'},
+    freeda:{name:'فريدا', letter:'ف'},
+    fine:{name:'فاين', letter:'ف'},
+    sama:{name:'مناديل سما', letter:'م'},
+    starkey:{name:'ستاركي', letter:'س'},
+    opal:{name:'اوبال', letter:'ا'},
+    helwan:{name:'حلوان بلاست', letter:'ح'},
+    tribak:{name:'تراي باك', letter:'ت'},
+    ronza:{name:'رونزا مناديل مبللة', letter:'ر'},
+    vilara:{name:'فيلارا', letter:'ف'},
+    varnish:{name:'ورنيش ستيل', letter:'و'}
+  };
+
+  SECTIONS = [
+    {id:'paper',  name:'قسم الورقيات',            icon:'#ico-paper',  items:142, unassigned:0,
+      lines:[['fine',48],['sama',36],['ronza',22],['vilara',18],['freeda',18]]},
+    {id:'pack',   name:'مواد التعبئة والتغليف',    icon:'#ico-pack',   items:96,  unassigned:0,
+      lines:[['helwan',34],['tribak',28],['opal',20],['starkey',14]]},
+    {id:'clean',  name:'المنظفات والمعطرات',       icon:'#ico-clean',  items:187, unassigned:15,
+      lines:[['fox',72],['varnish',41],['starkey',33],['opal',26]]},
+    {id:'care',   name:'منتجات العناية الشخصية',   icon:'#ico-care',   items:74,  unassigned:0,
+      lines:[['freeda',31],['vilara',24],['ronza',19]]},
+    {id:'sundry', name:'الرفايع والخردوات',        icon:'#ico-sundry', items:38,  unassigned:38, lines:[]}
+  ];
+
+  ar(n){ return String(n).replace(/[0-9]/g, d => '٠١٢٣٤٥٦٧٨٩'[Number(d)]); }
+
+  plural(n, one, two, many){
+    if(n === 0) return 'مفيش ' + many;
+    if(n === 1) return one;
+    if(n === 2) return two;
+    return this.ar(n) + ' ' + many;
+  }
+
+  go(id){ this.setState({screen:'section', sectionId:id, toast:''}); if(typeof window !== 'undefined') window.scrollTo(0,0); }
+
+  say(text){
+    this.setState({toast:text});
+    clearTimeout(this._t);
+    this._t = setTimeout(() => this.setState({toast:''}), 2400);
+  }
+
+  componentWillUnmount(){ clearTimeout(this._t); }
+
+  renderVals(){
+    const showStats = this.props.showSectionStats ?? true;
+    const metaMode  = this.props.companyMeta ?? 'عدد الأصناف';
+    const forceEmpty = this.props.forceEmptySection ?? false;
+
+    const sec = this.SECTIONS.find(s => s.id === this.state.sectionId) || this.SECTIONS[0];
+    const lines = forceEmpty ? [] : sec.lines;
+
+    const allCompanies = Object.keys(this.COMPANIES).map(key => {
+      const c = this.COMPANIES[key];
+      let total = 0, secCount = 0;
+      this.SECTIONS.forEach(s => s.lines.forEach(([k,n]) => { if(k === key){ total += n; secCount += 1; } }));
+      const meta = metaMode === 'عدد الأقسام'
+        ? this.plural(secCount, 'قسم واحد', 'قسمين', 'أقسام')
+        : this.ar(total) + ' صنف';
+      return {key, name:c.name, letter:c.letter, meta, open:e => {e.preventDefault(); this.say('فتح قائمة منتجات ' + c.name);}};
+    });
+
+    const secCompanies = lines.map(([key,n]) => {
+      const c = this.COMPANIES[key];
+      return {key, name:c.name, letter:c.letter, stock:this.ar(n) + ' صنف للجملة',
+        open:e => {e.preventDefault(); this.say('فتح منتجات ' + c.name + ' في ' + sec.name);}};
+    });
+
+    const unassignedNote = sec.unassigned > 0
+      ? (sec.unassigned === sec.items
+          ? ' — كلها لسه غير مسندة لشركة.'
+          : '، بما فيها ' + this.ar(sec.unassigned) + ' صنف غير مسند لشركة.')
+      : ' من كل الشركات الموردة.';
+
+    return {
+      isHome: this.state.screen === 'home',
+      isSection: this.state.screen === 'section',
+      showSectionStats: showStats,
+      q: this.state.q,
+      setQ: v => this.setState({q:v}),
+      toast: this.state.toast,
+
+      goHome: () => this.setState({screen:'home', toast:''}),
+      openPaper:  e => {e.preventDefault(); this.go('paper');},
+      openPack:   e => {e.preventDefault(); this.go('pack');},
+      openClean:  e => {e.preventDefault(); this.go('clean');},
+      openCare:   e => {e.preventDefault(); this.go('care');},
+      openSundry: e => {e.preventDefault(); this.go('sundry');},
+      openAllCompanies: e => {e.preventDefault(); this.say('فتح دليل الشركات الكامل');},
+
+      allCompanies,
+      secCompanies,
+      hasCompanies: secCompanies.length > 0,
+      isEmpty: secCompanies.length === 0,
+
+      secIcon: sec.icon,
+      secName: sec.name,
+      secMeta: this.plural(lines.length, 'شركة واحدة', 'شركتين', 'شركات') + ' · ' + this.ar(sec.items) + ' صنف متوفر للجملة',
+      secCompaniesMeta: this.plural(lines.length, 'شركة واحدة', 'شركتين', 'شركات'),
+      allTitle: 'كل منتجات ' + sec.name,
+      allDesc: this.ar(sec.items) + ' صنف' + unassignedNote,
+      openAll: () => this.say('فتح قائمة كل منتجات ' + sec.name),
+
+      crumbs: [{label:'بيت العز'}, {label:'الجملة'}, {label:sec.name}],
+      onCrumb: it => { if(it.label !== sec.name) this.setState({screen:'home', toast:''}); }
+    };
+  }
+}
+</script>
+</body>
+</html>

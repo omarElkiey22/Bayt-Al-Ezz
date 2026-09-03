@@ -1,0 +1,22 @@
+/* Layout constants read off the real pages. */
+:root{
+  --header-height:64px;          /* h-16 sticky nav, z-50 */
+  --header-pad-x:16px;           /* px-4 */
+  --header-pad-x-md:64px;        /* md:px-16 */
+  --sidebar-width:256px;         /* w-64 storefront section nav */
+  --admin-sidebar-width:288px;   /* w-72 fixed, right-anchored (RTL) */
+  --summary-width:380px;         /* cart order-summary column */
+  --sticky-offset:96px;          /* top-24 for the summary card under the header */
+
+  --container-5xl:1024px;  /* product page */
+  --container-6xl:1152px;  /* cart, footer */
+  --container-7xl:1280px;  /* category page */
+  --container-4xl:896px;   /* admin content, house hero */
+
+  --page-pad-x:16px;       /* px-4 */
+  --page-pad-x-md:32px;    /* md:px-8 */
+  --page-pad-y:32px;       /* py-8 */
+
+  --grid-gap:24px;         /* gap-6 product grid */
+  --house-max:760px;       /* .house-wrap width cap */
+}
