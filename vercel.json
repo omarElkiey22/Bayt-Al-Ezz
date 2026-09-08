@@ -7,6 +7,8 @@
     { "source": "/category.html", "destination": "/src/pages/category.html" },
     { "source": "/product.html", "destination": "/src/pages/product.html" },
     { "source": "/cart.html", "destination": "/src/pages/cart.html" },
+    { "source": "/wholesale-home.html", "destination": "/src/pages/wholesale-home.html" },
+    { "source": "/wholesale-section-companies.html", "destination": "/src/pages/wholesale-section-companies.html" },
     { "source": "/admin/login.html", "destination": "/src/pages/admin/login.html" },
     { "source": "/admin/dashboard.html", "destination": "/src/pages/admin/dashboard.html" },
     { "source": "/admin/sections.html", "destination": "/src/pages/admin/sections.html" },
