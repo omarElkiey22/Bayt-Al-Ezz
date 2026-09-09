@@ -50,6 +50,7 @@ const SENSITIVE_POLICIES = [
   ['customers', 'Admins can manage customers'],
   ['storage.objects', 'merchant asset write'],
   ['companies', 'merchant companies writes'],
+  ['wholesale_sections', 'merchant wholesale sections writes'],
 ];
 
 describe('RLS admin gating (regression guard for /cso Finding #1)', () => {

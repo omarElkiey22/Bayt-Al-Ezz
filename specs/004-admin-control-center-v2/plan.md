@@ -137,3 +137,70 @@ Decision 6 (reusing `companies.html` and `sections.html` rather than adding a th
 ## Complexity Tracking
 
 *No entries — Constitution Check has no violations.*
+
+## GSTACK REVIEW REPORT
+
+| Review | Trigger | Why | Runs | Status | Findings |
+|--------|---------|-----|------|--------|----------|
+| CEO Review | `/plan-ceo-review` | Scope & strategy | 0 | — | not run |
+| Codex Review | `/codex review` | Independent 2nd opinion | 0 | — | not run (skipped by proportionality — see below) |
+| Eng Review | `/plan-eng-review` | Architecture & tests (required) | 1 | clean (SCOPE_REDUCED) | 2 issues found, 2 resolved |
+| Design Review | `/plan-design-review` | UI/UX gaps | 0 | — | not run |
+| DX Review | `/plan-devex-review` | Developer experience gaps | 0 | — | not run |
+
+**Scope note:** this review was explicitly narrowed to the user's three named focus areas
+(`softDeleteSection()` correctness, `wholesale_sections` RLS parity with `companies`, and the
+blast radius of the `renderProductRow()`/`renderSectionRow()` signature changes) across
+`contracts/database-schema.md` and `contracts/wholesale-sections-api.md` — not a full re-review
+of all 004 planning artifacts, which already passed Constitution Check in `/speckit-plan`.
+
+**Outside voice:** skipped for this pass. Finding 1 below was verified by executing the actual
+migration logic live against the project's Supabase instance (in a rolled-back transaction) —
+a stronger evidence class than a text-only second-model read — so a Codex pass was judged
+disproportionate to a 2-file, 3-question review. Available on request for a broader pass.
+
+**Findings resolved this review (2 total):**
+
+1. **CRITICAL** (confidence 10/10, verified live) — `sanitize_text_trigger()` as originally
+   contracted would fail every `INSERT`/`UPDATE` on `wholesale_sections` with
+   `record "new" has no field "description"`, because the shared function's single boolean OR
+   expression does not reliably short-circuit around a field that doesn't exist on the record —
+   proven by running the exact trigger against a live temp table in a rolled-back transaction.
+   `wholesale_sections` would have been the first table ever attached to this trigger without a
+   `description` column (`products`/`companies` both have one, so this path was never exercised
+   before). **Fix (also verified live):** restructured into nested `IF`/`END IF` statements,
+   which PL/pgSQL genuinely skips when unentered, unlike a boolean expression →
+   `contracts/database-schema.md`
+2. (confidence 9/10, verified via grep across the full repo) — `renderProductRow()` has exactly
+   two call sites in `products-crud.js` (initial render, live-filter re-render), both duplicating
+   an identical lookup expression; the plan's original phrasing ("pass resolved names into every
+   call site") risked either missing the second site or making the existing duplication worse. →
+   extracted a shared `rowFor()` row-builder (fixes the pre-existing DRY violation instead of
+   compounding it) and specified null-safe placeholder rendering for missing wholesale-placement
+   names → `contracts/admin-ui.md`, `tasks.md` (T014, T015)
+
+**What already exists (reused, not rebuilt):** `companies` table's exact soft-delete + RLS +
+sanitize-trigger pattern (reused verbatim for `wholesale_sections`, per `research.md` Decision 3);
+`softDeleteCompany()`'s soft-delete shape (reused as the fix template for `softDeleteSection()`);
+`renderCompanyRow()`/`renderCompanyFormFieldValues()` (reused as the template for the new
+wholesale-section row/form templates); `mapProductWithVariants()` in `products-api.js` (cited as
+the existing precedent for the new `rowFor()` extraction, so this isn't a novel pattern for the
+codebase).
+
+**NOT in scope for this review pass:**
+- Full 4-section review (Architecture/Code Quality/Test/Performance) of every 004 planning
+  artifact — deferred; this pass targeted the 3 named questions only, and Test/Performance raised
+  nothing beyond what `tasks.md`'s existing T032/T033 already cover at this feature's scale.
+- A live database check found only `prevent_html_in_companies` currently attached in production —
+  no `prevent_html_in_products` or `prevent_html_in_sections` trigger exists despite
+  `003_db_constraints_validation.sql`'s function supporting both. This is a **pre-existing gap
+  unrelated to this feature** (server-side XSS protection is currently missing for `products` and
+  `sections` writes) — flagged per "see something, say something," not fixed here since it's
+  outside the 2 files this review was scoped to and outside the 004 migration's blast radius.
+  Worth a dedicated follow-up.
+
+**VERDICT:** ENG REVIEW CLEARED (scope-reduced) — both findings resolved and folded into
+`contracts/database-schema.md`, `contracts/admin-ui.md`, and `tasks.md` before implementation
+begins.
+
+NO UNRESOLVED DECISIONS

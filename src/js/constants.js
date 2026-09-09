@@ -9,7 +9,8 @@ export const TABLES = {
   products: 'products',
   variants: 'product_variants',
   invoices: 'invoices',
-  companies: 'companies'
+  companies: 'companies',
+  wholesaleSections: 'wholesale_sections'
 };
 
 export const PALETTE = {

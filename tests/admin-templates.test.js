@@ -5,6 +5,8 @@ import {
   renderSectionFormFieldValues,
   renderSectionRow,
   renderCompanyRow,
+  renderWholesaleSectionFormFieldValues,
+  renderWholesaleSectionRow,
 } from '../src/js/admin/admin-templates.js';
 
 // Regression guard for /cso Finding #3: sanitizeInput() only strips <tags>,
@@ -60,6 +62,53 @@ describe('renderProductRow', () => {
     expect(html).toMatch(/src="\.\.\/\.\.\/\.\.\/public\/assets\/placeholder\.svg"/);
     expect(html).not.toMatch(/src="\.\.\/\.\.\/public\//);
   });
+
+  // plan-eng-review finding, resolved: renderProductRow gained
+  // wholesaleSectionName/companyName params. A caller that omits them
+  // (old 2-arg shape) or a product with no wholesale placement at all
+  // must never render the literal string "undefined" -- it falls back to
+  // the same placeholder shown when there is truly no wholesale placement.
+  it('shows the "no wholesale placement" placeholder when called with the old 2-arg shape', () => {
+    const html = renderProductRow({ id: '1', name: 'منتج', description: '', primary_image_url: '', base_price: 100 }, 'قسم');
+    expect(html).not.toContain('undefined');
+    expect(html).toContain('لا يوجد تصنيف جملة');
+  });
+
+  it('shows the wholesale section and company names when both are provided', () => {
+    const html = renderProductRow(
+      { id: '1', name: 'منتج', description: '', primary_image_url: '', base_price: 100, wholesale_price: 80 },
+      'قسم',
+      'قسم جملة',
+      'شركة الاتحاد'
+    );
+    expect(html).toContain('قسم جملة');
+    expect(html).toContain('شركة الاتحاد');
+    expect(html).not.toContain('لا يوجد تصنيف جملة');
+  });
+
+  // Code-review follow-up finding (TODOS.md, resolved): a product with
+  // ONLY a wholesale_price set (no wholesale section, no company) must
+  // still fall back to the placeholder in this badge -- not an empty
+  // amber box -- since the badge shows placement, not price.
+  it('shows the placeholder (not an empty box) for a wholesale-price-only product', () => {
+    const html = renderProductRow(
+      { id: '1', name: 'منتج', description: '', primary_image_url: '', base_price: 100, wholesale_price: 80 },
+      'قسم',
+      undefined,
+      undefined
+    );
+    expect(html).toContain('لا يوجد تصنيف جملة');
+  });
+
+  it('escapes wholesale section and company names against tag injection', () => {
+    const html = renderProductRow(
+      { id: '1', name: 'منتج', description: '', primary_image_url: '' },
+      'قسم',
+      tagPayload,
+      tagPayload
+    );
+    expect(html).not.toContain(tagPayload);
+  });
 });
 
 describe('renderCompanyRow', () => {
@@ -95,5 +144,58 @@ describe('renderSectionRow', () => {
     const html = renderSectionRow({ id: '1', name: 'قسم', description: attrBreakoutPayload, icon_name: 'laundry.svg' }, 0);
     expect(html).not.toContain('" onload="');
     expect(html).toContain('&quot; onload=&quot;');
+  });
+
+  // User Story 3: renderSectionRow gained an isActive param + status badge.
+  it('shows an active status badge when isActive is true', () => {
+    const html = renderSectionRow({ id: '1', name: 'قسم', icon_name: 'laundry.svg' }, 0, '', true);
+    expect(html).toContain('نشط');
+    expect(html).not.toContain('موقوف');
+  });
+
+  it('shows an inactive status badge when isActive is false', () => {
+    const html = renderSectionRow({ id: '1', name: 'قسم', icon_name: 'laundry.svg' }, 0, '', false);
+    expect(html).toContain('موقوف');
+  });
+});
+
+describe('renderWholesaleSectionFormFieldValues', () => {
+  it('escapes a quote-breakout payload in the name value attribute', () => {
+    const { name } = renderWholesaleSectionFormFieldValues({ name: attrBreakoutPayload });
+    expect(name).not.toContain('" onload="');
+    expect(name).toContain('&quot; onload=&quot;');
+  });
+
+  it('handles no editing section (defaults)', () => {
+    const { name, display_order } = renderWholesaleSectionFormFieldValues(null);
+    expect(name).toBe('');
+    expect(display_order).toBe(0);
+  });
+});
+
+describe('renderWholesaleSectionRow', () => {
+  it('escapes a raw tag payload in the name text node', () => {
+    const html = renderWholesaleSectionRow({ id: '1', name: tagPayload, is_active: true }, 0);
+    expect(html).not.toContain(tagPayload);
+  });
+
+  // Code-review follow-up finding (TODOS.md, resolved): the "#" column
+  // must reflect list position (index), not display_order, so
+  // non-contiguous display_order values (e.g. 0 and 5) still render as
+  // sequential #1/#2 -- matching renderSectionRow's convention.
+  it('shows list position (index+1), not display_order+1, in the order column', () => {
+    const html = renderWholesaleSectionRow({ id: '1', name: 'قسم جملة', display_order: 5, is_active: true }, 1);
+    expect(html).toContain('#2');
+    expect(html).not.toContain('#6');
+  });
+
+  it('shows an active status badge when is_active is true', () => {
+    const html = renderWholesaleSectionRow({ id: '1', name: 'قسم جملة', is_active: true }, 0);
+    expect(html).toContain('نشط');
+  });
+
+  it('shows an inactive status badge when is_active is false', () => {
+    const html = renderWholesaleSectionRow({ id: '1', name: 'قسم جملة', is_active: false }, 0);
+    expect(html).toContain('موقوف');
   });
 });

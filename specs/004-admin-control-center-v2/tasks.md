@@ -29,7 +29,7 @@ Single static web project (no `backend/`/`frontend/` split) — paths are `src/`
 
 **Purpose**: Nothing new to scaffold — this feature extends an existing, already-initialized project (no new top-level directories, no new dependencies). Setup is a single verification task.
 
-- [ ] T001 Verify local environment can reach the Supabase project used by prior features (`supabase/migrations/` numbering continues from `013`; confirm via `mcp__supabase__list_migrations` or `supabase migration list` that `013_companies_and_product_company.sql` is the latest applied migration before starting T002)
+- [x] T001 Verify local environment can reach the Supabase project used by prior features (`supabase/migrations/` numbering continues from `013`; confirm via `mcp__supabase__list_migrations` or `supabase migration list` that `013_companies_and_product_company.sql` is the latest applied migration before starting T002)
 
 ---
 
@@ -39,11 +39,11 @@ Single static web project (no `backend/`/`frontend/` split) — paths are `src/`
 
 **⚠️ CRITICAL**: No US1 or US2 work can begin until this phase is complete. US3, US4, and US5 have no dependency on this phase and MAY be implemented in parallel with it (see Dependencies section).
 
-- [ ] T002 Create migration `supabase/migrations/014_wholesale_sections.sql` — `wholesale_sections` table, `products.wholesale_section_id` column, `idx_products_wholesale_section_active_deleted` index, RLS policies (`"wholesale sections readable"`, `"merchant wholesale sections writes"`), and `prevent_html_in_wholesale_sections` trigger, exactly per [contracts/database-schema.md](./contracts/database-schema.md)
-- [ ] T003 Apply migration T002 to the Supabase project (`apply_migration` / `supabase db push`) and verify with `get_advisors` (security) that no new findings appear beyond the already-accepted `is_admin()`-executable-by-anon/authenticated pattern already present for `companies`/`is_admin()`
-- [ ] T004 [P] Add `wholesaleSections: 'wholesale_sections'` to `TABLES` in `src/js/constants.js`
-- [ ] T005 [P] Create `src/js/wholesale-sections-api.js` with `fetchAllWholesaleSectionsAdmin()`, `createWholesaleSection()`, `updateWholesaleSection()`, `softDeleteWholesaleSection()`, exactly per [contracts/wholesale-sections-api.md](./contracts/wholesale-sections-api.md) (depends on T004 for `TABLES.wholesaleSections`)
-- [ ] T006 [P] Add `['wholesale_sections', 'merchant wholesale sections writes']` to the `SENSITIVE_POLICIES` array in `tests/rls-admin-access.test.js` and run `npm test` to confirm it now passes against the applied migration (depends on T003)
+- [x] T002 Create migration `supabase/migrations/014_wholesale_sections.sql` — `wholesale_sections` table, `products.wholesale_section_id` column, `idx_products_wholesale_section_active_deleted` index, RLS policies (`"wholesale sections readable"`, `"merchant wholesale sections writes"`), and `prevent_html_in_wholesale_sections` trigger, exactly per [contracts/database-schema.md](./contracts/database-schema.md)
+- [x] T003 Apply migration T002 to the Supabase project (`apply_migration` / `supabase db push`) and verify with `get_advisors` (security) that no new findings appear beyond the already-accepted `is_admin()`-executable-by-anon/authenticated pattern already present for `companies`/`is_admin()`
+- [x] T004 [P] Add `wholesaleSections: 'wholesale_sections'` to `TABLES` in `src/js/constants.js`
+- [x] T005 [P] Create `src/js/wholesale-sections-api.js` with `fetchAllWholesaleSectionsAdmin()`, `createWholesaleSection()`, `updateWholesaleSection()`, `softDeleteWholesaleSection()`, exactly per [contracts/wholesale-sections-api.md](./contracts/wholesale-sections-api.md) (depends on T004 for `TABLES.wholesaleSections`)
+- [x] T006 [P] Add `['wholesale_sections', 'merchant wholesale sections writes']` to the `SENSITIVE_POLICIES` array in `tests/rls-admin-access.test.js` and run `npm test` to confirm it now passes against the applied migration (depends on T003)
 
 **Checkpoint**: `wholesale_sections` exists, is RLS-protected, and has a working admin data-access module. US1 and US2 implementation can now begin.
 
@@ -57,10 +57,10 @@ Single static web project (no `backend/`/`frontend/` split) — paths are `src/`
 
 ### Implementation for User Story 1
 
-- [ ] T007 [P] [US1] Add `renderWholesaleSectionFormFieldValues(editing)` and `renderWholesaleSectionRow(section)` to `src/js/admin/admin-templates.js`, mirroring `renderCompanyFormFieldValues`/`renderCompanyRow` (name, `display_order` display, active/inactive status badge, edit/delete buttons; no logo column), per [contracts/admin-ui.md](./contracts/admin-ui.md) §3
-- [ ] T008 [US1] Extend `initializeCompaniesPage()` in `src/js/admin/companies-crud.js` to render a second, clearly separated "أقسام الجملة" section (form: name, `is_active` checkbox, `display_order` number input; list: table using T007's row template) below the existing companies section, wired to `fetchAllWholesaleSectionsAdmin()` / `createWholesaleSection()` / `updateWholesaleSection()` / `softDeleteWholesaleSection()` from `wholesale-sections-api.js` (depends on T005, T007)
-- [ ] T009 [US1] Update `src/pages/admin/companies.html`'s `<title>` and `<h1>`/description copy to reflect both companies and wholesale-section management (e.g. "إدارة الشركات وأقسام الجملة"), per [contracts/admin-ui.md](./contracts/admin-ui.md) §3
-- [ ] T010 [US1] Manually run [quickstart.md](./quickstart.md) Scenario 1 end-to-end (create/rename/reorder/soft-delete a wholesale section; confirm `sections` row count is unaffected before/after) and fix any issues found
+- [x] T007 [P] [US1] Add `renderWholesaleSectionFormFieldValues(editing)` and `renderWholesaleSectionRow(section)` to `src/js/admin/admin-templates.js`, mirroring `renderCompanyFormFieldValues`/`renderCompanyRow` (name, `display_order` display, active/inactive status badge, edit/delete buttons; no logo column), per [contracts/admin-ui.md](./contracts/admin-ui.md) §3
+- [x] T008 [US1] Extend `initializeCompaniesPage()` in `src/js/admin/companies-crud.js` to render a second, clearly separated "أقسام الجملة" section (form: name, `is_active` checkbox, `display_order` number input; list: table using T007's row template) below the existing companies section, wired to `fetchAllWholesaleSectionsAdmin()` / `createWholesaleSection()` / `updateWholesaleSection()` / `softDeleteWholesaleSection()` from `wholesale-sections-api.js` (depends on T005, T007)
+- [x] T009 [US1] Update `src/pages/admin/companies.html`'s `<title>` and `<h1>`/description copy to reflect both companies and wholesale-section management (e.g. "إدارة الشركات وأقسام الجملة"), per [contracts/admin-ui.md](./contracts/admin-ui.md) §3
+- [x] T010 [US1] Manually run [quickstart.md](./quickstart.md) Scenario 1 end-to-end (create/rename/reorder/soft-delete a wholesale section; confirm `sections` row count is unaffected before/after) and fix any issues found
 
 **Checkpoint**: Wholesale sections are a fully independent, admin-manageable entity. User Story 1 is demoable on its own.
 
@@ -74,13 +74,13 @@ Single static web project (no `backend/`/`frontend/` split) — paths are `src/`
 
 ### Implementation for User Story 2
 
-- [ ] T011 [US2] In `src/js/admin/products-crud.js`, import `fetchAllWholesaleSectionsAdmin` from `wholesale-sections-api.js`, fetch the list alongside the existing `sections`/`companies` fetches in `initializeProductsPage()`, and add a wholesale-section `<select name="wholesale_section_id">` to the form immediately alongside the existing company `<select>`, with a "بدون قسم جملة" empty option and pre-selection of `editing?.wholesale_section_id`, per [contracts/admin-ui.md](./contracts/admin-ui.md) §4 (depends on T005)
-- [ ] T012 [US2] In the same form, visually group the company `<select>`, new wholesale-section `<select>`, and `wholesale_price` input under a "بيانات البيع بالجملة (اختياري)" sub-heading, separated from the retail fields (name, description, retail `section_id` `<select>`, `base_price`), per [contracts/admin-ui.md](./contracts/admin-ui.md) §4 (depends on T011)
-- [ ] T013 [US2] In `products-crud.js`'s form submit handler, add `wholesale_section_id: data.wholesale_section_id || null` to the `updates` object alongside the existing `company_id`/`wholesale_price` lines (depends on T011)
-- [ ] T014 [P] [US2] Extend `renderProductRow(product, sectionName)` in `src/js/admin/admin-templates.js` to `renderProductRow(product, sectionName, wholesaleSectionName, companyName)`, adding a second badge row showing the wholesale section and company names (or a muted "لا يوجد تصنيف جملة" placeholder when all three of wholesale section, company, and wholesale price are unset), per [contracts/admin-ui.md](./contracts/admin-ui.md) §4
-- [ ] T015 [US2] In `products-crud.js`, build id→name lookup maps for wholesale sections and companies (from the lists already fetched in T011) and pass the resolved names into every `renderProductRow()` call site (depends on T011, T014)
-- [ ] T016 [US2] Manually verify FR-017 end-to-end: the existing company `<select>` persists its value on create, pre-selects the product's current company on edit, and correctly clears back to "بدون شركة" — confirming research.md Decision 1's finding holds under the changes made in T011–T015
-- [ ] T017 [US2] Manually run [quickstart.md](./quickstart.md) Scenario 2 end-to-end (independent retail/wholesale placement, round-trip after reload, clearing one placement leaves the other untouched, list view shows both) and fix any issues found
+- [x] T011 [US2] In `src/js/admin/products-crud.js`, import `fetchAllWholesaleSectionsAdmin` from `wholesale-sections-api.js`, fetch the list alongside the existing `sections`/`companies` fetches in `initializeProductsPage()`, and add a wholesale-section `<select name="wholesale_section_id">` to the form immediately alongside the existing company `<select>`, with a "بدون قسم جملة" empty option and pre-selection of `editing?.wholesale_section_id`, per [contracts/admin-ui.md](./contracts/admin-ui.md) §4 (depends on T005)
+- [x] T012 [US2] In the same form, visually group the company `<select>`, new wholesale-section `<select>`, and `wholesale_price` input under a "بيانات البيع بالجملة (اختياري)" sub-heading, separated from the retail fields (name, description, retail `section_id` `<select>`, `base_price`), per [contracts/admin-ui.md](./contracts/admin-ui.md) §4 (depends on T011)
+- [x] T013 [US2] In `products-crud.js`'s form submit handler, add `wholesale_section_id: data.wholesale_section_id || null` to the `updates` object alongside the existing `company_id`/`wholesale_price` lines (depends on T011)
+- [x] T014 [P] [US2] Extend `renderProductRow(product, sectionName)` in `src/js/admin/admin-templates.js` to `renderProductRow(product, sectionName, wholesaleSectionName, companyName)`, adding a second badge row showing the wholesale section and company names — treating a missing/`undefined` `wholesaleSectionName`/`companyName` the same as "no value" (falls into the same "لا يوجد تصنيف جملة" placeholder branch as when all three of wholesale section, company, and wholesale price are unset; never interpolates `undefined` into markup) — per [contracts/admin-ui.md](./contracts/admin-ui.md) §4 (plan-eng-review finding, resolved)
+- [x] T015 [US2] In `products-crud.js`'s `initializeProductsPage()`, build `sectionsMap`/`wholesaleMap`/`companiesMap` id→name `Map`s from the lists already fetched (T011), and extract one shared `rowFor = p => renderProductRow(p, sectionsMap.get(p.section_id), wholesaleMap.get(p.wholesale_section_id), companiesMap.get(p.company_id))` helper — replace **both** existing `renderProductRow(p, sections.find(...)?.name)` call sites (the initial `filteredProducts.map(...)` render and the live-filter `curFiltered.map(...)` re-render) with `rowFor(p)`, per [contracts/admin-ui.md](./contracts/admin-ui.md) §4 (depends on T011, T014; plan-eng-review finding, resolved — do not update only one of the two call sites)
+- [x] T016 [US2] Manually verify FR-017 end-to-end: the existing company `<select>` persists its value on create, pre-selects the product's current company on edit, and correctly clears back to "بدون شركة" — confirming research.md Decision 1's finding holds under the changes made in T011–T015
+- [x] T017 [US2] Manually run [quickstart.md](./quickstart.md) Scenario 2 end-to-end (independent retail/wholesale placement, round-trip after reload, clearing one placement leaves the other untouched, list view shows both) and fix any issues found
 
 **Checkpoint**: Products carry two fully independent placements, visible and editable from the admin. User Stories 1 AND 2 both work independently — this is the feature's MVP.
 
@@ -94,12 +94,12 @@ Single static web project (no `backend/`/`frontend/` split) — paths are `src/`
 
 ### Implementation for User Story 3
 
-- [ ] T018 [P] [US3] Fix `softDeleteSection(id)` in `src/js/sections-api.js` to perform a real soft-delete (`update({deleted_at: new Date().toISOString()})` on the section row only, keeping the existing active-products guard, removing both hard `.delete()` calls), exactly per [contracts/wholesale-sections-api.md](./contracts/wholesale-sections-api.md)'s `sections-api.js` fix section
-- [ ] T019 [P] [US3] Extend `renderSectionRow(section, index, iconSrc)` in `src/js/admin/admin-templates.js` to also accept and render `is_active` as a status badge (same badge markup as `renderCompanyRow`), per [contracts/admin-ui.md](./contracts/admin-ui.md) §2
-- [ ] T020 [US3] In `src/js/admin/sections-crud.js`'s `initializeSectionsPage()`, remove the create path: default `editing` to the first fetched section (or show a clear "اختر قسمًا للتعديل" empty state if the list is empty) instead of `null`, and delete the submit handler's `createSection(...)` branch so only `updateSection(...)` is ever called, per [contracts/admin-ui.md](./contracts/admin-ui.md) §2 (depends on T019)
-- [ ] T021 [US3] Add an `is_active` checkbox and a `display_order` numeric input to the section form in `sections-crud.js`, wired into the same `data` object passed to `updateSection()`, and pass `section.is_active` into T019's updated `renderSectionRow()` call (depends on T019, T020)
-- [ ] T022 [US3] Update the delete-confirm dialog copy in `sections-crud.js` from "سيتم حذف القسم والمنتجات غير النشطة التابعة له" to "هل تريد حذف هذا القسم؟ سيتم إخفاؤه فقط، ولا يمكن حذفه إذا كان يحتوي على منتجات نشطة." to match the corrected behavior from T018 (depends on T018)
-- [ ] T023 [US3] Manually run [quickstart.md](./quickstart.md) Scenario 3 end-to-end (no create control reachable; rename/reorder/disable a section and confirm the house hero's Frame 1/Frame 2 SVGs and zone shapes are pixel-identical to before; soft-delete a section with no active products and confirm its products are NOT removed) and fix any issues found
+- [x] T018 [P] [US3] Fix `softDeleteSection(id)` in `src/js/sections-api.js` to perform a real soft-delete (`update({deleted_at: new Date().toISOString()})` on the section row only, keeping the existing active-products guard, removing both hard `.delete()` calls), exactly per [contracts/wholesale-sections-api.md](./contracts/wholesale-sections-api.md)'s `sections-api.js` fix section
+- [x] T019 [P] [US3] Extend `renderSectionRow(section, index, iconSrc)` in `src/js/admin/admin-templates.js` to also accept and render `is_active` as a status badge (same badge markup as `renderCompanyRow`), per [contracts/admin-ui.md](./contracts/admin-ui.md) §2
+- [x] T020 [US3] In `src/js/admin/sections-crud.js`'s `initializeSectionsPage()`, remove the create path: default `editing` to the first fetched section (or show a clear "اختر قسمًا للتعديل" empty state if the list is empty) instead of `null`, and delete the submit handler's `createSection(...)` branch so only `updateSection(...)` is ever called, per [contracts/admin-ui.md](./contracts/admin-ui.md) §2 (depends on T019)
+- [x] T021 [US3] Add an `is_active` checkbox and a `display_order` numeric input to the section form in `sections-crud.js`, wired into the same `data` object passed to `updateSection()`, and pass `section.is_active` into T019's updated `renderSectionRow()` call (depends on T019, T020)
+- [x] T022 [US3] Update the delete-confirm dialog copy in `sections-crud.js` from "سيتم حذف القسم والمنتجات غير النشطة التابعة له" to "هل تريد حذف هذا القسم؟ سيتم إخفاؤه فقط، ولا يمكن حذفه إذا كان يحتوي على منتجات نشطة." to match the corrected behavior from T018 (depends on T018)
+- [x] T023 [US3] Manually run [quickstart.md](./quickstart.md) Scenario 3 end-to-end (no create control reachable; rename/reorder/disable a section and confirm the house hero's Frame 1/Frame 2 SVGs and zone shapes are pixel-identical to before; soft-delete a section with no active products and confirm its products are NOT removed) and fix any issues found
 
 **Checkpoint**: Retail section metadata is admin-editable and the hard-delete bug is fixed, with the house hero fully unaffected. User Stories 1, 2, AND 3 all work independently.
 
@@ -113,9 +113,9 @@ Single static web project (no `backend/`/`frontend/` split) — paths are `src/`
 
 ### Implementation for User Story 4
 
-- [ ] T024 [US4] Manually verify the existing invoice picker in `src/pages/admin/invoices.html` against spec.md's User Story 4 acceptance scenarios 1–5 (wholesale-only search results, pre-fill + editable price, manual entry still available, both mixable, empty-search state) with no code change — per research.md Decision 1, this flow already works; this task exists to catch any regression before T025 touches the same file
-- [ ] T025 [US4] In `invoices.html`'s `btnAddCatalog.onclick` handler, add `product_id: selectedProduct.id` to the object pushed into `invoiceItems` (leave `btnAddCustom.onclick`'s pushed object unchanged, with no `product_id` key), per [contracts/admin-ui.md](./contracts/admin-ui.md) §5 (depends on T024 passing)
-- [ ] T026 [US4] Manually run [quickstart.md](./quickstart.md) Scenario 4 step 6 (save an invoice with one picker-added and one manual line item; inspect the saved `invoices.items` jsonb and confirm exactly the picker-added line carries `product_id`) and fix any issues found
+- [x] T024 [US4] Manually verify the existing invoice picker in `src/pages/admin/invoices.html` against spec.md's User Story 4 acceptance scenarios 1–5 (wholesale-only search results, pre-fill + editable price, manual entry still available, both mixable, empty-search state) with no code change — per research.md Decision 1, this flow already works; this task exists to catch any regression before T025 touches the same file
+- [x] T025 [US4] In `invoices.html`'s `btnAddCatalog.onclick` handler, add `product_id: selectedProduct.id` to the object pushed into `invoiceItems` (leave `btnAddCustom.onclick`'s pushed object unchanged, with no `product_id` key), per [contracts/admin-ui.md](./contracts/admin-ui.md) §5 (depends on T024 passing)
+- [x] T026 [US4] Manually run [quickstart.md](./quickstart.md) Scenario 4 step 6 (save an invoice with one picker-added and one manual line item; inspect the saved `invoices.items` jsonb and confirm exactly the picker-added line carries `product_id`) and fix any issues found
 
 **Checkpoint**: Invoice line items are traceable to their source product where applicable, with the existing hybrid entry UX fully preserved. User Stories 1–4 all work independently.
 
@@ -129,11 +129,11 @@ Single static web project (no `backend/`/`frontend/` split) — paths are `src/`
 
 ### Implementation for User Story 5
 
-- [ ] T027 [P] [US5] Insert the "إدارة الشركات" `<a>` nav block (inactive-state classes, `href="companies.html"`, `store` icon) into `src/pages/admin/sections.html`'s sidebar `<nav>`, immediately after the "إدارة المنتجات" link and before "إنشاء وطباعة فاتورة", per [contracts/admin-ui.md](./contracts/admin-ui.md) §1
-- [ ] T028 [P] [US5] Insert the same nav block into `src/pages/admin/products.html`'s sidebar `<nav>` in the same position
-- [ ] T029 [P] [US5] Insert the same nav block into `src/pages/admin/invoices.html`'s sidebar `<nav>` in the same position (note this `<aside>` carries an additional `no-print` class already — do not remove it)
-- [ ] T030 [P] [US5] Insert the same nav block into `src/pages/admin/customers.html`'s sidebar `<nav>` in the same position
-- [ ] T031 [US5] Manually run [quickstart.md](./quickstart.md) Scenario 5 (visit all four pages, confirm link position/style matches `dashboard.html`, confirm it navigates to `companies.html`)
+- [x] T027 [P] [US5] Insert the "إدارة الشركات" `<a>` nav block (inactive-state classes, `href="companies.html"`, `store` icon) into `src/pages/admin/sections.html`'s sidebar `<nav>`, immediately after the "إدارة المنتجات" link and before "إنشاء وطباعة فاتورة", per [contracts/admin-ui.md](./contracts/admin-ui.md) §1
+- [x] T028 [P] [US5] Insert the same nav block into `src/pages/admin/products.html`'s sidebar `<nav>` in the same position
+- [x] T029 [P] [US5] Insert the same nav block into `src/pages/admin/invoices.html`'s sidebar `<nav>` in the same position (note this `<aside>` carries an additional `no-print` class already — do not remove it)
+- [x] T030 [P] [US5] Insert the same nav block into `src/pages/admin/customers.html`'s sidebar `<nav>` in the same position
+- [x] T031 [US5] Manually run [quickstart.md](./quickstart.md) Scenario 5 (visit all four pages, confirm link position/style matches `dashboard.html`, confirm it navigates to `companies.html`)
 
 **Checkpoint**: All five user stories are independently functional. Feature complete.
 
@@ -143,10 +143,10 @@ Single static web project (no `backend/`/`frontend/` split) — paths are `src/`
 
 **Purpose**: Final regression pass across the whole feature.
 
-- [ ] T032 [P] Add/update Vitest cases in `tests/admin-templates.test.js` covering `renderWholesaleSectionRow()`, `renderWholesaleSectionFormFieldValues()`, `renderSectionRow()`'s new `is_active` parameter, and `renderProductRow()`'s new `wholesaleSectionName`/`companyName` parameters (both populated and "no wholesale placement" cases)
-- [ ] T033 Run `npm test` and confirm the full suite passes, including the updated `tests/rls-admin-access.test.js` (T006) and `tests/admin-templates.test.js` (T032)
-- [ ] T034 Run `mcp__supabase__get_advisors` (security) one final time against the fully implemented feature and confirm no new findings beyond those already accepted for `companies`/`is_admin()` in prior features
-- [ ] T035 Run the full [quickstart.md](./quickstart.md) top-to-bottom in one pass (all 5 scenarios) as a final end-to-end sanity check
+- [x] T032 [P] Add/update Vitest cases in `tests/admin-templates.test.js` covering `renderWholesaleSectionRow()`, `renderWholesaleSectionFormFieldValues()`, `renderSectionRow()`'s new `is_active` parameter, and `renderProductRow()`'s new `wholesaleSectionName`/`companyName` parameters (both populated and "no wholesale placement" cases)
+- [x] T033 Run `npm test` and confirm the full suite passes, including the updated `tests/rls-admin-access.test.js` (T006) and `tests/admin-templates.test.js` (T032)
+- [x] T034 Run `mcp__supabase__get_advisors` (security) one final time against the fully implemented feature and confirm no new findings beyond those already accepted for `companies`/`is_admin()` in prior features
+- [x] T035 Run the full [quickstart.md](./quickstart.md) top-to-bottom in one pass (all 5 scenarios) as a final end-to-end sanity check
 
 ---
 

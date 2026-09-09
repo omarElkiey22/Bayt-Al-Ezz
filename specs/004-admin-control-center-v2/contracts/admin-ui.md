@@ -93,14 +93,43 @@ grouping only, no change to how the fields are read/submitted.
 
 **Product list view (`renderProductRow`, FR-010)**: currently shows one section badge (retail) and
 `base_price` + a conditional `wholesale_price` line. **Add**: a second badge row showing the
-wholesale section's name (via a name lookup map built the same way `renderProductRow`'s existing
-`sectionName` argument is already resolved by its caller) and the company's name (already resolved
-today, since `products-crud.js` already fetches `companies` — the row template just needs to
-receive and render it), or a muted "لا يوجد تصنيف جملة" placeholder when the product has no
-wholesale section, no company, and no wholesale price at all (FR-004's "no wholesale placement"
-state). `renderProductRow()`'s signature grows from `(product, sectionName)` to
-`(product, sectionName, wholesaleSectionName, companyName)` — an additive parameter change,
-consistent with how `renderSectionRow()` gains its new parameter in the same release (§2 above).
+wholesale section's name and the company's name, or a muted "لا يوجد تصنيف جملة" placeholder when
+the product has no wholesale section, no company, and no wholesale price at all (FR-004's "no
+wholesale placement" state). `renderProductRow()`'s signature grows from `(product, sectionName)`
+to `(product, sectionName, wholesaleSectionName, companyName)`.
+
+**plan-eng-review finding (confidence 9/10, resolved):** `renderProductRow()` has exactly two call
+sites in `products-crud.js` today — the initial page render and the live search/filter re-render
+— both currently duplicating the identical lookup expression
+`renderProductRow(p, sections.find(s => s.id === p.section_id)?.name)`. Naively following "pass
+the resolved names into every call site" would copy-paste a 4-lookup expression into both spots
+instead of the current 1-lookup expression, making an existing DRY violation worse. Fix, required
+as part of this change (not deferred):
+
+1. **Extract one shared row-builder** in `products-crud.js`'s `initializeProductsPage()`, built
+   once per render alongside the existing `sections`/`companies`/wholesale-sections fetches:
+   ```js
+   const sectionsMap = new Map(sections.map(s => [s.id, s.name]));
+   const wholesaleMap = new Map(wholesaleSections.map(w => [w.id, w.name]));
+   const companiesMap = new Map(companies.map(c => [c.id, c.name]));
+   const rowFor = p => renderProductRow(
+     p,
+     sectionsMap.get(p.section_id),
+     wholesaleMap.get(p.wholesale_section_id),
+     companiesMap.get(p.company_id)
+   );
+   ```
+   Both existing call sites (the initial `filteredProducts.map(...)` render and the live-filter
+   `curFiltered.map(...)` re-render) call `rowFor(p)` instead of `renderProductRow(p, ...)`
+   directly — one lookup construction, two consumers, matching the project's existing DRY
+   convention elsewhere (e.g. `mapProductWithVariants()` in `products-api.js`).
+2. **`renderProductRow()` treats a missing/`undefined` `wholesaleSectionName`/`companyName` the
+   same as "no value present"** — i.e. it falls into the same "لا يوجد تصنيف جملة" placeholder
+   branch used for a product with no wholesale placement at all, never interpolating `undefined`
+   directly into the badge markup. This matters concretely: `tests/admin-templates.test.js`'s
+   existing 2-arg calls to `renderProductRow()` are not updated until the Polish phase (T032), so
+   between US2's implementation and Polish, those tests must keep rendering a sensible placeholder
+   rather than the literal string "undefined".
 
 ## 5. Invoice creation (`invoices.html`) — `product_id` traceability (data-model.md Decision 5)
 

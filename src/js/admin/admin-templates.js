@@ -14,10 +14,31 @@ export function renderProductFormFieldValues(editing) {
   };
 }
 
-export function renderProductRow(product, sectionName) {
+export function renderProductRow(product, sectionName, wholesaleSectionName, companyName) {
   const name = escapeHtml(product.name);
   const description = escapeHtml(product.description || '');
   const image = escapeHtml(product.primary_image_url || '../../../public/assets/placeholder.svg');
+  // plan-eng-review finding, resolved: a missing/undefined wholesaleSectionName
+  // or companyName (e.g. an old 2-arg call site, or a product with no
+  // wholesale placement) MUST render the same "no wholesale placement"
+  // state as a product with none of these set at all -- never the literal
+  // string "undefined" in the badge.
+  //
+  // Code-review follow-up finding (TODOS.md, resolved): this badge shows
+  // *category* placement (wholesale section / company), not price -- a
+  // product with only a wholesale_price and no section/company has nothing
+  // to put inside this specific badge, so it falls back to the same
+  // placeholder rather than rendering an empty amber box. The wholesale
+  // price itself is never lost -- it's already shown unconditionally in
+  // the price column below, independent of this badge.
+  const hasWholesalePlacement = Boolean(wholesaleSectionName || companyName);
+  const wholesaleBadge = hasWholesalePlacement
+    ? `<div class="text-xs text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 w-fit mt-1">
+         ${wholesaleSectionName ? `<span class="font-semibold">${escapeHtml(wholesaleSectionName)}</span>` : ''}
+         ${wholesaleSectionName && companyName ? ' · ' : ''}
+         ${companyName ? escapeHtml(companyName) : ''}
+       </div>`
+    : `<div class="text-[10px] text-gray-400 mt-1">لا يوجد تصنيف جملة</div>`;
   return `
     <tr class="hover:bg-gray-50 transition-colors">
       <td class="p-4">
@@ -31,6 +52,7 @@ export function renderProductRow(product, sectionName) {
       </td>
       <td class="p-4">
         <span class="bg-gray-100 text-gray-600 text-xs font-semibold px-2.5 py-0.5 rounded-full">${escapeHtml(sectionName || 'غير محدد')}</span>
+        ${wholesaleBadge}
       </td>
       <td class="p-4">
         <div class="font-bold text-[#0056B3]">${formatPrice(product.base_price)}</div>
@@ -95,7 +117,37 @@ export function renderCompanyRow(company) {
   `;
 }
 
-export function renderSectionRow(section, index, iconSrc) {
+export function renderWholesaleSectionFormFieldValues(editing) {
+  return {
+    name: escapeHtml(editing?.name || ''),
+    display_order: editing?.display_order ?? 0,
+  };
+}
+
+export function renderWholesaleSectionRow(section, index) {
+  const name = escapeHtml(section.name);
+  return `
+    <tr class="hover:bg-gray-50 transition-colors">
+      <td class="p-4 font-semibold text-gray-400">#${index + 1}</td>
+      <td class="p-4 font-bold">${name}</td>
+      <td class="p-4">
+        <span class="${section.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'} text-xs font-semibold px-2.5 py-0.5 rounded-full">${section.is_active ? 'نشط' : 'موقوف'}</span>
+      </td>
+      <td class="p-4">
+        <div class="flex items-center justify-center gap-2">
+          <button class="w-8 h-8 rounded-full flex items-center justify-center text-primary hover:bg-[#0056B3]/10 transition-colors" data-edit="${section.id}" title="تعديل">
+            <span class="material-symbols-outlined text-[18px]">edit</span>
+          </button>
+          <button class="w-8 h-8 rounded-full flex items-center justify-center text-red-500 hover:bg-red-50 transition-colors" data-delete="${section.id}" title="حذف">
+            <span class="material-symbols-outlined text-[18px]">delete</span>
+          </button>
+        </div>
+      </td>
+    </tr>
+  `;
+}
+
+export function renderSectionRow(section, index, iconSrc, isActive) {
   return `
     <tr class="hover:bg-gray-50 transition-colors">
       <td class="p-4 font-semibold text-gray-400">#${index + 1}</td>
@@ -105,6 +157,9 @@ export function renderSectionRow(section, index, iconSrc) {
       </td>
       <td class="p-4">
         <img src="${iconSrc || ''}" class="w-16 h-16 rounded object-contain" alt="">
+      </td>
+      <td class="p-4">
+        <span class="${isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'} text-xs font-semibold px-2.5 py-0.5 rounded-full">${isActive ? 'نشط' : 'موقوف'}</span>
       </td>
       <td class="p-4">
         <div class="flex items-center justify-center gap-2">

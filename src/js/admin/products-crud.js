@@ -1,5 +1,6 @@
 import { fetchAllSectionsAdmin } from '../sections-api.js';
 import { fetchAllCompaniesAdmin } from '../companies-api.js';
+import { fetchAllWholesaleSectionsAdmin } from '../wholesale-sections-api.js';
 import { createProduct, updateProduct, softDeleteProduct, fetchProductDetails } from '../products-api.js';
 import { compressImage } from '../image-compressor.js';
 import { TABLES } from '../constants.js';
@@ -22,6 +23,21 @@ async function upload(file) {
 export async function initializeProductsPage(root) {
   const sections = await fetchAllSectionsAdmin();
   const companies = await fetchAllCompaniesAdmin();
+  const wholesaleSections = await fetchAllWholesaleSectionsAdmin();
+  const sectionsMap = new Map(sections.map(s => [s.id, s.name]));
+  const wholesaleMap = new Map(wholesaleSections.map(w => [w.id, w.name]));
+  const companiesMap = new Map(companies.map(c => [c.id, c.name]));
+  // Shared row builder -- both the initial render below and the live
+  // search/filter re-render call this instead of duplicating the lookup
+  // expression (plan-eng-review finding, resolved: the pre-existing
+  // duplication would have gotten worse -- 4 lookups copy-pasted twice
+  // instead of the original 1 -- had each call site built its own args).
+  const rowFor = p => renderProductRow(
+    p,
+    sectionsMap.get(p.section_id),
+    wholesaleMap.get(p.wholesale_section_id),
+    companiesMap.get(p.company_id)
+  );
   let editing = null;
   let variants = [{ label: 'افتراضي', price_override: '', is_in_stock: true }];
   let adminSearchQuery = '';
@@ -79,22 +95,34 @@ export async function initializeProductsPage(root) {
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-[#1A237E] mb-1.5">الشركة <span class="text-gray-400 font-normal">(اختياري)</span></label>
-              <select class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-[#1A237E] focus:border-[#0056B3] focus:ring-1 focus:ring-[#0056B3] focus:outline-none" name="company_id">
-                <option value="">بدون شركة</option>
-                ${companies.map(c => `<option value="${c.id}" ${editing?.company_id === c.id ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('')}
-              </select>
-            </div>
-
-            <div>
               <label class="block text-xs font-semibold text-[#1A237E] mb-1.5">السعر الأساسي (ج.م)</label>
               <input class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-[#1A237E] focus:border-[#0056B3] focus:ring-1 focus:ring-[#0056B3] focus:outline-none" name="base_price" type="number" min="0" placeholder="0" value="${editing?.base_price || ''}" required>
             </div>
 
-            <div>
-              <label class="block text-xs font-semibold text-[#1A237E] mb-1.5">سعر الجملة (ج.م) <span class="text-gray-400 font-normal">(اختياري)</span></label>
-              <input class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-[#1A237E] focus:border-[#0056B3] focus:ring-1 focus:ring-[#0056B3] focus:outline-none" name="wholesale_price" type="number" min="0" placeholder="اتركه فارغاً إذا لم تكن له تسعيرة جملة" value="${editing?.wholesale_price ?? ''}">
-              <p class="text-[10px] text-[#75777E] mt-1">عند كتابة سعر جملة، سيظهر هذا المنتج في رابط الجملة الخاطف للعملاء.</p>
+            <div class="pt-2 mt-2 border-t border-dashed border-[#9E9E9E]/30">
+              <p class="text-xs font-bold text-[#1A237E] mb-3">بيانات البيع بالجملة <span class="text-gray-400 font-normal">(اختياري)</span></p>
+
+              <div class="mb-3">
+                <label class="block text-xs font-semibold text-[#1A237E] mb-1.5">قسم الجملة <span class="text-gray-400 font-normal">(اختياري)</span></label>
+                <select class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-[#1A237E] focus:border-[#0056B3] focus:ring-1 focus:ring-[#0056B3] focus:outline-none" name="wholesale_section_id">
+                  <option value="">بدون قسم جملة</option>
+                  ${wholesaleSections.map(w => `<option value="${w.id}" ${editing?.wholesale_section_id === w.id ? 'selected' : ''}>${escapeHtml(w.name)}</option>`).join('')}
+                </select>
+              </div>
+
+              <div class="mb-3">
+                <label class="block text-xs font-semibold text-[#1A237E] mb-1.5">الشركة <span class="text-gray-400 font-normal">(اختياري)</span></label>
+                <select class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-[#1A237E] focus:border-[#0056B3] focus:ring-1 focus:ring-[#0056B3] focus:outline-none" name="company_id">
+                  <option value="">بدون شركة</option>
+                  ${companies.map(c => `<option value="${c.id}" ${editing?.company_id === c.id ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('')}
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-[#1A237E] mb-1.5">سعر الجملة (ج.م) <span class="text-gray-400 font-normal">(اختياري)</span></label>
+                <input class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-[#1A237E] focus:border-[#0056B3] focus:ring-1 focus:ring-[#0056B3] focus:outline-none" name="wholesale_price" type="number" min="0" placeholder="اتركه فارغاً إذا لم تكن له تسعيرة جملة" value="${editing?.wholesale_price ?? ''}">
+                <p class="text-[10px] text-[#75777E] mt-1">عند كتابة سعر جملة، سيظهر هذا المنتج في رابط الجملة الخاطف للعملاء.</p>
+              </div>
             </div>
 
             <div>
@@ -174,7 +202,7 @@ export async function initializeProductsPage(root) {
                         <span>لا توجد منتجات تطابق البحث</span>
                       </td>
                     </tr>
-                  ` : filteredProducts.map(p => renderProductRow(p, sections.find(s => s.id === p.section_id)?.name)).join('')}
+                  ` : filteredProducts.map(p => rowFor(p)).join('')}
                 </tbody>
               </table>
             </div>
@@ -283,7 +311,7 @@ export async function initializeProductsPage(root) {
               </tr>
             `;
           } else {
-            tbody.innerHTML = curFiltered.map(p => renderProductRow(p, sections.find(s => s.id === p.section_id)?.name)).join('');
+            tbody.innerHTML = curFiltered.map(p => rowFor(p)).join('');
 
             tbody.querySelectorAll('[data-edit]').forEach(b => {
               b.onclick = async () => {
@@ -391,6 +419,7 @@ export async function initializeProductsPage(root) {
           description: data.description,
           section_id: data.section_id,
           company_id: data.company_id || null,
+          wholesale_section_id: data.wholesale_section_id || null,
           base_price: Number(data.base_price),
           wholesale_price: data.wholesale_price !== undefined && data.wholesale_price !== '' && data.wholesale_price !== null ? Number(data.wholesale_price) : null,
           primary_image_url: imageUrl,

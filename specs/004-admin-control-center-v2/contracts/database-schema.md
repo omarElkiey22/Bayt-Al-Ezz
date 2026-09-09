@@ -73,18 +73,62 @@ create policy "merchant wholesale sections writes" on wholesale_sections
 
 ## Server-side sanitization trigger
 
-`sanitize_text_trigger()` (owned by `003_db_constraints_validation.sql`, last extended by `013`)
-already checks `NEW.name ~ '<[^>]*>'` for every table it's attached to — `wholesale_sections` has
-a `name` column and no `description` column, so **no change to the shared function body is
-needed** (unlike `013`, which had to add `description` handling for `companies`). Only a new
-trigger attachment is required:
+**plan-eng-review finding (CRITICAL, verified live, resolved):** an earlier draft of this
+contract assumed no change to `sanitize_text_trigger()` was needed, since `wholesale_sections`
+has a `name` column and the shared function's `description` check is already gated behind
+`TG_TABLE_NAME IN ('products', 'companies')`. That assumption was tested directly against the
+live Supabase project (temp table, `name` column only, no `description`, this exact trigger
+attached) and **failed**: `INSERT` raised `record "new" has no field "description"`. The
+function's single boolean expression —
 
 ```sql
+IF NEW.name ~ '<[^>]*>'
+   OR (TG_TABLE_NAME IN ('products', 'companies') AND NEW.description ~ '<[^>]*>')
+THEN ...
+```
+
+— does not reliably short-circuit far enough to avoid evaluating `NEW.description` on a record
+type that lacks the field. Every table this function has been attached to so far (`products`,
+`companies`) happens to have a `description` column, so this failure mode was never exercised
+until `wholesale_sections` (the first attached table without one). Left as originally drafted,
+migration `014` would have made every `INSERT`/`UPDATE` on `wholesale_sections` fail outright,
+breaking all of User Story 1.
+
+**Fix (verified live, both branches)**: restructure the single OR expression into nested
+`IF`/`END IF` statements. PL/pgSQL's statement-level `IF` genuinely skips an unentered block —
+unlike a boolean `OR`/`AND` expression, it never evaluates `NEW.description` unless
+`TG_TABLE_NAME` has already matched:
+
+```sql
+CREATE OR REPLACE FUNCTION sanitize_text_trigger()
+RETURNS trigger AS $$
+BEGIN
+  IF NEW.name ~ '<[^>]*>' THEN
+    RAISE EXCEPTION 'Input contains prohibited HTML or script tags';
+  END IF;
+  IF TG_TABLE_NAME IN ('products', 'companies') THEN
+    IF NEW.description ~ '<[^>]*>' THEN
+      RAISE EXCEPTION 'Input contains prohibited HTML or script tags';
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
 CREATE TRIGGER prevent_html_in_wholesale_sections
   BEFORE INSERT OR UPDATE ON public.wholesale_sections
   FOR EACH ROW
   EXECUTE FUNCTION sanitize_text_trigger();
 ```
+
+Verified live in a rolled-back transaction: (1) a safe `name` on a table with no `description`
+column inserts successfully; (2) a malicious `name` on that same no-description table is
+correctly rejected (not a field-access crash); (3) a malicious `description` on a table that
+*has* a `description` column but isn't in `('products', 'companies')` is still accepted,
+matching today's existing (unrelated) behavior for such tables — this restructure changes
+nothing for `products`/`companies`, it only makes the description branch genuinely skippable.
+This is a general fix: it also protects any future table attached to this shared trigger that
+lacks a `description` column, not just `wholesale_sections`.
 
 ## Invoice line item shape — no migration change
 
