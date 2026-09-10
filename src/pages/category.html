@@ -47,7 +47,7 @@
   <div class="flex-grow flex flex-col md:flex-row max-w-7xl w-full mx-auto px-4 md:px-8 py-8 gap-8">
     
     <!-- Sidebar Navigation (Desktop) -->
-    <aside class="hidden md:block w-64 shrink-0 bg-white border border-[#9E9E9E]/20 rounded-2xl p-6 h-fit shadow-sm">
+    <aside id="sidebar-aside" class="hidden md:block w-64 shrink-0 bg-white border border-[#9E9E9E]/20 rounded-2xl p-6 h-fit shadow-sm">
       <h2 class="font-bold text-lg text-[#1A237E] mb-4 pb-2 border-b border-[#9E9E9E]/10">أقسام البيت</h2>
       <nav class="flex flex-col gap-2" id="sidebar-nav">
         <!-- Sidebar links loaded dynamically -->
@@ -124,9 +124,10 @@
 
   <script type="module">
     import { getQueryParam, formatPrice, escapeHtml } from '../js/utils.js';
-    import { fetchProductsBySection, searchProducts } from '../js/products-api.js';
+    import { fetchProductsBySection, fetchProductsByWholesaleSection, searchProducts } from '../js/products-api.js';
     import { fetchActiveSections } from '../js/sections-api.js';
-    import { fetchCompanyDetails, fetchProductsByCompany, fetchCompaniesForSection, fetchActiveCompanies } from '../js/companies-api.js';
+    import { fetchActiveWholesaleSections } from '../js/wholesale-sections-api.js';
+    import { fetchCompanyDetails, fetchProductsByCompany, fetchCompaniesForSection, fetchCompaniesForWholesaleSection, fetchActiveCompanies } from '../js/companies-api.js';
     import { applyProductFilters } from '../js/product-filters.js';
     import { addToCart, getCartItems, calculateCartTotals } from '../js/cart.js';
     import { initializeSearchBar } from '../js/search-bar.js';
@@ -140,10 +141,22 @@
     const content = document.querySelector('#content');
     const filterPanelSlot = document.getElementById('filter-panel-slot');
     const slug = getQueryParam('section');
+    const wholesaleSectionId = getQueryParam('wholesale_section');
     const companyId = getQueryParam('company');
     const searchQuery = getQueryParam('search');
     const breadcrumbActive = document.getElementById('breadcrumb-active');
     const sectionTitle = document.getElementById('section-title');
+    // Feature 005, US1 (research.md Decision 3): a retail slug is
+    // meaningless -- and MUST NOT be resolved against either sections
+    // table -- once wholesale mode is active. Neutralized exactly once,
+    // here, and used everywhere `slug` would otherwise be read for scoping
+    // purposes below (the redirect guard, the initial currentSlug
+    // assignment, resetFilters()'s dirty-check) instead of re-checking
+    // isWholesaleMode() at each site independently -- see
+    // contracts/wholesale-section-browsing.md's "redirect guard and slug
+    // neutralization" subsection for why patching only some of those sites
+    // is exactly how a retail-data leak would ship.
+    const effectiveSlug = isWholesaleMode() ? null : slug;
     // True for the page's whole lifetime -- whether the URL started with a
     // company id decides which mode the company facet operates in for the
     // rest of the page's life (see the "Filter panel: state" comment below).
@@ -179,7 +192,12 @@
     //   instead; see onCompanyFacetChange). minPrice/maxPrice stay
     //   meaningful as in-memory filters on every route.
     let sectionsCache = [];
-    let currentSlug = slug;
+    let currentSlug = effectiveSlug;
+    // The active wholesale section, when the page is driven by
+    // ?wholesale_section=<id> (research.md Decision 2 -- narrow branch, no
+    // section-facet to change this after the initial load, unlike
+    // currentSlug/activeCompanyId above).
+    let currentWholesaleSectionId = null;
     let activeCompanyId = companyId;
     let allProducts = [];
     let companyOptionsList = [];
@@ -217,7 +235,40 @@
     // is an explicit parameter (not a closure over the URL's companyId) so
     // a company-scoped route can re-fetch a *different* company without
     // this function needing to know why its caller changed.
-    async function fetchAndLabelProducts(sections, targetSlug, targetCompanyId) {
+    //
+    // Feature 005, US1: targetWholesaleSectionId gets the identical explicit-
+    // parameter treatment as targetCompanyId, appended as a 4th parameter so
+    // every existing retail call site is unaffected (it never passes a 4th
+    // argument, which is undefined/falsy, so the branch below is never taken
+    // on the retail path). Checked FIRST, before the existing retail-slug and
+    // company-only branches, which are otherwise completely unchanged.
+    async function fetchAndLabelProducts(sections, targetSlug, targetCompanyId, targetWholesaleSectionId) {
+      if (isWholesaleMode() && targetWholesaleSectionId) {
+        const wholesaleSections = await fetchActiveWholesaleSections();
+        const wholesaleSection = wholesaleSections.find(s => s.id === targetWholesaleSectionId);
+        if (wholesaleSection) {
+          breadcrumbActive.textContent = wholesaleSection.name;
+          sectionTitle.textContent = wholesaleSection.name;
+          document.title = `${wholesaleSection.name} | بيت العز`;
+          document.getElementById('section-desc').textContent = 'تصفح كل منتجات هذا القسم المتاحة بالجملة.';
+        }
+        if (targetCompanyId) {
+          // Same invalid/soft-deleted/deactivated-company handling as the
+          // retail-equivalent branch below -- throws here, falls through to
+          // the caller's existing catch block unchanged.
+          const company = await fetchCompanyDetails(targetCompanyId);
+          if (wholesaleSection) {
+            const scopedTitle = `${wholesaleSection.name} — ${company.name}`;
+            breadcrumbActive.textContent = scopedTitle;
+            sectionTitle.textContent = scopedTitle;
+            document.title = `${scopedTitle} | بيت العز`;
+            document.getElementById('section-desc').textContent = `منتجات شركة ${company.name} في هذا القسم.`;
+          }
+          return await fetchProductsByCompany(targetCompanyId, { wholesaleSectionId: targetWholesaleSectionId });
+        }
+        return await fetchProductsByWholesaleSection(targetWholesaleSectionId);
+      }
+
       const currentSection = targetSlug ? sections.find(s => s.slug === targetSlug) : null;
       if (currentSection) {
         breadcrumbActive.textContent = currentSection.name;
@@ -304,6 +355,22 @@
     }
 
     function buildFilterPanelHTML() {
+      // Feature 005, US1 (research.md Decision 2): the "القسم" facet is a
+      // retail-only control tied to slugs -- it does not gain a wholesale-
+      // section-sourced branch. Omitted entirely (not just left unpopulated)
+      // when a wholesale section drives the page; every reference to
+      // #filter-section below is null-guarded to match (wireFilterPanelEvents,
+      // refetchAndSync) -- omitting the element without those guards throws a
+      // TypeError on the very first ?wholesale_section=<id> load and crashes
+      // the whole filter panel, price/company facets included.
+      const sectionFacetHTML = currentWholesaleSectionId ? '' : `
+          <div class="flex flex-col gap-1 min-w-[150px]">
+            <label class="text-xs font-semibold text-[#1A237E]" for="filter-section">القسم</label>
+            <select id="filter-section" class="rounded-xl border border-gray-300 px-3 py-2 text-sm text-[#1A237E] focus:border-amber-500 focus:ring-1 focus:ring-amber-500 focus:outline-none">
+              ${buildSectionOptionsHTML()}
+            </select>
+          </div>
+      `;
       return `
         <div class="bg-white border border-[#9E9E9E]/20 rounded-2xl p-4 md:p-5 shadow-sm mb-6 flex flex-wrap items-end gap-4">
           <div class="flex flex-col gap-1">
@@ -320,12 +387,7 @@
               ${buildCompanyOptionsHTML()}
             </select>
           </div>
-          <div class="flex flex-col gap-1 min-w-[150px]">
-            <label class="text-xs font-semibold text-[#1A237E]" for="filter-section">القسم</label>
-            <select id="filter-section" class="rounded-xl border border-gray-300 px-3 py-2 text-sm text-[#1A237E] focus:border-amber-500 focus:ring-1 focus:ring-amber-500 focus:outline-none">
-              ${buildSectionOptionsHTML()}
-            </select>
-          </div>
+          ${sectionFacetHTML}
           <button type="button" id="filter-reset" class="inline-flex items-center gap-1.5 text-xs font-bold text-[#75777E] hover:text-[#1A237E] hover:bg-gray-100 transition-colors py-2.5 px-3 rounded-xl">
             <span class="material-symbols-outlined text-sm">restart_alt</span>
             إعادة تعيين الفلاتر
@@ -338,12 +400,16 @@
       const minInput = document.getElementById('filter-min-price');
       const maxInput = document.getElementById('filter-max-price');
       const companySelect = document.getElementById('filter-company');
+      // null when currentWholesaleSectionId is set -- buildFilterPanelHTML()
+      // omits this element entirely in that mode (research.md Decision 2).
       const sectionSelect = document.getElementById('filter-section');
       const resetBtn = document.getElementById('filter-reset');
 
       // Pre-seed from the entry context (Acceptance Scenarios 2 & 4, US3).
       companySelect.value = currentCompanySelectValue();
-      sectionSelect.value = currentSlug || '';
+      if (sectionSelect) {
+        sectionSelect.value = currentSlug || '';
+      }
 
       // Price: always a pure in-memory re-filter, no fetch -- `input` (not
       // `change`) so it updates on every keystroke.
@@ -375,14 +441,29 @@
       };
 
       // Section: always a genuine re-fetch -- the already-fetched array
-      // cannot contain a different section's products.
-      sectionSelect.onchange = () => onSectionFacetChange(sectionSelect.value || null);
+      // cannot contain a different section's products. Absent entirely in
+      // wholesale-section mode (sectionSelect is null there).
+      if (sectionSelect) {
+        sectionSelect.onchange = () => onSectionFacetChange(sectionSelect.value || null);
+      }
 
       resetBtn.onclick = resetFilters;
     }
 
     async function fetchCompanyFacetData(forSlug) {
-      if (forSlug) {
+      // Feature 005, US1: checked first -- currentWholesaleSectionId is
+      // read from the closure, not a parameter, since (unlike currentSlug)
+      // nothing in this mode's narrow scope ever changes it after the
+      // initial load (no section facet to switch it -- research.md
+      // Decision 2). Without this branch, a ?wholesale_section=<id> load
+      // would fall through to the `else` below (forSlug is always null in
+      // this mode) and offer every company with ANY wholesale product
+      // anywhere, not just this section's.
+      if (currentWholesaleSectionId) {
+        const ctx = await fetchCompaniesForWholesaleSection(currentWholesaleSectionId);
+        companyOptionsList = ctx.companies;
+        hasUnassignedFlag = ctx.hasUnassigned;
+      } else if (forSlug) {
         const ctx = await fetchCompaniesForSection(forSlug);
         companyOptionsList = ctx.companies;
         hasUnassignedFlag = ctx.hasUnassigned;
@@ -413,10 +494,16 @@
     async function refetchAndSync() {
       const myGeneration = ++fetchGeneration;
       try {
-        const freshProducts = await fetchAndLabelProducts(sectionsCache, currentSlug, activeCompanyId);
+        const freshProducts = await fetchAndLabelProducts(sectionsCache, currentSlug, activeCompanyId, currentWholesaleSectionId);
         if (myGeneration !== fetchGeneration) return;
         allProducts = filterWholesaleProducts(freshProducts);
-        await loadNavigation(sectionsCache);
+        // No retail sidebar-nav to refresh in wholesale-section mode --
+        // sectionsCache stays [] there (render() never populates it, see
+        // below), so this would be a harmless but pointless write; guarded
+        // for symmetry with render()'s own guard (research.md Decision 2).
+        if (!currentWholesaleSectionId) {
+          await loadNavigation(sectionsCache);
+        }
 
         await fetchCompanyFacetData(currentSlug);
         if (myGeneration !== fetchGeneration) return;
@@ -436,7 +523,15 @@
           }
         }
         companySelect.value = currentCompanySelectValue();
-        document.getElementById('filter-section').value = currentSlug || '';
+        // null in wholesale-section mode -- buildFilterPanelHTML() omits
+        // this element entirely there (research.md Decision 2). Guarded to
+        // match wireFilterPanelEvents()'s own guard above; unconditional
+        // access here previously threw a TypeError on `null`, crashing the
+        // whole filter panel on the very first re-fetch.
+        const sectionSelect = document.getElementById('filter-section');
+        if (sectionSelect) {
+          sectionSelect.value = currentSlug || '';
+        }
 
         applyFiltersAndRender();
       } catch (error) {
@@ -452,11 +547,18 @@
     }
 
     function onCompanyFacetChange(newCompanyId) {
-      if (!newCompanyId && !currentSlug) {
-        // Clearing the company with no section active would leave nothing
-        // to browse (the page's own routing invariant requires at least
-        // one of section/company) -- revert the control instead of
-        // navigating to a dead end.
+      // Feature 005, US1 fix (code review finding): currentSlug is now
+      // unconditionally null in wholesale-section mode (effectiveSlug
+      // neutralization), so this dead-end check also needs
+      // currentWholesaleSectionId -- without it, clearing the company on a
+      // ?wholesale_section=<id>&company=<id> page was wrongly treated as a
+      // dead end and silently reverted the dropdown instead of re-fetching
+      // to the (perfectly valid) section-only listing.
+      if (!newCompanyId && !currentSlug && !currentWholesaleSectionId) {
+        // Clearing the company with no section/wholesale-section active
+        // would leave nothing to browse (the page's own routing invariant
+        // requires at least one of section/company/wholesale-section) --
+        // revert the control instead of navigating to a dead end.
         document.getElementById('filter-company').value = activeCompanyId || '';
         return;
       }
@@ -473,8 +575,12 @@
       document.getElementById('filter-min-price').value = '';
       document.getElementById('filter-max-price').value = '';
 
-      if (currentSlug !== slug || activeCompanyId !== companyId) {
-        currentSlug = slug;
+      // effectiveSlug, not the raw slug -- comparing against the raw value
+      // would make this permanently true once currentSlug is neutralized in
+      // wholesale mode (currentSlug resets to null while slug itself never
+      // changes), forcing an unnecessary re-fetch on every reset click.
+      if (currentSlug !== effectiveSlug || activeCompanyId !== companyId) {
+        currentSlug = effectiveSlug;
         activeCompanyId = companyId;
         await refetchAndSync();
       } else {
@@ -631,18 +737,37 @@
     async function render() {
       // A bare ?company=<id> (no section) is a valid wholesale-mode route
       // (User Story 2, direct company browsing) -- only redirect when none
-      // of section, search, or a wholesale company id are present.
-      if (!slug && !searchQuery && !(isWholesaleMode() && companyId)) {
+      // of section, search, a wholesale company id, or a wholesale section
+      // id are present. Uses effectiveSlug (neutralized in wholesale mode),
+      // not the raw slug -- without this, a bare ?wholesale_section=<id>
+      // load (the feature's primary entry point) would redirect to
+      // index.html before ever reaching the branch below (research.md
+      // Decision 2/3; contracts/wholesale-section-browsing.md).
+      if (!effectiveSlug && !searchQuery && !(isWholesaleMode() && (companyId || wholesaleSectionId))) {
         location.href = 'index.html';
         return;
       }
-      currentSlug = slug;
+      currentSlug = effectiveSlug;
       activeCompanyId = companyId;
+      currentWholesaleSectionId = isWholesaleMode() ? wholesaleSectionId : null;
 
       try {
-        const sections = await fetchActiveSections();
-        sectionsCache = sections;
-        await loadNavigation(sections);
+        // Feature 005, US1 (SC-001): zero references to retail-section data
+        // in a wholesale-section-driven load -- not merely unrendered, never
+        // fetched. sectionsCache stays [] and the retail sidebar/mobile nav
+        // stay hidden; the retail branch (else) is byte-for-byte what
+        // render() already did before this feature.
+        let sections = [];
+        const sidebarAside = document.getElementById('sidebar-aside');
+        const mobileNav = document.getElementById('mobile-nav');
+        if (currentWholesaleSectionId) {
+          if (sidebarAside) sidebarAside.style.display = 'none';
+          if (mobileNav) mobileNav.style.display = 'none';
+        } else {
+          sections = await fetchActiveSections();
+          sectionsCache = sections;
+          await loadNavigation(sections);
+        }
 
         if (searchQuery) {
           breadcrumbActive.textContent = `البحث: ${searchQuery}`;
@@ -651,7 +776,7 @@
           allProducts = await searchProducts(searchQuery);
           document.getElementById('section-desc').textContent = `عثرنا على ${allProducts.length} منتج يطابق بحثك.`;
         } else {
-          allProducts = await fetchAndLabelProducts(sections, currentSlug, activeCompanyId);
+          allProducts = await fetchAndLabelProducts(sections, currentSlug, activeCompanyId, currentWholesaleSectionId);
         }
 
         // Apply wholesale filter if wholesale mode is active

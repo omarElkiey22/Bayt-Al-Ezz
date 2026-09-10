@@ -8,6 +8,7 @@ import {
   renderWholesaleSectionFormFieldValues,
   renderWholesaleSectionRow,
 } from '../src/js/admin/admin-templates.js';
+import { ICONS, DEFAULT_ICON, iconSource } from '../src/js/admin/icon-picker.js';
 
 // Regression guard for /cso Finding #3: sanitizeInput() only strips <tags>,
 // it does not escape quote characters -- so a value with no angle brackets
@@ -171,6 +172,29 @@ describe('renderWholesaleSectionFormFieldValues', () => {
     expect(name).toBe('');
     expect(display_order).toBe(0);
   });
+
+  // Feature 005, US3 (T020/T023): icon_name gains the same DEFAULT_ICON
+  // fallback style renderSectionFormFieldValues' sibling fields already use,
+  // via the shared icon-picker.js module (research.md Decision 5).
+  it('defaults icon_name to DEFAULT_ICON when no section is being edited', () => {
+    const { icon_name } = renderWholesaleSectionFormFieldValues(null);
+    expect(icon_name).toBe(DEFAULT_ICON);
+  });
+
+  it('defaults icon_name to DEFAULT_ICON when the section has no icon_name set', () => {
+    const { icon_name } = renderWholesaleSectionFormFieldValues({ name: 'قسم جملة' });
+    expect(icon_name).toBe(DEFAULT_ICON);
+  });
+
+  it('defaults icon_name to DEFAULT_ICON when the section has an unknown icon_name', () => {
+    const { icon_name } = renderWholesaleSectionFormFieldValues({ name: 'قسم جملة', icon_name: 'not-a-real-icon.svg' });
+    expect(icon_name).toBe(DEFAULT_ICON);
+  });
+
+  it('preserves a known icon_name from the section being edited', () => {
+    const { icon_name } = renderWholesaleSectionFormFieldValues({ name: 'قسم جملة', icon_name: ICONS[2] });
+    expect(icon_name).toBe(ICONS[2]);
+  });
 });
 
 describe('renderWholesaleSectionRow', () => {
@@ -197,5 +221,29 @@ describe('renderWholesaleSectionRow', () => {
   it('shows an inactive status badge when is_active is false', () => {
     const html = renderWholesaleSectionRow({ id: '1', name: 'قسم جملة', is_active: false }, 0);
     expect(html).toContain('موقوف');
+  });
+
+  // Feature 005, US3 (T020/T023): the list row gains an icon thumbnail,
+  // sourced via the shared icon-picker.js's iconSource() -- same visual
+  // treatment as renderSectionRow's icon column, minus the "مميز" badge
+  // (retail-only, per icon-picker.js's `special` design).
+  it('renders an icon thumbnail sourced via iconSource() for a known icon_name', () => {
+    const html = renderWholesaleSectionRow({ id: '1', name: 'قسم جملة', is_active: true, icon_name: ICONS[3] }, 0);
+    expect(html).toContain(`src="${iconSource(ICONS[3])}"`);
+  });
+
+  it('falls back to the default icon thumbnail when icon_name is absent', () => {
+    const html = renderWholesaleSectionRow({ id: '1', name: 'قسم جملة', is_active: true }, 0);
+    expect(html).toContain(`src="${iconSource(null)}"`);
+  });
+
+  it('never renders the retail-only "مميز" badge', () => {
+    const html = renderWholesaleSectionRow({ id: '1', name: 'قسم جملة', is_active: true, icon_name: 'Gift_Home.svg' }, 0);
+    expect(html).not.toContain('مميز');
+  });
+
+  it('escapes a tag-injection payload in icon_name (defense in depth)', () => {
+    const html = renderWholesaleSectionRow({ id: '1', name: 'قسم جملة', is_active: true, icon_name: tagPayload }, 0);
+    expect(html).not.toContain(tagPayload);
   });
 });

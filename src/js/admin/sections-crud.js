@@ -2,14 +2,14 @@ import { fetchAllSectionsAdmin, updateSection, softDeleteSection } from '../sect
 import { slugify, sanitizeInput, escapeHtml } from '../utils.js';
 import { requireAdmin } from './auth-gate.js';
 import { renderSectionFormFieldValues, renderSectionRow } from './admin-templates.js';
+import { iconSource, renderIconPickerHTML, wireIconPicker } from './icon-picker.js';
 
-const ICONS = ['laundry.svg', 'kitchen-shelving.svg', 'paper-goods.svg', 'bathroom.svg', 'women.svg', 'men.svg', 'reception.svg', 'baby.svg', 'footwear.svg', 'vanity.svg', 'garage.svg', 'cleaning.svg', 'Gift_Home.svg', 'Medications.svg', 'library-book.svg'];
-const ICON_DIRECTORY = '../../../public/assets/icons/';
-const DEFAULT_ICON = 'laundry.svg';
-
-function iconSource(iconName) {
-  return `${ICON_DIRECTORY}${ICONS.includes(iconName) ? iconName : DEFAULT_ICON}`;
-}
+// Feature 005, US3: ICONS/ICON_DIRECTORY/DEFAULT_ICON/iconSource() and the
+// picker's markup/click-handling now live in the shared icon-picker.js
+// (research.md Decision 5) -- this file just calls into it, so both this
+// page and wholesale-sections-crud.js reuse the exact same picker instead
+// of a duplicated copy. Pure extraction: no visible/functional change to
+// this page (verified byte-identical, see the T019 verification harness).
 
 // FR-004: this page manages the existing fixed set of retail sections only
 // -- rename/reorder/enable-disable/soft-delete -- there is no "create new
@@ -80,26 +80,7 @@ export async function initializeSectionsPage(root) {
             </label>
 
             <div>
-              <label class="block text-xs font-semibold text-[#1A237E] mb-1.5">الأيقونة (اختر من القائمة)</label>
-              <input type="hidden" name="icon_name" id="selected-icon-input" value="${ICONS.includes(editing.icon_name) ? editing.icon_name : DEFAULT_ICON}" required>
-              <div class="grid grid-cols-4 gap-2" id="icon-picker">
-                ${ICONS.map(icon => {
-                  const isSelected = editing.icon_name === icon;
-                  const isGift = icon === 'Gift_Home.svg';
-                  const baseClass = isGift
-                    ? `icon-btn p-2 border-2 rounded-xl flex flex-col items-center justify-center transition-all relative ${isSelected ? 'border-[#1E2154] bg-[#1E2154]/10 ring-1 ring-[#1E2154]' : 'border-amber-400 hover:bg-amber-50 hover:border-amber-500'}`
-                    : `icon-btn p-2 border rounded-xl flex items-center justify-center transition-all ${isSelected ? 'border-[#0056B3] bg-[#0056B3]/10 ring-1 ring-[#0056B3]' : 'border-gray-200 hover:bg-gray-50 hover:border-gray-300'}`;
-                  return `
-                  <button type="button" data-icon="${icon}" class="${baseClass}" title="${isGift ? 'موضع خاص: قسم عروض البيت (المثلث العلوي)' : icon}">
-                    ${isGift ? `<span class="absolute -top-1.5 right-1 text-[8px] font-bold bg-amber-400 text-white px-1 rounded leading-tight">مميز</span>` : ''}
-                    <img src="${iconSource(icon)}" class="w-16 h-16 object-contain pointer-events-none" alt="${icon}">
-                  </button>
-                `}).join('')}
-              </div>
-              <p class="text-[10px] text-amber-600 mt-1.5 flex items-center gap-1">
-                <span class="text-sm">⚠️</span>
-                اختيار أيقونة يضع القسم في موقع خاص داخل مثلث البيت (الأعلى).
-              </p>
+              ${renderIconPickerHTML(editing.icon_name, { special: { icon: 'Gift_Home.svg', label: 'مميز', hint: 'اختيار أيقونة يضع القسم في موقع خاص داخل مثلث البيت (الأعلى).' } })}
             </div>
 
             <div class="flex gap-2 mt-2">
@@ -150,17 +131,7 @@ export async function initializeSectionsPage(root) {
 
     if (form) {
       // Icon picker listener
-      root.querySelectorAll('.icon-btn').forEach(btn => {
-        btn.onclick = () => {
-          root.querySelectorAll('.icon-btn').forEach(b => {
-            b.classList.remove('border-[#0056B3]', 'bg-[#0056B3]/10', 'ring-1', 'ring-[#0056B3]');
-            b.classList.add('border-gray-200', 'hover:bg-gray-50', 'hover:border-gray-300');
-          });
-          btn.classList.add('border-[#0056B3]', 'bg-[#0056B3]/10', 'ring-1', 'ring-[#0056B3]');
-          btn.classList.remove('border-gray-200', 'hover:bg-gray-50', 'hover:border-gray-300');
-          root.querySelector('#selected-icon-input').value = btn.dataset.icon;
-        };
-      });
+      wireIconPicker(root, '#selected-icon-input');
 
       form.onsubmit = async e => {
         e.preventDefault();

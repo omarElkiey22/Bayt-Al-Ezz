@@ -25,39 +25,39 @@ single-OR-expression version), since both `products` and `sections` have a
 but using the corrected version keeps the function consistent everywhere it's
 attached.
 
-**Status**: Not yet scheduled. Out of scope for feature 004 (unrelated tables).
-Track as a standalone follow-up.
+**Status**: Resolved — fixed in migration `016_sanitize_triggers_products_sections.sql`,
+applied 2026-09-10. Before creating either trigger, `sanitize_text_trigger()`'s live
+definition was re-queried directly from `pg_proc` and re-confirmed to already be the
+corrected nested-IF version from `014_wholesale_sections.sql` (name checked
+unconditionally; `NEW.description` only ever evaluated inside a nested
+`IF TG_TABLE_NAME IN ('products', 'companies')` block) — the function itself was not
+touched, only the two triggers were added. `prevent_html_in_products` and
+`prevent_html_in_sections` now both attach it `BEFORE INSERT OR UPDATE`. Verified live:
+(1) a safe name+description inserts successfully on both tables; (2) a malicious
+(HTML-containing) name is rejected on both tables, raising `sanitize_text_trigger()`'s
+own exception rather than a field-access crash — confirms the trigger is genuinely
+active, not silently no-op'ing; (3) a malicious description is rejected on `products`
+(in the function's `TG_TABLE_NAME` list) and, matching the documented/verified
+existing behavior for tables outside that list, does *not* crash on `sections` (its
+`description` branch is simply not evaluated there — pre-existing, unrelated gap,
+not a regression introduced by this fix); (4) `mcp__supabase__get_advisors` (security)
+shows the same 5 pre-existing findings as baseline, nothing new; (5) all test rows
+deleted immediately after, confirmed gone by name lookup.
 
-## UI: Empty wholesale badge for wholesale-price-only products
+## Security: `sections.description` not covered by `sanitize_text_trigger()`
 
-**Found**: 2026-09-09, code review during feature 004-admin-control-center-v2.
+**Found**: 2026-09-10, during verification of migration 016
+(prevent_html_in_products/sections).
 
-**Issue**: A product with only a wholesale price set (no wholesale section, no
-company) renders an empty amber box in the product list's wholesale badge
-instead of showing content or the "لا يوجد تصنيف جملة" placeholder.
+**Issue**: `sanitize_text_trigger()`'s description check only fires for
+`TG_TABLE_NAME IN ('products', 'companies')` — `sections.description` is not
+sanitized server-side, only `sections.name` is. Low risk currently (section
+descriptions aren't prominently rendered), but inconsistent with the
+protection level given to products/companies.
 
-**Fix needed**: renderProductRow() in admin-templates.js should treat this
-partial state consistently with the full "no wholesale placement" case, or
-show the wholesale price alone if that's the intended behavior — needs a
-product decision on what a wholesale-price-only product should display.
+**Fix needed**: Add `'sections'` to the function's `TG_TABLE_NAME IN (...)`
+list for the description check, if `sections.description` is ever used more
+prominently or this consistency becomes a priority.
 
-**Status**: Resolved — fixed in 004-admin-control-center-v2 Polish phase.
-renderProductRow() now falls back to the "لا يوجد تصنيف جملة" placeholder
-whenever both wholesaleSectionName and companyName are absent, regardless of
-wholesale_price. Covered by a regression test in tests/admin-templates.test.js.
+**Status**: Not yet scheduled. Low priority, low current risk.
 
-## UI: Wholesale section row number inconsistency
-
-**Found**: 2026-09-09, code review during feature 004-admin-control-center-v2.
-
-**Issue**: renderWholesaleSectionRow()'s "#" column shows display_order + 1
-rather than the row's actual list position, inconsistent with the retail
-sections page's #index+1 convention.
-
-**Fix needed**: Align renderWholesaleSectionRow() to show list position
-(index+1) like renderSectionRow() does.
-
-**Status**: Resolved — fixed in 004-admin-control-center-v2 Polish phase.
-renderWholesaleSectionRow() now takes an `index` param and renders `#${index +
-1}`, matching renderSectionRow()'s convention. Covered by a regression test
-in tests/admin-templates.test.js (non-contiguous display_order case).

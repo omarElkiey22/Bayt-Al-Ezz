@@ -82,23 +82,27 @@
   <script type="module">
     import { getQueryParam, escapeHtml } from '../js/utils.js';
     import { isWholesaleMode, initPricingMode } from '../js/pricing-mode.js';
-    import { fetchActiveSections } from '../js/sections-api.js';
-    import { fetchCompaniesForSection } from '../js/companies-api.js';
+    import { fetchActiveWholesaleSections } from '../js/wholesale-sections-api.js';
+    import { fetchCompaniesForWholesaleSection } from '../js/companies-api.js';
     import { buildCompanyCardHTML } from '../js/company-card-html.js';
     import { getCartItems, calculateCartTotals } from '../js/cart.js';
     import { initializeSearchBar } from '../js/search-bar.js';
 
-    const slug = getQueryParam('section');
+    // Feature 005, US1: keyed by the wholesale_sections id, not a retail
+    // slug (research.md Decision 1 -- wholesale_sections has no slug
+    // column by design). Param renamed from ?section=<slug>.
+    const wholesaleSectionId = getQueryParam('wholesale_section');
     const content = document.getElementById('content');
 
-    // A direct/bookmarked visit outside wholesale mode must not build a
-    // "wholesale companies" grid from the section's entire non-wholesale-
-    // filtered catalog -- fetchCompaniesForSection()'s underlying
-    // filterWholesaleProducts() is a no-op when wholesale mode is off.
-    // Bounce to the equivalent retail listing instead (contracts/ui-routes.md).
+    // A direct/bookmarked visit outside wholesale mode has no retail
+    // equivalent to bounce to any more -- a wholesale_sections id has no
+    // meaningful mapping onto a retail section slug (they are unrelated,
+    // independent tables/keyspaces, per feature 004). Bounce to the retail
+    // homepage instead, mirroring wholesale-home.html's own
+    // !isWholesaleMode() fallback.
     if (!isWholesaleMode()) {
-      location.replace(`category.html?section=${encodeURIComponent(slug || '')}`);
-    } else if (!slug) {
+      location.replace('index.html');
+    } else if (!wholesaleSectionId) {
       // Required query param missing -- there is nothing to show.
       location.replace('wholesale-home.html');
     } else {
@@ -121,10 +125,10 @@
       async function render() {
         try {
           const [sections, { companies, hasUnassigned }] = await Promise.all([
-            fetchActiveSections(),
-            fetchCompaniesForSection(slug)
+            fetchActiveWholesaleSections(),
+            fetchCompaniesForWholesaleSection(wholesaleSectionId)
           ]);
-          const section = sections.find(s => s.slug === slug);
+          const section = sections.find(s => s.id === wholesaleSectionId);
           const sectionName = section?.name || '';
           const sectionIcon = section?.icon_name || 'laundry.svg';
 
@@ -154,7 +158,7 @@
             </header>
 
             <!-- All products in this section (banner-style, visually distinct from company cards) -->
-            <a href="category.html?section=${encodeURIComponent(slug)}" class="group flex items-center gap-5 flex-wrap p-6 mb-10 bg-amber-50 border border-amber-200 border-r-4 border-r-amber-600 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300">
+            <a href="category.html?wholesale_section=${encodeURIComponent(wholesaleSectionId)}" class="group flex items-center gap-5 flex-wrap p-6 mb-10 bg-amber-50 border border-amber-200 border-r-4 border-r-amber-600 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300">
               <span class="shrink-0 rounded-xl bg-white border border-amber-200 flex items-center justify-center" style="width:52px;height:52px">
                 <span class="material-symbols-outlined text-[28px] text-amber-700">inventory_2</span>
               </span>
@@ -198,7 +202,7 @@
           } else {
             companiesArea.innerHTML = `
               <div class="grid grid-cols-[repeat(auto-fill,minmax(190px,220px))] gap-6">
-                ${companies.map(c => `<a href="category.html?section=${encodeURIComponent(slug)}&company=${encodeURIComponent(c.id)}">${buildCompanyCardHTML(c)}</a>`).join('')}
+                ${companies.map(c => `<a href="category.html?wholesale_section=${encodeURIComponent(wholesaleSectionId)}&company=${encodeURIComponent(c.id)}">${buildCompanyCardHTML(c)}</a>`).join('')}
               </div>
             `;
           }

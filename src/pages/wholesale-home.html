@@ -110,7 +110,7 @@
     if (!isWholesaleMode()) {
       location.replace('index.html');
     } else {
-      const { fetchActiveSections } = await import('../js/sections-api.js');
+      const { fetchActiveWholesaleSections } = await import('../js/wholesale-sections-api.js');
       const { fetchActiveCompanies } = await import('../js/companies-api.js');
       const { getCartItems, calculateCartTotals } = await import('../js/cart.js');
       const { initializeSearchBar } = await import('../js/search-bar.js');
@@ -131,9 +131,12 @@
 
       // Render the section-grid entry view + the "Browse Companies"
       // showcase together (independent data sources, fetched in parallel).
+      // Feature 005, US1: reads wholesale_sections, not the retail sections
+      // table -- this page previously leaked retail-section names into the
+      // wholesale storefront (spec.md FR-001).
       const sectionGrid = document.getElementById('section-grid');
       const [sections, companies] = await Promise.all([
-        fetchActiveSections(),
+        fetchActiveWholesaleSections(),
         fetchActiveCompanies()
       ]);
 

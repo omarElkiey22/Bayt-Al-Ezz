@@ -1,4 +1,4 @@
-import {requireSupabase} from './supabase-client.js'; import {TABLES} from './constants.js'; import {fetchProductsBySection, getHiddenSectionContext, mapProductWithVariants} from './products-api.js'; import {filterWholesaleProducts} from './pricing-mode.js';
+import {requireSupabase} from './supabase-client.js'; import {TABLES} from './constants.js'; import {fetchProductsBySection, fetchProductsByWholesaleSection, getHiddenSectionContext, mapProductWithVariants} from './products-api.js'; import {filterWholesaleProducts} from './pricing-mode.js';
 const active=query=>query.is('deleted_at',null).eq('is_active',true);
 
 // ── Storefront (public, RLS-backed) ──────────────────────────────────────
@@ -10,6 +10,11 @@ const active=query=>query.is('deleted_at',null).eq('is_active',true);
 // at today's scale; revisit if any single section exceeds ~500 active
 // products.
 export async function fetchCompaniesForSection(sectionSlug){const db=requireSupabase();const products=await fetchProductsBySection(sectionSlug);const wholesale=filterWholesaleProducts(products);const hasUnassigned=wholesale.some(p=>!p.company_id);const companyIds=[...new Set(wholesale.map(p=>p.company_id).filter(Boolean))];if(companyIds.length===0)return {companies:[],hasUnassigned};const {data,error}=await active(db.from(TABLES.companies).select('*').in('id',companyIds)).order('name');if(error)throw error;return {companies:data||[],hasUnassigned}}
+
+// Feature 005, US1: mirrors fetchCompaniesForSection(sectionSlug) exactly,
+// built on fetchProductsByWholesaleSection() instead of
+// fetchProductsBySection(). Same return shape.
+export async function fetchCompaniesForWholesaleSection(wholesaleSectionId){const db=requireSupabase();const products=await fetchProductsByWholesaleSection(wholesaleSectionId);const wholesale=filterWholesaleProducts(products);const hasUnassigned=wholesale.some(p=>!p.company_id);const companyIds=[...new Set(wholesale.map(p=>p.company_id).filter(Boolean))];if(companyIds.length===0)return {companies:[],hasUnassigned};const {data,error}=await active(db.from(TABLES.companies).select('*').in('id',companyIds)).order('name');if(error)throw error;return {companies:data||[],hasUnassigned}}
 
 // Homepage direct-browsing showcase (User Story 2). Matches
 // filterWholesaleProducts()'s actual "wholesale-eligible" condition
@@ -31,7 +36,16 @@ export async function fetchCompanyDetails(id){const db=requireSupabase();const {
 // Callers validate the company via fetchCompanyDetails() first -- this
 // function only handles the product-fetch side (same division of
 // responsibility fetchProductsBySection/fetchProductDetails already have).
-export async function fetchProductsByCompany(companyId,{sectionSlug}={}){const db=requireSupabase();const {isAdmin,hiddenSectionIds}=await getHiddenSectionContext(db);let sectionId=null;if(sectionSlug){const {data:section,error:sectionError}=await db.from(TABLES.sections).select('id,icon_name').eq('slug',sectionSlug).is('deleted_at',null).eq('is_active',true).single();if(sectionError)throw sectionError;if(section.icon_name==='library-book.svg'&&!isAdmin)throw new Error('Not authorized');sectionId=section.id}let query=active(db.from(TABLES.products).select('*, product_variants(*)').eq('company_id',companyId));if(sectionId){query=query.eq('section_id',sectionId)}else if(!isAdmin&&hiddenSectionIds.size>0){query=query.not('section_id','in',`(${[...hiddenSectionIds].join(',')})`)}const {data,error}=await query.order('created_at',{ascending:false});if(error)throw error;return (data||[]).map(mapProductWithVariants)}
+//
+// Feature 005, US1: gains a second, mutually-exclusive scoping option,
+// wholesaleSectionId, alongside the existing sectionSlug (contracts/
+// wholesale-section-browsing.md). No lookup needed for it (already an id,
+// unlike sectionSlug which must resolve to a section row first) and no
+// hidden-section check (research.md Decision 4 -- not replicated for
+// wholesale sections) -- checked first so it never falls through to the
+// retail sectionSlug/hidden-section branches below, which are otherwise
+// completely unchanged from today.
+export async function fetchProductsByCompany(companyId,{sectionSlug,wholesaleSectionId}={}){const db=requireSupabase();const {isAdmin,hiddenSectionIds}=await getHiddenSectionContext(db);let sectionId=null;if(sectionSlug){const {data:section,error:sectionError}=await db.from(TABLES.sections).select('id,icon_name').eq('slug',sectionSlug).is('deleted_at',null).eq('is_active',true).single();if(sectionError)throw sectionError;if(section.icon_name==='library-book.svg'&&!isAdmin)throw new Error('Not authorized');sectionId=section.id}let query=active(db.from(TABLES.products).select('*, product_variants(*)').eq('company_id',companyId));if(wholesaleSectionId){query=query.eq('wholesale_section_id',wholesaleSectionId)}else if(sectionId){query=query.eq('section_id',sectionId)}else if(!isAdmin&&hiddenSectionIds.size>0){query=query.not('section_id','in',`(${[...hiddenSectionIds].join(',')})`)}const {data,error}=await query.order('created_at',{ascending:false});if(error)throw error;return (data||[]).map(mapProductWithVariants)}
 
 // ── Admin (write-gated by RLS is_admin(), called from companies-crud.js) ─
 
