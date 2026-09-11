@@ -1,5 +1,5 @@
 import { escapeHtml, formatPrice } from '../utils.js';
-import { ICONS, DEFAULT_ICON, iconSource } from './icon-picker.js';
+import { WHOLESALE_ICONS, WHOLESALE_DEFAULT_ICON, WHOLESALE_ICON_SET, iconSource } from './icon-picker.js';
 
 // Pure, testable templates shared by products-crud.js and sections-crud.js.
 // Extracted to fix /cso Finding #3: sanitizeInput() (utils.js) only strips
@@ -122,15 +122,19 @@ export function renderWholesaleSectionFormFieldValues(editing) {
   return {
     name: escapeHtml(editing?.name || ''),
     display_order: editing?.display_order ?? 0,
-    // Feature 005, US3: same DEFAULT_ICON fallback style as the other
+    // Feature 005, US3: same default-icon fallback style as the other
     // fields' defaulting above -- mirrors how renderSectionRow's icon
     // column already degrades via the shared icon-picker.js's iconSource().
+    // Validated against the WHOLESALE set, not the retail one: these are
+    // wholesale sections, whose icons come from their own separate library
+    // (public/assets/wholesale-new/), so a retail icon name here is just as
+    // invalid as an unknown one and degrades to the wholesale default.
     // Note: wholesale-sections-crud.js's picker itself reads icon_name
     // straight off the editing record (renderIconPickerHTML() does its own
     // equivalent fallback internally), not through this field -- same
     // convention sections-crud.js already uses. This field exists so the
     // defaulted value is available/testable independent of the picker.
-    icon_name: ICONS.includes(editing?.icon_name) ? editing.icon_name : DEFAULT_ICON,
+    icon_name: WHOLESALE_ICONS.includes(editing?.icon_name) ? editing.icon_name : WHOLESALE_DEFAULT_ICON,
   };
 }
 
@@ -141,7 +145,7 @@ export function renderWholesaleSectionRow(section, index) {
       <td class="p-4 font-semibold text-gray-400">#${index + 1}</td>
       <td class="p-4 font-bold">${name}</td>
       <td class="p-4">
-        <img src="${iconSource(section.icon_name)}" class="w-16 h-16 rounded object-contain" alt="">
+        <img src="${iconSource(section.icon_name, WHOLESALE_ICON_SET)}" class="w-16 h-16 rounded object-contain" alt="">
       </td>
       <td class="p-4">
         <span class="${section.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'} text-xs font-semibold px-2.5 py-0.5 rounded-full">${section.is_active ? 'نشط' : 'موقوف'}</span>

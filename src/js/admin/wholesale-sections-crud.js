@@ -2,7 +2,7 @@ import { fetchAllWholesaleSectionsAdmin, createWholesaleSection, updateWholesale
 import { sanitizeInput } from '../utils.js';
 import { requireAdmin } from './auth-gate.js';
 import { renderWholesaleSectionFormFieldValues, renderWholesaleSectionRow } from './admin-templates.js';
-import { renderIconPickerHTML, wireIconPicker } from './icon-picker.js';
+import { renderIconPickerHTML, wireIconPicker, WHOLESALE_ICON_SET } from './icon-picker.js';
 
 // Feature 005, US2: moved out of companies-crud.js (not copied) -- feature
 // 004 originally stacked this CRUD onto the companies admin page for
@@ -52,7 +52,7 @@ export async function initializeWholesaleSectionsPage(root) {
             </label>
 
             <div>
-              ${renderIconPickerHTML(editingWholesaleSection?.icon_name, {})}
+              ${renderIconPickerHTML(editingWholesaleSection?.icon_name, { iconSet: WHOLESALE_ICON_SET })}
             </div>
 
             <div class="flex gap-2 mt-2">
@@ -107,7 +107,7 @@ export async function initializeWholesaleSectionsPage(root) {
     `;
 
     // Icon picker listener
-    wireIconPicker(root, '#selected-icon-input');
+    wireIconPicker(root, '#selected-icon-input', WHOLESALE_ICON_SET);
 
     // Cancel editing
     const cancelWsBtn = root.querySelector('#cancel-edit-wholesale-section');

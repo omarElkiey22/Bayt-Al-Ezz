@@ -130,7 +130,10 @@
           ]);
           const section = sections.find(s => s.id === wholesaleSectionId);
           const sectionName = section?.name || '';
-          const sectionIcon = section?.icon_name || 'laundry.svg';
+          // Wholesale icon library (public/assets/wholesale-new/), not the
+          // retail set -- two '../' from src/pages/. Default kept in sync
+          // with icon-picker.js's WHOLESALE_DEFAULT_ICON.
+          const sectionIcon = section?.icon_name || 'paper-rolls.svg';
 
           document.title = `الشركات في ${sectionName || 'القسم'} | بيت العز`;
 
@@ -149,7 +152,7 @@
             <!-- Section Header -->
             <header class="flex items-center gap-4 mb-8">
               <span class="w-16 h-16 shrink-0 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center overflow-hidden">
-                <img class="w-9 h-9 object-contain" alt="" src="../../public/assets/icons/${escapeHtml(sectionIcon)}" onerror="this.style.display='none'">
+                <img class="w-9 h-9 object-contain" alt="" src="../../public/assets/wholesale-new/${escapeHtml(sectionIcon)}" onerror="this.style.display='none'">
               </span>
               <div>
                 <h1 class="text-2xl md:text-3xl font-extrabold text-[#1A237E] mb-1">${escapeHtml(sectionName)}</h1>

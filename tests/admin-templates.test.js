@@ -8,7 +8,7 @@ import {
   renderWholesaleSectionFormFieldValues,
   renderWholesaleSectionRow,
 } from '../src/js/admin/admin-templates.js';
-import { ICONS, DEFAULT_ICON, iconSource } from '../src/js/admin/icon-picker.js';
+import { ICONS, DEFAULT_ICON, WHOLESALE_ICONS, WHOLESALE_DEFAULT_ICON, WHOLESALE_ICON_SET, iconSource } from '../src/js/admin/icon-picker.js';
 
 // Regression guard for /cso Finding #3: sanitizeInput() only strips <tags>,
 // it does not escape quote characters -- so a value with no angle brackets
@@ -173,27 +173,37 @@ describe('renderWholesaleSectionFormFieldValues', () => {
     expect(display_order).toBe(0);
   });
 
-  // Feature 005, US3 (T020/T023): icon_name gains the same DEFAULT_ICON
+  // Feature 005, US3 (T020/T023): icon_name gains the same default-icon
   // fallback style renderSectionFormFieldValues' sibling fields already use,
-  // via the shared icon-picker.js module (research.md Decision 5).
-  it('defaults icon_name to DEFAULT_ICON when no section is being edited', () => {
+  // via the shared icon-picker.js module (research.md Decision 5). These are
+  // WHOLESALE sections, so they default/validate against the wholesale set,
+  // not the retail one.
+  it('defaults icon_name to WHOLESALE_DEFAULT_ICON when no section is being edited', () => {
     const { icon_name } = renderWholesaleSectionFormFieldValues(null);
-    expect(icon_name).toBe(DEFAULT_ICON);
+    expect(icon_name).toBe(WHOLESALE_DEFAULT_ICON);
   });
 
-  it('defaults icon_name to DEFAULT_ICON when the section has no icon_name set', () => {
+  it('defaults icon_name to WHOLESALE_DEFAULT_ICON when the section has no icon_name set', () => {
     const { icon_name } = renderWholesaleSectionFormFieldValues({ name: 'قسم جملة' });
-    expect(icon_name).toBe(DEFAULT_ICON);
+    expect(icon_name).toBe(WHOLESALE_DEFAULT_ICON);
   });
 
-  it('defaults icon_name to DEFAULT_ICON when the section has an unknown icon_name', () => {
+  it('defaults icon_name to WHOLESALE_DEFAULT_ICON when the section has an unknown icon_name', () => {
     const { icon_name } = renderWholesaleSectionFormFieldValues({ name: 'قسم جملة', icon_name: 'not-a-real-icon.svg' });
-    expect(icon_name).toBe(DEFAULT_ICON);
+    expect(icon_name).toBe(WHOLESALE_DEFAULT_ICON);
   });
 
-  it('preserves a known icon_name from the section being edited', () => {
-    const { icon_name } = renderWholesaleSectionFormFieldValues({ name: 'قسم جملة', icon_name: ICONS[2] });
-    expect(icon_name).toBe(ICONS[2]);
+  it('preserves a known wholesale icon_name from the section being edited', () => {
+    const { icon_name } = renderWholesaleSectionFormFieldValues({ name: 'قسم جملة', icon_name: WHOLESALE_ICONS[2] });
+    expect(icon_name).toBe(WHOLESALE_ICONS[2]);
+  });
+
+  // Cross-set isolation: a retail icon name is not valid on a wholesale
+  // section, so it degrades to the wholesale default rather than being kept
+  // and later rendered from the wrong asset directory.
+  it('degrades a retail icon_name to WHOLESALE_DEFAULT_ICON', () => {
+    const { icon_name } = renderWholesaleSectionFormFieldValues({ name: 'قسم جملة', icon_name: DEFAULT_ICON });
+    expect(icon_name).toBe(WHOLESALE_DEFAULT_ICON);
   });
 });
 
@@ -227,14 +237,22 @@ describe('renderWholesaleSectionRow', () => {
   // sourced via the shared icon-picker.js's iconSource() -- same visual
   // treatment as renderSectionRow's icon column, minus the "مميز" badge
   // (retail-only, per icon-picker.js's `special` design).
-  it('renders an icon thumbnail sourced via iconSource() for a known icon_name', () => {
-    const html = renderWholesaleSectionRow({ id: '1', name: 'قسم جملة', is_active: true, icon_name: ICONS[3] }, 0);
-    expect(html).toContain(`src="${iconSource(ICONS[3])}"`);
+  it('renders an icon thumbnail sourced from the WHOLESALE set for a known icon_name', () => {
+    const html = renderWholesaleSectionRow({ id: '1', name: 'قسم جملة', is_active: true, icon_name: WHOLESALE_ICONS[3] }, 0);
+    expect(html).toContain(`src="${iconSource(WHOLESALE_ICONS[3], WHOLESALE_ICON_SET)}"`);
   });
 
-  it('falls back to the default icon thumbnail when icon_name is absent', () => {
+  it('falls back to the wholesale default icon thumbnail when icon_name is absent', () => {
     const html = renderWholesaleSectionRow({ id: '1', name: 'قسم جملة', is_active: true }, 0);
-    expect(html).toContain(`src="${iconSource(null)}"`);
+    expect(html).toContain(`src="${iconSource(null, WHOLESALE_ICON_SET)}"`);
+  });
+
+  // The thumbnail must never point into the retail icon directory -- that is
+  // exactly the broken-image case the two-set split exists to prevent.
+  it('never points the thumbnail at the retail icon directory', () => {
+    const html = renderWholesaleSectionRow({ id: '1', name: 'قسم جملة', is_active: true, icon_name: WHOLESALE_ICONS[0] }, 0);
+    expect(html).toContain('/wholesale-new/');
+    expect(html).not.toContain('/assets/icons/');
   });
 
   it('never renders the retail-only "مميز" badge', () => {
