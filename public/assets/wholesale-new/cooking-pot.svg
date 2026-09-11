@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <!-- Pot body muted blue-green/teal-navy gradient -->
+    <linearGradient id="potBodyGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#72B5B5" />
+      <stop offset="30%" stop-color="#4E9E9E" />
+      <stop offset="70%" stop-color="#2D6E6E" />
+      <stop offset="100%" stop-color="#1B4B4B" />
+    </linearGradient>
+
+    <!-- Domed lid gradient -->
+    <linearGradient id="potLidGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#82C2C2" />
+      <stop offset="35%" stop-color="#58A8A8" />
+      <stop offset="75%" stop-color="#337878" />
+      <stop offset="100%" stop-color="#1F5252" />
+    </linearGradient>
+
+    <!-- Side handles gradient -->
+    <linearGradient id="handleLeftGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#72B5B5" />
+      <stop offset="100%" stop-color="#4E9E9E" />
+    </linearGradient>
+
+    <linearGradient id="handleRightGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2D6E6E" />
+      <stop offset="100%" stop-color="#1B4B4B" />
+    </linearGradient>
+
+    <!-- Neutral gray metallic knob gradient -->
+    <linearGradient id="knobGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ECEFF1" />
+      <stop offset="45%" stop-color="#CFD8DC" />
+      <stop offset="80%" stop-color="#90A4AE" />
+      <stop offset="100%" stop-color="#546E7A" />
+    </linearGradient>
+  </defs>
+
+  <!-- Circular badge background -->
+  <circle cx="32" cy="32" r="28" fill="#E0F7FA" />
+
+  <!-- Ground contact shadow -->
+  <ellipse cx="32" cy="50.5" rx="15" ry="2.8" fill="#B2EBF2" opacity="0.8" />
+
+  <!-- Left Side Handle (outer loop) -->
+  <path d="M 19,29.5 C 14.5,29.5 13.2,30.8 13.2,32.8 C 13.2,34.8 14.5,36.2 19,36.2 Z" fill="url(#handleLeftGrad)" />
+  <!-- Left Handle inner finger cutout (matching badge fill) -->
+  <path d="M 19,31.2 C 16.5,31.2 15.2,31.8 15.2,32.8 C 15.2,33.8 16.5,34.5 19,34.5 Z" fill="#E0F7FA" />
+  <!-- Left Handle top highlight -->
+  <path d="M 19,29.5 C 15.5,29.5 14,30.2 13.5,31.8 C 14.2,30.8 16,30.2 19,30.2 Z" fill="#FFFFFF" opacity="0.4" />
+
+  <!-- Right Side Handle (outer loop) -->
+  <path d="M 45,29.5 C 49.5,29.5 50.8,30.8 50.8,32.8 C 50.8,34.8 49.5,36.2 45,36.2 Z" fill="url(#handleRightGrad)" />
+  <!-- Right Handle inner finger cutout (matching badge fill) -->
+  <path d="M 45,31.2 C 47.5,31.2 48.8,31.8 48.8,32.8 C 48.8,33.8 47.5,34.5 45,34.5 Z" fill="#E0F7FA" />
+
+  <!-- Pot Body -->
+  <path d="M 19,28 C 18.5,34 18.5,41 21.5,45.5 C 24,48.5 28,49 32,49 C 36,49 40,48.5 42.5,45.5 C 45.5,41 45.5,34 45,28 Z" fill="url(#potBodyGrad)" />
+
+  <!-- Soft shadow under lid rim on pot body -->
+  <path d="M 19,28 A 14 3.5 0 0 0 45,28 C 44,29.8 38,30.6 32,30.6 C 26,30.6 20,29.8 19,28 Z" fill="#0E2929" opacity="0.32" />
+
+  <!-- Specular vertical highlight streak on pot body -->
+  <path d="M 20.6,30.5 C 20,35 20,41 22.4,45.5 C 23.2,45.5 23.2,41 23,35 C 22.8,32 22,30.5 20.6,30.5 Z" fill="#FFFFFF" opacity="0.28" />
+
+  <!-- Secondary soft sheen on pot body -->
+  <path d="M 24.5,32 L 24.5,46.5 Q 25.2,47 25.8,46.5 L 25.8,32 Q 25.2,31.5 24.5,32 Z" fill="#FFFFFF" opacity="0.12" />
+
+  <!-- Domed Pot Lid (smooth curved cover) -->
+  <path d="M 18,28 C 18,23 23.5,20.5 32,20.5 C 40.5,20.5 46,23 46,28 A 14 3.5 0 0 1 18,28 Z" fill="url(#potLidGrad)" />
+
+  <!-- Lid concentric embossed ring ridge (classic Dutch oven detail) -->
+  <path d="M 22,26 C 24.5,23.6 28,22.6 32,22.6 C 36,22.6 39.5,23.6 42,26 C 39.5,24.2 36,23.3 32,23.3 C 28,23.3 24.5,24.2 22,26 Z" fill="#FFFFFF" opacity="0.25" />
+  <path d="M 22,26.1 C 24.5,24.3 28,23.5 32,23.5 C 36,23.5 39.5,24.3 42,26.1 C 39.5,24.8 36,24 32,24 C 28,24 24.5,24.8 22,26.1 Z" fill="#0E2929" opacity="0.2" />
+
+  <!-- Domed lid specular light reflection -->
+  <path d="M 20.5,26.2 C 20.8,23.5 25,21.8 32,21.8 C 34.8,21.8 37.5,22.2 39.5,22.8 C 36.5,22.4 33.5,22.3 31.5,22.3 C 25.5,22.3 21.8,23.5 20.5,26.2 Z" fill="#FFFFFF" opacity="0.45" />
+
+  <!-- Lid rim front lip bevel highlight -->
+  <path d="M 18,28 A 14 3.5 0 0 0 46,28 C 45,28.8 39,29.4 32,29.4 C 25,29.4 19,28.8 18,28 Z" fill="#FFFFFF" opacity="0.28" />
+
+  <!-- Lid Handle / Knob Base -->
+  <rect x="30.5" y="19" width="3" height="2" rx="0.4" fill="url(#knobGrad)" />
+
+  <!-- Lid Handle / Metallic Neutral Gray Knob -->
+  <path d="M 28.5,18 C 28.5,16.4 30,15.4 32,15.4 C 34,15.4 35.5,16.4 35.5,18 C 35.5,18.8 34,19.3 32,19.3 C 30,19.3 28.5,18.8 28.5,18 Z" fill="url(#knobGrad)" />
+
+  <!-- Knob chrome specular glint -->
+  <ellipse cx="31.2" cy="16.5" rx="1.6" ry="0.6" fill="#FFFFFF" opacity="0.7" />
+</svg>

@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <!-- Bottle upper/empty body gradient (sheer navy-indigo) -->
+    <linearGradient id="bottleEmpty" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#9FA8DA" stop-opacity="0.55" />
+      <stop offset="35%" stop-color="#7986CB" stop-opacity="0.45" />
+      <stop offset="75%" stop-color="#5C6BC0" stop-opacity="0.55" />
+      <stop offset="100%" stop-color="#3949AB" stop-opacity="0.65" />
+    </linearGradient>
+
+    <!-- Deep navy/indigo liquid gradient -->
+    <linearGradient id="liquidGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#5C6BC0" />
+      <stop offset="30%" stop-color="#3F51B5" />
+      <stop offset="70%" stop-color="#303F9F" />
+      <stop offset="100%" stop-color="#1A237E" />
+    </linearGradient>
+
+    <!-- Liquid surface meniscus gradient -->
+    <linearGradient id="meniscusGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#C5CAE9" />
+      <stop offset="50%" stop-color="#E8EAF6" />
+      <stop offset="100%" stop-color="#9FA8DA" />
+    </linearGradient>
+
+    <!-- Neutral cool-gray sprayer housing gradient -->
+    <linearGradient id="sprayerHead" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ECEFF1" />
+      <stop offset="45%" stop-color="#CFD8DC" />
+      <stop offset="85%" stop-color="#90A4AE" />
+      <stop offset="100%" stop-color="#78909C" />
+    </linearGradient>
+
+    <!-- Trigger lever gradient -->
+    <linearGradient id="triggerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ECEFF1" />
+      <stop offset="60%" stop-color="#B0BEC5" />
+      <stop offset="100%" stop-color="#78909C" />
+    </linearGradient>
+
+    <!-- Neck screw collar gradient -->
+    <linearGradient id="collarGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#CFD8DC" />
+      <stop offset="50%" stop-color="#90A4AE" />
+      <stop offset="100%" stop-color="#607D8B" />
+    </linearGradient>
+  </defs>
+
+  <!-- Circular badge background -->
+  <circle cx="32" cy="32" r="28" fill="#E8EAF6" />
+
+  <!-- Ground contact shadow -->
+  <ellipse cx="32" cy="50.5" rx="14" ry="2.8" fill="#C5CAE9" opacity="0.8" />
+
+  <!-- Entire bottle base silhouette / upper empty portion -->
+  <path d="M 28,25 C 28,27.5 24,28.5 23.5,32 C 23,35 24,37 23.5,41 C 23,44 22.5,47 24.5,48.2 C 26,48.8 30,49 32,49 C 34,49 38,48.8 39.5,48.2 C 41.5,47 41,44 40.5,41 C 40,37 41,35 40.5,32 C 40,28.5 36,27.5 36,25 Z" fill="url(#bottleEmpty)" />
+
+  <!-- Internal dip tube / suction straw -->
+  <path d="M 31.6,24.5 L 32.1,34 L 33.7,47.8 L 34.6,47.8 L 32.9,34 L 32.4,24.5 Z" fill="#FFFFFF" opacity="0.38" />
+
+  <!-- Deep navy/indigo liquid fill (bottom 60% of bottle) -->
+  <path d="M 23.7,34 C 27,35 37,35 40.3,34 C 40.1,36.5 41,38 40.5,41 C 40,44 41.5,47 39.5,48.2 C 38,48.8 34,49 32,49 C 30,49 26,48.8 24.5,48.2 C 22.5,47 23,44 23.5,41 C 24,38 23.5,36.5 23.7,34 Z" fill="url(#liquidGrad)" />
+
+  <!-- Visible liquid-level meniscus line with surface reflection -->
+  <path d="M 23.7,34 C 27,34.8 37,34.8 40.3,34 C 37,35.4 27,35.4 23.7,34 Z" fill="url(#meniscusGrad)" />
+  <path d="M 24.5,33.8 C 27.5,34.4 36.5,34.4 39.5,33.8 C 36.5,34.8 27.5,34.8 24.5,33.8 Z" fill="#FFFFFF" opacity="0.6" />
+
+  <!-- Graduation measurement tick marks on bottle flank -->
+  <rect x="24.8" y="38" width="2.2" height="0.8" rx="0.3" fill="#FFFFFF" opacity="0.4" />
+  <rect x="24.6" y="41.5" width="2.8" height="0.8" rx="0.3" fill="#FFFFFF" opacity="0.4" />
+  <rect x="24.4" y="45" width="2.2" height="0.8" rx="0.3" fill="#FFFFFF" opacity="0.4" />
+
+  <!-- Vertical specular highlight streak on bottle body -->
+  <path d="M 25.2,28.5 C 24.8,32 24.6,42 25.4,46.5 C 26.2,46.5 26.3,42 26.1,32 C 26.1,29.8 25.8,28.5 25.2,28.5 Z" fill="#FFFFFF" opacity="0.35" />
+
+  <!-- Shoulder specular reflection glint -->
+  <path d="M 27.5,26.5 C 25.8,27.5 24.8,29.2 24.8,31 C 25.5,29.8 26.8,28.4 28.2,27.6 Z" fill="#FFFFFF" opacity="0.4" />
+
+  <!-- Sprayer neck screw collar -->
+  <rect x="27" y="22.5" width="10" height="3" rx="0.8" fill="url(#collarGrad)" />
+  <!-- Collar ridges/texture -->
+  <rect x="29" y="23" width="0.7" height="2" fill="#ECEFF1" opacity="0.5" />
+  <rect x="31" y="23" width="0.7" height="2" fill="#ECEFF1" opacity="0.5" />
+  <rect x="33" y="23" width="0.7" height="2" fill="#ECEFF1" opacity="0.5" />
+  <rect x="35" y="23" width="0.7" height="2" fill="#ECEFF1" opacity="0.5" />
+
+  <!-- Sprayer Housing (Main Trigger Head) -->
+  <path d="M 21,17.2 L 30,15.2 C 35.5,15.2 41,16.8 42.5,18.8 C 43.2,19.8 40.5,21.5 37.5,22.5 L 30,22.5 C 29.5,20.5 28,19.6 25,19.6 L 21,19.6 Z" fill="url(#sprayerHead)" />
+
+  <!-- Sprayer head top specular sheen -->
+  <path d="M 21.5,17.5 L 29.5,15.7 C 34.5,15.7 39.5,17 41.5,18.5 C 38.5,17.5 33.5,16.5 29.5,16.5 L 22.5,18 Z" fill="#FFFFFF" opacity="0.55" />
+
+  <!-- Nozzle tip (front nozzle cap) -->
+  <path d="M 19.5,17.3 L 21.8,16.9 L 21.8,19.9 L 19.5,19.5 Z" fill="#546E7A" />
+  <!-- Tiny nozzle orifice dot -->
+  <circle cx="19.7" cy="18.4" r="0.5" fill="#263238" />
+
+  <!-- Trigger Lever (hanging ergonomically with clear finger gap) -->
+  <path d="M 26.5,19.6 C 26,22 23.5,24 23.5,27.2 C 23.5,28.4 24.8,28.9 25.8,28.6 C 26.8,28.2 27.5,27 28.5,24.5 C 29,23 29.5,21 29,19.6 Z" fill="url(#triggerGrad)" />
+
+  <!-- Trigger front-edge highlight -->
+  <path d="M 26.2,19.8 C 25.7,22.2 23.6,24.2 23.6,27.2 C 23.6,28 24.4,28.4 25.2,28.2 C 24.4,28 24.1,27.2 24.1,26.5 C 24.1,24 25.8,22 26.5,19.8 Z" fill="#FFFFFF" opacity="0.55" />
+</svg>

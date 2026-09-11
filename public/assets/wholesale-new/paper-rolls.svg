@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <!-- Dimensional gradient for cylinder body -->
+    <linearGradient id="rollBody" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#81D4FA" />
+      <stop offset="30%" stop-color="#4FC3F7" />
+      <stop offset="70%" stop-color="#29B6F6" />
+      <stop offset="100%" stop-color="#0288D1" />
+    </linearGradient>
+
+    <!-- Top face gradient (overhead light reflection) -->
+    <linearGradient id="rollTop" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#E1F5FE" />
+      <stop offset="100%" stop-color="#B3E5FC" />
+    </linearGradient>
+
+    <!-- Hollow core inside gradient -->
+    <linearGradient id="rollCore" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#01579B" />
+      <stop offset="100%" stop-color="#0277BD" />
+    </linearGradient>
+
+    <!-- Hanging sheet front gradient -->
+    <linearGradient id="sheetGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#B3E5FC" />
+      <stop offset="35%" stop-color="#4FC3F7" />
+      <stop offset="80%" stop-color="#0288D1" />
+      <stop offset="100%" stop-color="#01579B" />
+    </linearGradient>
+  </defs>
+
+  <!-- Circular badge background -->
+  <circle cx="32" cy="32" r="28" fill="#E3F2FD" />
+
+  <!-- Soft ground shadow under roll -->
+  <ellipse cx="32" cy="48" rx="16" ry="3" fill="#BBDEFB" opacity="0.75" />
+
+  <!-- Roll cylinder body -->
+  <path d="M 18.5,19 L 18.5,43 A 8.5 3.2 0 0 0 35.5,43 L 35.5,19 Z" fill="url(#rollBody)" />
+
+  <!-- Soft vertical light sheen on cylinder -->
+  <path d="M 21,21.5 L 21,41 Q 22,42 23,41.5 L 23,21.8 Q 22,21.2 21,21.5 Z" fill="#FFFFFF" opacity="0.28" />
+
+  <!-- Subtle quilted embossed texture dots on cylinder body -->
+  <g fill="#FFFFFF" opacity="0.38">
+    <circle cx="23" cy="27" r="0.65" />
+    <circle cx="27" cy="27" r="0.65" />
+    <circle cx="31" cy="27" r="0.65" />
+    <circle cx="25" cy="31" r="0.65" />
+    <circle cx="29" cy="31" r="0.65" />
+    <circle cx="23" cy="35" r="0.65" />
+    <circle cx="27" cy="35" r="0.65" />
+    <circle cx="31" cy="35" r="0.65" />
+    <circle cx="25" cy="39" r="0.65" />
+    <circle cx="29" cy="39" r="0.65" />
+  </g>
+
+  <!-- Shadow cast by hanging sheet onto cylinder body -->
+  <path d="M 31,21 C 32.5,28 32.8,36 33.2,44.5 A 8.5 3.2 0 0 0 35.5,43 L 35.5,20.5 C 34,20.6 32.4,20.8 31,21 Z" fill="#01579B" opacity="0.22" />
+
+  <!-- Roll top face ellipse -->
+  <ellipse cx="27" cy="19" rx="8.5" ry="3.2" fill="url(#rollTop)" />
+
+  <!-- Visible spiral roll texture line on top face (pure filled shape) -->
+  <path d="M 35.5,19.2 C 35.5,17.4 31.7,16.2 27,16.2 C 22.3,16.2 19.6,17.4 19.6,18.8 C 19.6,20.2 22.8,21.3 27,21.3 C 30.6,21.3 33,20.4 33,19.3 C 33,18.3 30.4,17.5 27,17.5 C 24.1,17.5 22.4,18.2 22.4,18.9 C 22.4,19.6 24.5,20.2 27,20.2 C 28.8,20.2 30.1,19.7 30.1,19.2 L 29.5,19.2 C 29.5,19.5 28.4,19.8 27,19.8 C 24.8,19.8 23.1,19.3 23.1,18.8 C 23.1,18.3 24.5,17.9 27,17.9 C 30,17.9 32.3,18.6 32.3,19.3 C 32.3,20.1 30.2,20.9 27,20.9 C 23.2,20.9 20.3,19.9 20.3,18.8 C 20.3,17.7 22.7,16.6 27,16.6 C 31.4,16.6 34.8,17.7 34.8,19.3 Z" fill="#0288D1" opacity="0.65" />
+
+  <!-- Core cardboard tube rim -->
+  <ellipse cx="27" cy="19" rx="3.0" ry="1.2" fill="#81D4FA" />
+
+  <!-- Inner core hollow opening -->
+  <ellipse cx="27" cy="19" rx="2.2" ry="0.85" fill="url(#rollCore)" />
+
+  <!-- Hanging sheet with torn bottom edge -->
+  <path d="M 34.2,20.4 C 37.5,21.2 41.5,22.2 45.5,23.8 C 45.8,29.5 45.7,36.2 45.4,42.5 L 43.8,44.2 L 42.6,43.0 L 40.5,45.2 L 39.2,43.7 L 37.2,45.8 L 35.8,44.2 L 34.0,46.0 C 33.6,38 33.7,29 34.2,20.4 Z" fill="url(#sheetGrad)" />
+
+  <!-- Sheet top curl highlight -->
+  <path d="M 34.2,20.4 C 37.5,21.2 41.5,22.2 45.5,23.8 C 43.5,24.2 38.5,23.2 34.4,21.8 Z" fill="#FFFFFF" opacity="0.4" />
+
+  <!-- Subtle quilted dots on hanging sheet -->
+  <g fill="#FFFFFF" opacity="0.45">
+    <circle cx="39" cy="27" r="0.65" />
+    <circle cx="43" cy="28" r="0.65" />
+    <circle cx="37" cy="32" r="0.65" />
+    <circle cx="41" cy="33" r="0.65" />
+    <circle cx="39" cy="38" r="0.65" />
+    <circle cx="43" cy="39" r="0.65" />
+  </g>
+</svg>

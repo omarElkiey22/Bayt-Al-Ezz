@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <!-- Bottle body lavender/purple gradient -->
+    <linearGradient id="bottleGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#CE93D8" />
+      <stop offset="30%" stop-color="#BA68C8" />
+      <stop offset="70%" stop-color="#8E24AA" />
+      <stop offset="100%" stop-color="#6A1B9A" />
+    </linearGradient>
+
+    <!-- Pump head pearl/lavender gradient -->
+    <linearGradient id="pumpHead" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="50%" stop-color="#EDE7F6" />
+      <stop offset="100%" stop-color="#D1C4E9" />
+    </linearGradient>
+
+    <!-- Pump stem gradient -->
+    <linearGradient id="pumpStem" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="50%" stop-color="#E1BEE7" />
+      <stop offset="100%" stop-color="#CE93D8" />
+    </linearGradient>
+
+    <!-- Pump collar gradient -->
+    <linearGradient id="pumpCollar" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#F3E5F5" />
+      <stop offset="45%" stop-color="#D1C4E9" />
+      <stop offset="100%" stop-color="#AB47BC" />
+    </linearGradient>
+  </defs>
+
+  <!-- Circular badge background -->
+  <circle cx="32" cy="32" r="28" fill="#F3E5F5" />
+
+  <!-- Soft ground contact shadow -->
+  <ellipse cx="32" cy="51" rx="14" ry="2.8" fill="#E1BEE7" opacity="0.8" />
+
+  <!-- Rounded rectangular bottle body -->
+  <path d="M 26.5,26 C 23.5,26 22,27.8 22,30.5 L 22,45 C 22,47.8 24.2,49 27,49 L 37,49 C 39.8,49 42,47.8 42,45 L 42,30.5 C 42,27.8 40.5,26 37.5,26 L 35.5,26 L 35.5,25 L 28.5,25 L 28.5,26 Z" fill="url(#bottleGrad)" />
+
+  <!-- Specular vertical highlight streak on left curve -->
+  <path d="M 23.5,29.5 L 23.5,45.5 Q 24.2,46.2 24.8,45.5 L 24.8,29.5 Q 24.2,28.8 23.5,29.5 Z" fill="#FFFFFF" opacity="0.32" />
+
+  <!-- Shoulder curve reflection glint -->
+  <path d="M 25.5,27.2 C 23.8,28.2 22.8,29.6 22.8,31.2 C 23.5,29.8 25,28.4 26.8,27.8 Z" fill="#FFFFFF" opacity="0.45" />
+
+  <!-- Elegant personal care label panel (pure color blocks, no text) -->
+  <rect x="25.2" y="32" width="13.6" height="11" rx="2" fill="#F3E5F5" opacity="0.88" />
+
+  <!-- Care droplet emblem on label -->
+  <path d="M 32,34.5 C 32,34.5 29.5,37.2 29.5,38.8 C 29.5,40.2 30.6,41.2 32,41.2 C 33.4,41.2 34.5,40.2 34.5,38.8 C 34.5,37.2 32,34.5 32,34.5 Z" fill="#8E24AA" />
+  <!-- Droplet shine glint -->
+  <circle cx="31.2" cy="38.5" r="0.65" fill="#FFFFFF" opacity="0.85" />
+
+  <!-- Minimalist care label accent bars -->
+  <rect x="29" y="42" width="6" height="0.6" rx="0.3" fill="#BA68C8" opacity="0.65" />
+
+  <!-- Pump neck collar -->
+  <rect x="28" y="24" width="8" height="2.5" rx="0.7" fill="url(#pumpCollar)" />
+  <!-- Collar vertical ribs -->
+  <rect x="29.6" y="24.4" width="0.6" height="1.7" fill="#EDE7F6" opacity="0.7" />
+  <rect x="31.2" y="24.4" width="0.6" height="1.7" fill="#EDE7F6" opacity="0.7" />
+  <rect x="32.8" y="24.4" width="0.6" height="1.7" fill="#EDE7F6" opacity="0.7" />
+  <rect x="34.4" y="24.4" width="0.6" height="1.7" fill="#EDE7F6" opacity="0.7" />
+
+  <!-- Pump stem / piston -->
+  <rect x="30.5" y="19.2" width="3" height="5" rx="0.5" fill="url(#pumpStem)" />
+  <rect x="31.1" y="19.5" width="0.7" height="4.5" fill="#FFFFFF" opacity="0.6" />
+
+  <!-- Pump actuator head with spout -->
+  <path d="M 22,18 L 29,16.8 C 33,16.2 37,16.5 38.5,17.2 C 39.5,18 38.8,19.2 36.8,19.5 L 32,19.8 L 30,19.8 L 24,19.4 C 22.6,19.2 22,18.6 22,18 Z" fill="url(#pumpHead)" />
+
+  <!-- Pump head top press curve highlight -->
+  <path d="M 23,17.8 L 29,16.8 C 33,16.3 36.5,16.6 37.8,17.2 C 35.5,17 32,17.2 29,17.6 L 23.5,18.3 Z" fill="#FFFFFF" opacity="0.75" />
+
+  <!-- Pump discharge nozzle tip -->
+  <path d="M 21.6,18.1 L 22.8,17.7 L 22.8,19.1 L 21.6,18.7 Z" fill="#CE93D8" />
+</svg>
