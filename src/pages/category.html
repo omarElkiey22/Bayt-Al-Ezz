@@ -134,6 +134,7 @@
     import { initPricingMode, isWholesaleMode, filterWholesaleProducts } from '../js/pricing-mode.js';
     import { buildSidebarNavLinkHTML, buildMobileNavLinkHTML } from '../js/section-nav-html.js';
     import { buildNoResultsHTML } from '../js/no-results-html.js';
+    import { getCategoryEmptySubtitle } from '../js/category-empty-subtitle.js';
 
     initPricingMode();
     initializeSearchBar(document.getElementById('search-bar-slot'));
@@ -609,7 +610,12 @@
         content.innerHTML = searchQuery ? buildNoResultsHTML({ searchQuery, indexMockParam }) : `
           <span class="material-symbols-outlined text-6xl text-[#75777E] mb-4">folder_open</span>
           <h3 class="text-xl font-bold text-[#1A237E] mb-2">لا توجد منتجات متاحة</h3>
-          <p class="text-[#75777E] mb-6">${isWholesaleMode() ? 'لا توجد منتجات مسعرة بالجملة في هذا القسم حالياً.' : 'لم يتم إضافة منتجات في هذا القسم بعد.'}</p>
+          <p class="text-[#75777E] mb-6">${getCategoryEmptySubtitle({
+            isWholesale: isWholesaleMode(),
+            section: currentSlug || slug,
+            wholesaleSection: currentWholesaleSectionId || wholesaleSectionId,
+            company: activeCompanyId || companyId
+          })}</p>
           <a class="inline-flex items-center gap-2 bg-[#0056B3] hover:bg-[#004491] text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm" href="index.html${indexMockParam}">
             <span class="material-symbols-outlined text-sm">home</span>
             العودة إلى الصفحة الرئيسية
