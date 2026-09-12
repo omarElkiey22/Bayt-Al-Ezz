@@ -16,15 +16,12 @@ export async function fetchCompaniesForSection(sectionSlug){const db=requireSupa
 // fetchProductsBySection(). Same return shape.
 export async function fetchCompaniesForWholesaleSection(wholesaleSectionId){const db=requireSupabase();const products=await fetchProductsByWholesaleSection(wholesaleSectionId);const wholesale=filterWholesaleProducts(products);const hasUnassigned=wholesale.some(p=>!p.company_id);const companyIds=[...new Set(wholesale.map(p=>p.company_id).filter(Boolean))];if(companyIds.length===0)return {companies:[],hasUnassigned};const {data,error}=await active(db.from(TABLES.companies).select('*').in('id',companyIds)).order('name');if(error)throw error;return {companies:data||[],hasUnassigned}}
 
-// Homepage direct-browsing showcase (User Story 2). Matches
-// filterWholesaleProducts()'s actual "wholesale-eligible" condition
-// (wholesale_price > 0, not "is not null" -- 0 is a DB-legal value that
-// would otherwise show a company card with nothing actually wholesale-
-// priced behind it) and excludes hidden-section products for non-admins,
-// same as every other product-facing query. Degrades to [] on error
-// (logged, not thrown) since this powers a homepage showcase that should
-// never break the page, matching fetchActiveSections()'s error style.
-export async function fetchActiveCompanies(){try{const db=requireSupabase();const {isAdmin,hiddenSectionIds}=await getHiddenSectionContext(db);let query=active(db.from(TABLES.products).select('company_id')).gt('wholesale_price',0).not('company_id','is',null);if(!isAdmin&&hiddenSectionIds.size>0)query=query.not('section_id','in',`(${[...hiddenSectionIds].join(',')})`);const {data,error}=await query;if(error)throw error;const companyIds=[...new Set((data||[]).map(row=>row.company_id).filter(Boolean))];if(companyIds.length===0)return [];const {data:companies,error:companiesError}=await active(db.from(TABLES.companies).select('*').in('id',companyIds)).order('name');if(companiesError)throw companiesError;return companies||[]}catch(error){console.error(error);return []}}
+// Homepage direct-browsing showcase (User Story 2). Queries the companies
+// table directly for all active, non-deleted companies ordered by name,
+// matching fetchActiveSections()'s public-facing equivalent. Degrades to []
+// on error (logged, not thrown) since this powers a homepage showcase that
+// should never break the page, matching fetchActiveSections()'s error style.
+export async function fetchActiveCompanies(){try{const db=requireSupabase();const {data,error}=await active(db.from(TABLES.companies).select('*')).order('name');if(error)throw error;return data||[]}catch(error){console.error(error);return []}}
 
 // Single active, non-deleted company by id. Both company-scoped
 // category.html routes call this first and catch its "not found" error

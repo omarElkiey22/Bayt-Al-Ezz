@@ -29,10 +29,9 @@ beforeAll(async () => {
   ({ MockQueryBuilder } = await import('../src/js/supabase-client.js'));
 });
 
-// Regression guard for the .gt()/.not() support added so fetchActiveCompanies()
-// and fetchProductsByCompany() (companies-api.js) work against the local mock
-// Supabase client -- this is real parsing/comparison logic with no other test
-// coverage anywhere in the repo.
+// Regression guard for the .gt()/.not() support added so fetchProductsByCompany()
+// (companies-api.js) works against the local mock Supabase client -- this is
+// real parsing/comparison logic with no other test coverage anywhere in the repo.
 
 describe('MockQueryBuilder.gt', () => {
   it('keeps only rows strictly greater than the threshold', async () => {
