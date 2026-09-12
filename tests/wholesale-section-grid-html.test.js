@@ -13,19 +13,19 @@ import { WHOLESALE_ICONS, WHOLESALE_DEFAULT_ICON } from '../src/js/admin/icon-pi
 
 describe('buildWholesaleSectionGridEntryHTML', () => {
   it('links to wholesale-section-companies.html by id, not slug', () => {
-    const html = buildWholesaleSectionGridEntryHTML({ id: 'ws-123', name: 'مواد غذائية', icon_name: 'kitchen-shelving.svg' });
+    const html = buildWholesaleSectionGridEntryHTML({ id: 'ws-123', name: 'مواد غذائية', icon_name: 'cooking-pot.svg' });
     expect(html).toContain('wholesale-section-companies.html?wholesale_section=ws-123');
     expect(html).not.toContain('?section=');
   });
 
   it('escapes a malicious section name', () => {
-    const html = buildWholesaleSectionGridEntryHTML({ id: 'ws-1', name: '<img src=x onerror=alert(1)>', icon_name: 'laundry.svg' });
+    const html = buildWholesaleSectionGridEntryHTML({ id: 'ws-1', name: '<img src=x onerror=alert(1)>', icon_name: 'paper-rolls.svg' });
     expect(html).not.toContain('<img src=x onerror=alert(1)>');
     expect(html).toContain('&lt;img src=x onerror=alert(1)&gt;');
   });
 
   it('escapes an attribute-breakout payload in the id used for the link', () => {
-    const html = buildWholesaleSectionGridEntryHTML({ id: '"><script>alert(1)</script>', name: 'قسم', icon_name: 'laundry.svg' });
+    const html = buildWholesaleSectionGridEntryHTML({ id: '"><script>alert(1)</script>', name: 'قسم', icon_name: 'paper-rolls.svg' });
     expect(html).not.toContain('"><script>alert(1)</script>');
   });
 
@@ -69,5 +69,28 @@ describe('buildWholesaleSectionGridEntryHTML icon paths resolve on disk', () => 
 
   it('resolves the no-icon fallback to a real file from src/pages/', () => {
     expect(existsSync(resolve(renderingPageDir, srcPathFor(null)))).toBe(true);
+  });
+});
+
+// Presentation contract for the wholesale section card. Pinned because these
+// are the kind of classes a later markup edit silently drops: the icon size
+// and the absence of truncation are both deliberate (large icon, full section
+// name visible on a narrow mobile viewport rather than an ellipsis).
+describe('buildWholesaleSectionGridEntryHTML presentation', () => {
+  const html = () => buildWholesaleSectionGridEntryHTML(
+    { id: 'ws-1', name: 'مواد غذائية ومنظفات ومستلزمات منزلية', icon_name: 'cooking-pot.svg' }
+  );
+
+  it('renders the icon at the large w-28 h-28 size', () => {
+    expect(html()).toContain('class="w-28 h-28 object-contain pointer-events-none"');
+    expect(html()).not.toContain('w-12 h-12');
+  });
+
+  it('never truncates the section name (no line-clamp)', () => {
+    expect(html()).not.toContain('line-clamp');
+  });
+
+  it('renders the full section name, however long', () => {
+    expect(html()).toContain('مواد غذائية ومنظفات ومستلزمات منزلية');
   });
 });

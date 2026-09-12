@@ -56,7 +56,7 @@ Confirm the new pure-logic suites pass:
 
 ## User Story 2: Direct Company Browsing on Wholesale Homepage (P2)
 
-1. On `wholesale-home.html`, locate the "شركاء النجاح والشركات" showcase → **expect** it lists the
+1. On `wholesale-home.html`, locate the "تصفح حسب الشركة" showcase → **expect** it lists the
    companies created in Prerequisites.
 2. Tap a company card → **expect** `category.html?company=<id>` shows *all* of that company's
    active wholesale products across every section (not just one).

@@ -28,8 +28,8 @@ export function buildWholesaleSectionGridEntryHTML(section) {
   const icon = escapeHtml(section.icon_name || 'paper-rolls.svg');
   return `
     <a class="flex flex-col items-center gap-2 p-4 bg-white border border-[#9E9E9E]/20 rounded-2xl shadow-sm hover:border-[#0056B3] hover:shadow-md transition-all text-center" href="wholesale-section-companies.html?wholesale_section=${id}">
-      <img src="../../public/assets/wholesale-new/${icon}" class="w-12 h-12 object-contain pointer-events-none" alt="" onerror="this.style.display='none'">
-      <span class="font-bold text-sm text-[#1A237E] line-clamp-1">${name}</span>
+      <img src="../../public/assets/wholesale-new/${icon}" class="w-28 h-28 object-contain pointer-events-none" alt="" onerror="this.style.display='none'">
+      <span class="font-bold text-sm text-[#1A237E]">${name}</span>
     </a>
   `;
 }

@@ -56,11 +56,15 @@
     <section class="mb-12">
       <h2 class="font-bold text-lg text-[#1A237E] mb-4">تصفح حسب القسم</h2>
       <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4" id="section-grid">
-        <!-- Skeleton entries -->
-        <div class="h-28 bg-gray-200 animate-pulse rounded-2xl w-full"></div>
-        <div class="h-28 bg-gray-200 animate-pulse rounded-2xl w-full"></div>
-        <div class="h-28 bg-gray-200 animate-pulse rounded-2xl w-full"></div>
-        <div class="h-28 bg-gray-200 animate-pulse rounded-2xl w-full"></div>
+        <!-- Skeleton entries. h-48 (192px) is measured against the real card:
+             p-4 (32) + h-28 icon (112) + gap-2 (8) + a wrapped two-line name (40)
+             = ~194px at mobile/tablet widths, where the section names do wrap.
+             Desktop cards are ~174px (one-line names), so this errs 18px tall on
+             a single desktop row rather than 18px short on two mobile rows. -->
+        <div class="h-48 bg-gray-200 animate-pulse rounded-2xl w-full"></div>
+        <div class="h-48 bg-gray-200 animate-pulse rounded-2xl w-full"></div>
+        <div class="h-48 bg-gray-200 animate-pulse rounded-2xl w-full"></div>
+        <div class="h-48 bg-gray-200 animate-pulse rounded-2xl w-full"></div>
       </div>
     </section>
 
@@ -71,8 +75,7 @@
     <section class="hidden bg-white border border-[#9E9E9E]/20 rounded-3xl p-6 md:p-8 shadow-sm" id="companies-showcase">
       <div class="flex items-end justify-between gap-4 flex-wrap pb-4 mb-6 border-b border-[#9E9E9E]/10">
         <div>
-          <h2 class="text-2xl font-extrabold text-[#1A237E] mb-1">شركاء النجاح والشركات</h2>
-          <p class="text-sm text-[#75777E]">تعامل مباشر مع الموردين — اختار الشركة وشوف منتجاتها في كل الأقسام.</p>
+          <h2 class="text-2xl font-extrabold text-[#1A237E]">تصفح حسب الشركة</h2>
         </div>
         <span class="inline-flex items-center gap-1.5 bg-amber-50 text-amber-800 border border-amber-200 rounded-full px-3 py-1 text-xs font-bold shrink-0">
           <span class="material-symbols-outlined text-sm">group</span>

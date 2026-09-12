@@ -35,7 +35,7 @@ navigation and query strings, consistent with the rest of the storefront (no cli
     `wholesale-section-companies.html?section=<slug>`. Rendered via a new pure template module
     (`wholesale-section-grid-html.js`, mirrors `section-nav-html.js`) — explicitly **not** the
     house SVG components.
-  - The "Browse Companies" / "شركاء النجاح والشركات" showcase (User Story 2): populated via
+  - The "Browse Companies" / "تصفح حسب الشركة" showcase (User Story 2): populated via
     `fetchActiveCompanies()`, rendered with `company-card-html.js`'s `buildCompanyCardHTML()`. Each
     company card links to `category.html?company=<id>` (no `section` param — full cross-section
     catalog).

@@ -497,11 +497,18 @@
         const freshProducts = await fetchAndLabelProducts(sectionsCache, currentSlug, activeCompanyId, currentWholesaleSectionId);
         if (myGeneration !== fetchGeneration) return;
         allProducts = filterWholesaleProducts(freshProducts);
-        // No retail sidebar-nav to refresh in wholesale-section mode --
-        // sectionsCache stays [] there (render() never populates it, see
-        // below), so this would be a harmless but pointless write; guarded
-        // for symmetry with render()'s own guard (research.md Decision 2).
-        if (!currentWholesaleSectionId) {
+        // No retail sidebar-nav to refresh in ANY wholesale-mode view --
+        // render() never renders it there (it hides the <aside> outright), so
+        // re-rendering on a re-fetch would resurrect a nav this mode is not
+        // supposed to show.
+        //
+        // The guard is defence-in-depth rather than a live retail path: this
+        // whole function is only reachable from the filter panel's facet
+        // handlers and #zero-match-reset, and the panel is only ever wired
+        // inside `if (isWholesaleMode() && !searchQuery)` -- so retail never
+        // enters here today. Kept (not deleted) so that stays true by
+        // construction if the panel is ever offered on a retail route.
+        if (!isWholesaleMode()) {
           await loadNavigation(sectionsCache);
         }
 
@@ -760,9 +767,31 @@
         let sections = [];
         const sidebarAside = document.getElementById('sidebar-aside');
         const mobileNav = document.getElementById('mobile-nav');
-        if (currentWholesaleSectionId) {
+        const hideRetailSectionNav = () => {
+          // The <aside> holds the "أقسام البيت" heading AND loading
+          // skeletons, so it has to be hidden wholesale rather than merely
+          // left unpopulated -- skipping loadNavigation() alone would leave
+          // the skeletons pulsing forever.
           if (sidebarAside) sidebarAside.style.display = 'none';
           if (mobileNav) mobileNav.style.display = 'none';
+        };
+        if (currentWholesaleSectionId) {
+          hideRetailSectionNav();
+        } else if (isWholesaleMode()) {
+          // Wholesale mode, company-only browsing (feature 003's
+          // ?company=<id> route). The retail "أقسام البيت" nav is a
+          // slug-keyed consumer-store control with no meaning in ANY
+          // wholesale view, so it is never rendered here either.
+          //
+          // Unlike the wholesale-section branch above, the section data is
+          // still fetched: sectionsCache feeds the filter panel's "القسم"
+          // facet (buildSectionOptionsHTML) and fetchAndLabelProducts()'s
+          // section lookup, both of which stay live on this route when the
+          // shopper picks a section from that facet. Only the nav rendering
+          // is skipped, not the fetch.
+          sections = await fetchActiveSections();
+          sectionsCache = sections;
+          hideRetailSectionNav();
         } else {
           sections = await fetchActiveSections();
           sectionsCache = sections;

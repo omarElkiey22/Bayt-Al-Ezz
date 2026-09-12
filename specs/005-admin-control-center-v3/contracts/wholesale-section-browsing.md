@@ -236,8 +236,12 @@ and price inputs this mode is explicitly supposed to keep working.
   `fetchCompaniesForWholesaleSection`'s `companies` when a `wholesale_section` is present), not from
   a sections table, so nothing about how it's populated needs to change.
 - **No sidebar-nav / mobile-nav in this mode.** Covered by the `render()` guard above — the retail
-  sidebar-nav (`sectionsCache`/`fetchActiveSections()`/`section-nav-html.js`) is only ever populated
-  on the `?section=<slug>` (retail) path.
+  sidebar-nav (`section-nav-html.js`) is only ever *rendered* on the `?section=<slug>` (retail)
+  path. Note the distinction between fetching and rendering: `fetchActiveSections()` /
+  `sectionsCache` are still populated on the wholesale `?company=<id>` route, because the filter
+  panel's "القسم" facet (`buildSectionOptionsHTML()`) and `fetchAndLabelProducts()`'s section
+  lookup both read them there — only this `?wholesale_section=<id>` route skips the fetch outright
+  (SC-001). Do not "simplify" that route-2 fetch away: it would silently empty that facet.
 
 ### `fetchAndLabelProducts()` — explicit 4th parameter, checked first
 

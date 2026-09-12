@@ -39,3 +39,33 @@ describe('buildCompanyCardHTML', () => {
     expect(html).toContain('abc-123');
   });
 });
+
+// Presentation contract for the company card -- kept deliberately in step with
+// buildWholesaleSectionGridEntryHTML's w-28 h-28 icon so section cards and
+// company cards read as one visual system on the wholesale storefront. The
+// absent line-clamp is equally deliberate: long company names must wrap and
+// stay fully visible on a narrow mobile viewport.
+describe('buildCompanyCardHTML presentation', () => {
+  const LONG_NAME = 'شركة الاتحاد للتجارة والتوزيع والاستيراد';
+
+  it('sizes the logo container at w-28 h-28', () => {
+    const html = buildCompanyCardHTML({ id: 'c1', name: LONG_NAME, logo_url: 'https://example.com/logo.png' });
+    expect(html).toContain('w-28 h-28');
+    expect(html).not.toContain('w-16 h-16');
+  });
+
+  it('sizes the monogram fallback container at w-28 h-28 too', () => {
+    const html = buildCompanyCardHTML({ id: 'c2', name: LONG_NAME, logo_url: null });
+    expect(html).toContain('w-28 h-28');
+    expect(html).not.toContain('w-16 h-16');
+  });
+
+  it('never truncates the company name (no line-clamp), logo or monogram', () => {
+    const withLogo = buildCompanyCardHTML({ id: 'c3', name: LONG_NAME, logo_url: 'https://example.com/logo.png' });
+    const withMonogram = buildCompanyCardHTML({ id: 'c4', name: LONG_NAME, logo_url: null });
+    expect(withLogo).not.toContain('line-clamp');
+    expect(withMonogram).not.toContain('line-clamp');
+    expect(withLogo).toContain(LONG_NAME);
+    expect(withMonogram).toContain(LONG_NAME);
+  });
+});
